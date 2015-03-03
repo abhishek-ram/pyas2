@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+{% load cycle from future %}
+{% block title %}
+Messages
+{% endblock %}
+{% block content %}
+<form action="{{ form.action }}" method="post">{% csrf_token %}
+    <input onClick="history.back()" type="button" value="{% trans 'Back' %}" />
+    {% include "pyas2/paginator.html" %}
+    <table id="pyas2table">
+        <thead>
+            <tr>
+                <th><button class="pyas2header" type="submit" name="order" value="timestamp" >{% trans 'Timestamp' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="direction" >{% trans 'Direction' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="messageid" >{% trans 'Message ID' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="status" >{% trans 'Status' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="organization" >{% trans 'Organization' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="partner" >{% trans 'Partner' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="payload" >{% trans 'Payload' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="encryption" >{% trans 'Encryption' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="signature" >{% trans 'Signature' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="mdn mode" >{% trans 'MDN Mode' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="mdn" >{% trans 'MDN' %}</button></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in message_list %}
+            <tr class="{% cycle 'row1' 'row2' %}">
+                <td class="nowrap">{{row.timestamp|date:"Y-m-d H:i:s" }}</td>
+                <td class="nowrap">{{row.get_direction_display}}</td>
+                <td class="nowrap"><a href="{% url "message_detail" row.message_id %}" class="pyas2link">{{row.message_id}}</a></td>
+                <td class="nowrap">{{row.get_status_display}}</td>
+                <td class="nowrap">{{row.organization}}</td>
+                <td class="nowrap">{{row.partner}}</td>
+                <td class="nowrap">{% if row.payload %} <a target="_blank" href="{% url 'payload_view' row.message_id %}?action=this">{{row.payload}}</a>{% endif %}</td>
+                <td class="nowrap">{{row.partner.get_encryption_display}}</td>
+                <td class="nowrap">{{row.partner.get_signature_display}}</td>
+                <td class="nowrap">{{row.get_mdn_mode_display}}</td>
+                <td class="nowrap">{% if row.mdn %}<a target="_blank" href="{% url 'mdn_view' row.mdn.message_id %}?action=this">{{row.mdn}}{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</form>
+{% endblock %}
+
+    

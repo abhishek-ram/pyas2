@@ -1,0 +1,64 @@
+{% load i18n %}
+<div id="menu">
+{% if user.is_authenticated %}
+        <ul>
+                <a {% if not pyas2_touchscreen %} href="{% url "home" %}" {% endif %} >{% trans 'Home' %}</a>
+                <li><a href="{% url "home" %}">{% trans 'Home' %}{% if not pyas2_touchscreen %} *{% endif %}</a></li>
+                <li><a href="{% url "logout" %}">{% trans 'Log out' %}</a></li>
+                <li><a href="{% url "password_change" %}">{% trans 'Change password' %}</a></li>
+        </ul>
+        <ul>
+                <a>{% trans 'Messages' %}</a>
+                <li><a href="{% url "messages" %}" >{% trans 'All Messages' %}{% if not pyas2_touchscreen %} *{% endif %}</a></li>
+                <li><a href="{% url "messages" %}?direction=IN" >{% trans 'Inbound Messages' %}</a></li>
+                <li><a href="{% url "messages" %}?direction=OUT" >{% trans 'Outbound Messages' %}</a></li>
+                <li><a href="{% url "msearch" %}" >{% trans 'Search Messages' %}</a></li>
+                <li><a href="{% url "mdnsearch" %}" >{% trans 'MDNs' %}</a></li>
+        </ul>
+        {% if user.is_staff %}
+        <ul>
+                <a>{% trans 'Configuration' %}</a>
+                {% if perms.pyas2.change_organization %}<li><a href="/admin/pyas2/organization/" >{% trans 'Organizations' %}</a></li>{% endif %}
+                {% if perms.pyas2.change_partner %}<li><a href="/admin/pyas2/partner/" >{% trans 'Partners' %}</a></li>{% endif %}
+                {% if perms.pyas2.change_privatecertificate %}<li><a href="/admin/pyas2/privatecertificate/" >{% trans 'Private Certificates' %}</a></li>{% endif %}
+                {% if perms.pyas2.change_publiccertificate %}<li><a href="/admin/pyas2/publiccertificate/" >{% trans 'Public Certificates' %}</a></li>{% endif %}
+        </ul>
+    {% endif %}
+    {% if user.is_superuser %}
+        <ul>
+                <a>{% trans 'Administration' %}</a>
+                <li><a href="/admin/auth/user/" >{% trans 'Users' %}</a></li>
+                <li><a href="/admin/auth/group/" >{% trans 'UserGroups' %}</a></li>
+        <li><hr/></li>
+                <li><a href="{% url "sendtestmail" %}">{% trans 'Send test report' %}</a></li>
+        </ul>
+    {% endif %}
+        {% if perms.pyas2.change_mutex %} <!-- change mutex permission is required to run pyas2-engine! -->
+        <ul>
+                <a>{% trans 'Run' %}</a>
+                <li><a href="{% url "sendmessage" %}" >{% trans 'Send Message' %}</a></li>
+                <li><a href="{% url "sendasyncmdn" %}" >{% trans 'Send Pending ASYNC MDNs' %}</a></li>
+                <li><a href="{% url "retryfailedmessages" %}" >{% trans 'Retry failed outbound messages' %}</a></li>
+        </ul>
+        {% endif %}
+        {% if custom_menus %}
+        <ul>
+                <a>{{ custom_menuname }}</a>
+                {% for key,value in custom_menus %}
+                        {% ifequal '---' value %}
+                                <li><hr/></li>
+                        {% else %}
+                                <li><a href="{{ value }}" >{{ key }}</a></li>
+                        {% endifequal %}
+                {% endfor %}
+    </ul>
+        {% endif %}
+
+{% else %}
+        <ul>
+                <a href="{% url "login" %}">{% trans 'Log in' %}</a>
+        </ul>
+{% endif %}
+                <noscript>{% trans '*****Javascript is not enabled. Bots works better with javascript*****' %}</noscript>
+</div>
+

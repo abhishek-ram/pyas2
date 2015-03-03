@@ -1,0 +1,386 @@
+import requests
+import email.Message
+import email.utils
+import hashlib
+import as2utils
+import os 
+from email.mime.multipart import MIMEMultipart
+from email.parser import HeaderParser
+from M2Crypto import BIO, Rand, SMIME, X509
+from django.conf import settings
+from pyas2 import models
+from pyas2 import init
+
+signpass = ''
+
+class as2server():
+        ''' as2 server to receive files to remote server. '''
+	def saveMessage(self, payload):
+	    try:
+		if not models.Organization.objects.filter(as2_name=as2utils.unescape_as2name(payload.get('as2-to'))).exists():
+			self.buildmdn('error', 
+				adv_status='unknown-trading-partner', 
+				message='An error occured during the AS2 message processing: Unknown AS2 organization with id %s'%payload.get('as2-to')
+			)
+			return
+		self.message.organization = models.Organization.objects.get(as2_name=as2utils.unescape_as2name(payload.get('as2-to')))
+		if not models.Partner.objects.filter(as2_name=as2utils.unescape_as2name(payload.get('as2-from'))).exists(): 
+			self.buildmdn('error', 
+				adv_status='unknown-trading-partner', 
+				message='An error occured during the AS2 message processing: Unknown AS2 Trading partner with id %s'%payload.get('as2-from')
+			)
+			return
+		self.message.partner = models.Partner.objects.get(as2_name=as2utils.unescape_as2name(payload.get('as2-from')))
+		models.Log.objects.create(
+			message=self.message, 
+			status='S', 
+			text='Organization "%s" and partner "%s" related to message has been identified'%(self.message.organization, self.message.partner)
+		)
+		micContent = payload.get_payload()
+		filename = payload.get_filename()
+		if self.message.partner.encryption and payload.get_content_type() != 'application/pkcs7-mime':
+			self.buildmdn('error', 
+				adv_status='insufficient-message-security', 
+				message='An error occured during the AS2 message processing: Incoming messages from AS2 partner %s are defined to be encrypted'%self.messag.partner.as2_name
+			)
+			return
+		if payload.get_content_type() == 'application/pkcs7-mime':
+			models.Log.objects.create(message=self.message, status='S', text='Begin Decrypting the payload using private key %s'%self.message.organization.encryption_key)
+			privkey = SMIME.SMIME()
+        		privkey.load_key(as2utils.join(init.gsettings['root_dir'], self.message.organization.encryption_key.certificate.name), callback=self.getEncryptPassphrase)
+        		# Load the encrypted data.
+			try:
+				payload.get_payload().encode('ascii')
+			except Exception,e:			
+				payload.set_payload(payload.get_payload().encode('base64'))
+        		p7, data = SMIME.smime_load_pkcs7_bio(BIO.MemoryBuffer(as2utils.mimetostring(payload,78)))
+        		try:
+				decrypted_content = privkey.decrypt(p7)
+				payload = email.message_from_string(decrypted_content, strict=True)
+				if payload.get_content_type() == 'text/plain':
+					payload = email.Message.Message()
+					payload.set_payload(decrypted_content)
+					payload.set_type('application/edi-consent')
+					if filename:
+						payload.add_header('Content-Disposition', 'attachment', filename=filename)
+					micContent = decrypted_content
+        		except SMIME.SMIME_Error, msg:
+				self.buildmdn('error', 
+					adv_status='decryption-failed', 
+					message='An error occured during the AS2 message processing: Failed to decrypt message, exception message is %s' %msg
+				)
+				return 
+		if self.message.partner.signature and payload.get_content_type() != 'multipart/signed':
+			self.buildmdn('error', 
+				adv_status='insufficient-message-security', 
+				message='An error occured during the AS2 message processing: Incoming messages from AS2 partner %s are defined to be signed'%self.message.partner.as2_name 
+			)
+			return
+		if payload.get_content_type() == 'multipart/signed':
+			models.Log.objects.create(message=self.message, status='S', text='Begin Verifying the signature using public key %s'%self.message.partner.signature_key)
+			for part in payload.walk():
+				if part.get_content_type() == "application/pkcs7-signature":
+					raw_sig = part.get_payload()
+				else:
+					payload = part
+					msg = as2utils.canonicalize(part)
+					micContent = msg 
+			# now, wrap the signature in a PKCS7 block
+			sig = "-----BEGIN PKCS7-----\n%s\n-----END PKCS7-----\n"%raw_sig.replace('\r\n','\n')	
+			signer = SMIME.SMIME()
+			signerKey = X509.X509_Stack()
+			signerKey.push(X509.load_cert(as2utils.join(init.gsettings['root_dir'], self.message.partner.signature_key.certificate.name)))
+			signer.set_x509_stack(signerKey)
+			signerStore = X509.X509_Store()
+			signerStore.load_info(as2utils.join(init.gsettings['root_dir'], self.message.partner.signature_key.certificate.name))
+			signer.set_x509_store(signerStore)
+			p7 = SMIME.load_pkcs7_bio(BIO.MemoryBuffer(sig))
+			data_bio = BIO.MemoryBuffer(msg)
+			try:
+				signer.verify(p7, data_bio)
+			except Exception, e:
+				self.buildmdn('error', 
+					adv_status='integrity-check-failed', 
+					message='An error occured during the AS2 message processing: Signature Verification Failed, exception message is %s'%str(e))
+				return 
+		outputdir = as2utils.join(init.gsettings['root_dir'], 'messages/%s/inbox/%s'%(self.message.organization.as2_name, self.message.partner.as2_name))	
+		as2utils.dirshouldbethere(outputdir)
+		filename = payload.get_filename() or self.message.message_id.strip('<>')
+		fullfilename = as2utils.join(outputdir, filename)
+		file = open(fullfilename , 'wb')
+		file.write(payload.get_payload(decode=True))
+		file.close()
+		models.Log.objects.create(message=self.message, status='S', text='Message has been saved successfully to %s'%fullfilename)
+		self.message.payload = models.Payload.objects.create(name=filename, file=fullfilename, content_type=payload.get_content_type())
+		calcMIC = getattr(hashlib, self.message.partner.signature or 'sha1')
+		self.message.mic = calcMIC(micContent).digest().encode('base64').strip()
+		self.buildmdn('success')
+	    except Exception,e:
+		self.buildmdn('error',
+			adv_status='unexpected-processing-error', 
+			message='An error occured during the AS2 message processing: %s'%e
+		)
+	    finally:
+		self.message.save()		
+	def buildmdn(self, status, **kwargs):
+		if status == 'error':
+			models.Log.objects.create(message=self.message, status='E', text = kwargs['message'])
+		if not self.message_header.get('disposition-notification-to'):
+			models.Log.objects.create(message=self.message, status='S', text='MDN not requested by partner, closing request.')
+			self.mdnmessage = None
+			return None
+		models.Log.objects.create(message=self.message, status='S', text='Building MDN to be sent back to partner')
+		main = MIMEMultipart('report', report_type="disposition-notification")
+		text = "The AS2 message has been received. Thank you for exchanging AS2 messages with Pyas2."
+		if kwargs.get('message'):
+			text = kwargs['message']
+		textmessage = email.Message.Message()
+		textmessage.set_payload("%s\n"%text)
+		textmessage.set_type('text/plain')
+		textmessage.set_charset('us-ascii')
+		del textmessage['MIME-Version']
+		main.attach(textmessage)
+		mdnbase = email.Message.Message()
+		mdnbase.set_type('message/disposition-notification')
+		mdnbase.set_charset('us-ascii')
+		mdn = 'Reporting-UA: Bots Opensource EDI Translator\n'
+		mdn = mdn + 'Original-Recipient: rfc822; %s\n'%self.message.organization.as2_name
+		mdn = mdn + 'Final-Recipient: rfc822; %s\n'%self.message.organization.as2_name
+		mdn = mdn + 'Original-Message-ID: %s\n'%self.message.message_id
+		if status != 'success':
+			mdn = mdn + 'Disposition: automatic-action/MDN-sent-automatically; processed/%s: %s\n'%(status, kwargs['adv_status'])
+			self.message.status = 'E'
+			self.message.adv_status = kwargs['message']
+		else:
+			self.message.status = 'S'
+			mdn = mdn + 'Received-content-MIC: %s, sha1\n'%self.message.mic
+			mdn = mdn + 'Disposition: automatic-action/MDN-sent-automatically; processed\n'
+		mdnbase.set_payload(mdn)
+		del mdnbase['MIME-Version']
+		main.attach(mdnbase)
+		del main['MIME-Version']
+		models.Log.objects.create(message=self.message, status='S', text='MDN report created successfully and attached to the main message')
+		if self.message_header.get('disposition-notification-options'): 
+			models.Log.objects.create(message=self.message, status='S', text='Signing the MDN using private key %s'%self.message.organization.signature_key)
+			options = self.message_header.get('disposition-notification-options').split(";")
+			algorithm = options[1].split(",")[1].strip()
+			signed = MIMEMultipart('signed', micalg=algorithm)
+			signed.attach(main)
+			signature = email.Message.Message()
+			signer = SMIME.SMIME()
+			signer.load_key(as2utils.join(init.gsettings['root_dir'], self.message.organization.signature_key.certificate.name) , callback=self.getSignPassphrase)
+			sign = signer.sign(BIO.MemoryBuffer(as2utils.mimetostring(main, 0) + '\n'))
+			out = BIO.MemoryBuffer()
+			sign.write(out)
+			signature.set_type('application/pkcs7-signature')
+			signature.set_param('name', 'smime.p7s')
+			signature.set_param('smime-type', 'signed-data')
+			signature.add_header('Content-Disposition', 'attachment', filename='smime.p7s')
+			signature.add_header('Content-Transfer-Encoding', 'base64')
+			signature.set_payload(out.read().replace('-----BEGIN PKCS7-----\n','').replace('-----END PKCS7-----\n', ''))
+			del signature['MIME-Version']
+			signed.attach(signature)
+			self.mdnmessage = signed
+		else:
+			self.mdnmessage = main
+		self.mdnbody = as2utils.extractpayload(self.mdnmessage)
+		mainboundary = '--' + main.get_boundary() + '--'
+		self.mdnbody = self.mdnbody.replace(mainboundary, mainboundary+'\n')
+		self.mdnmessage.add_header('ediint-features', 'CEM')
+		self.mdnmessage.add_header('as2-from', self.message_header.get('as2-to'))
+		self.mdnmessage.add_header('as2-to', self.message_header.get('as2-from')) 
+		self.mdnmessage.add_header('AS2-Version', '1.2')
+		self.mdnmessage.add_header('date', email.Utils.formatdate(localtime=True))
+		self.mdnmessage.add_header('Message-ID', email.utils.make_msgid())
+		self.mdnmessage.add_header('user-agent', 'PYAS2, A pythonic AS2 server')
+                outputdir = as2utils.join(init.gsettings['root_dir'], 'messages/%s/mdn/%s'%(self.message.partner.as2_name, self.message.organization.as2_name))
+                as2utils.dirshouldbethere(outputdir)
+                filename = self.mdnmessage.get('message-id').strip('<>') + '.mdn'
+                fullfilename = as2utils.join(outputdir, filename)
+                file = open(fullfilename , 'wb')
+                file.write(as2utils.extractpayload(main))
+                file.close()
+		self.message.mdn = models.MDN.objects.create(message_id=self.mdnmessage.get('message-id').strip('<>'),file=fullfilename, status='sent', mode='SYNC')
+		models.Log.objects.create(message=self.message, status='S', text='MDN created and successfully sent to partner')
+
+	def getSignPassphrase(self, anotherself) :
+		return str(self.message.organization.signature_key.certificate_passphrase)
+
+	def getEncryptPassphrase(self, anotherself) :
+		return str(self.message.organization.encryption_key.certificate_passphrase)
+
+class as2client():
+    	''' as2 client to send files to remote server. '''
+    	def __init__(self, message_id, **kwargs):
+		self.message = models.Message.objects.get(message_id=message_id)
+
+	def buildMessage(self):
+		reference = '<%s>'%self.message.message_id
+		email_datetime = email.Utils.formatdate(localtime=True)
+
+		as2Header = {
+			'AS2-Version'         : '1.2',
+			'ediint-features'     : 'CEM',
+			'MIME-Version'        : '1.0',
+			'Message-ID'          : reference,
+			'AS2-From'            : as2utils.escape_as2name(self.message.organization.as2_name),
+			'AS2-To'              : as2utils.escape_as2name(self.message.partner.as2_name),
+			'Subject'             : self.message.partner.subject,
+			'Date'                : email_datetime,
+			'recipient-address'   : self.message.partner.target_url,
+			'user-agent'          : 'PYAS2, A pythonic AS2 server'
+		}
+	
+		payload = email.Message.Message()
+		with open(self.message.payload.file, 'rb') as fh:
+			payload.set_payload(fh.read())
+			fh.close()
+		payload.set_type(self.message.partner.content_type)
+		payload.add_header('Content-Disposition', 'attachment', filename=self.message.payload.name)
+		micContent = payload.get_payload()
+	
+		if self.message.partner.signature: 
+			multipart = MIMEMultipart('signed')
+			del payload['MIME-Version']
+			encmicContent = payload.as_string().replace('\n','\r\n')
+			micContent = as2utils.canonicalize(payload)
+			multipart.attach(payload)
+			signature = email.Message.Message()
+			signer = SMIME.SMIME()
+			global signpass
+			signpass = 'test'
+			signer.load_key(as2utils.join(init.gsettings['root_dir'], self.message.organization.signature_key.certificate.name) , callback=self.getSignPassphrase)
+			#sign = signer.sign(BIO.MemoryBuffer(as2utils.mimetostring(payload, 78)))
+			sign = signer.sign(BIO.MemoryBuffer(str(as2utils.canonicalize(payload))))
+			out = BIO.MemoryBuffer()
+			sign.write(out)
+			signature.set_type('application/pkcs7-signature')
+			signature.set_param('name', 'smime.p7s')
+			signature.add_header('Content-Disposition', 'attachment', filename='smime.p7s')
+			signature.add_header('Content-Transfer-Encoding', 'base64')
+			signature.add_header('Content-Description', 'S/MIME Cryptographic Signature')
+			signature.set_payload(out.read().replace('-----BEGIN PKCS7-----\n','').replace('-----END PKCS7-----\n', ''))
+			del signature['MIME-Version']
+			multipart.attach(signature)
+			payload = multipart
+			payload.as_string()
+
+		if self.message.partner.encryption: 
+			encrypter = SMIME.SMIME()	
+			certificate = X509.X509_Stack()
+			certificate.push(X509.load_cert(as2utils.join(init.gsettings['root_dir'], self.message.partner.encryption_key.certificate.name)))
+			encrypter.set_x509_stack(certificate)
+			encrypter.set_cipher(SMIME.Cipher(self.message.partner.encryption))
+			if payload.is_multipart():
+				content = as2utils.mimetostring(payload, 78) 
+				micContent = encmicContent
+			else:
+				content = payload.get_payload()
+				micContent = content.replace('\n','\r\n')
+			encryptedContent = encrypter.encrypt(BIO.MemoryBuffer(content))
+			out = BIO.MemoryBuffer()
+			encrypter.write(out, encryptedContent)
+			payload =  email.message_from_string(out.read())
+
+		if self.message.partner.mdn  :
+			as2Header['disposition-notification-to'] = 'no-reply@pyas2.com' 
+			if self.message.partner.mdn_sign:			
+				as2Header['disposition-notification-options'] = 'signed-receipt-protocol=required, pkcs7-signature; signed-receipt-micalg=optional, sha1'
+			if self.message.partner.mdn_mode == 'ASYNC':
+				as2Header['receipt-delivery-option'] = init.gsettings['mdn_url']
+		calcMIC = getattr(hashlib, self.message.partner.signature or 'sha1')
+		self.message.mic = calcMIC(micContent).digest().encode('base64').strip()
+		as2Header.update(payload.items())
+		self.message.headers = ''
+		for key in as2Header:
+			self.message.headers = self.message.headers + '%s: %s\n'%(key, as2Header[key])
+		return (as2Header, as2utils.extractpayload(payload))
+
+	def sendMessage(self,header, payload):
+		auth = None
+		if self.message.partner.http_auth:
+			auth = (self.message.partner.http_auth_user, self.message.partner.http_auth_pass)
+		response = requests.post(self.message.partner.target_url,  auth = auth, headers = header, data = payload)
+		response.raise_for_status()
+		if self.message.partner.mdn:
+			if self.message.partner.mdn_mode == 'ASYNC':
+				self.message.adv_status = 'Waiting for asynchronous MDN'
+				self.message.status = 'P'
+				return
+			mdnContent = '';
+			for key in response.headers:
+				mdnContent = mdnContent + '%s: %s\n'%(key, response.headers[key])
+			mdnHeaders = mdnContent
+			mdnContent = mdnContent + response.content
+			mdnMessage = email.message_from_string(mdnContent)
+			messageId = mdnMessage.get('message-id')
+			outputdir = as2utils.join(init.gsettings['root_dir'], 'messages/%s/mdn/%s'%(self.message.organization.as2_name, self.message.partner.as2_name))
+                	as2utils.dirshouldbethere(outputdir)
+                	filename = messageId.strip('<>') + '.mdn'
+                	fullfilename = as2utils.join(outputdir, filename)
+                	file = open(fullfilename , 'wb')
+                	file.write(as2utils.extractpayload(mdnMessage))
+                	file.close()
+                	self.message.mdn = models.MDN.objects.create(message_id=messageId.strip('<>'),file=fullfilename, status='received', mode='SYNC', headers=mdnHeaders)
+			if self.message.partner.mdn_sign and mdnMessage.get_content_type() != 'multipart/signed':
+				raise as2exception("Expected signed MDN but unsigned MDN returned")
+			if mdnMessage.get_content_type() == 'multipart/signed':
+				signer = SMIME.SMIME()
+				signerKey = X509.X509_Stack()
+				signerKey.push(X509.load_cert(as2utils.join(init.gsettings['root_dir'], self.message.partner.signature_key.certificate.name)))
+				signer.set_x509_stack(signerKey)
+				signerStore = X509.X509_Store()
+				signerStore.load_info(as2utils.join(init.gsettings['root_dir'], self.message.partner.signature_key.certificate.name))
+				signer.set_x509_store(signerStore)
+				#p7, data_bio = SMIME.smime_load_pkcs7('smime.p7s')
+				p7, data_bio = SMIME.smime_load_pkcs7_bio(BIO.MemoryBuffer(mdnContent))
+				try:
+					signer.verify(p7, data_bio)
+				except Exception, e:
+					raise as2exception("MDN Signature Verification Error, exception message is " + str(e))
+				for part in mdnMessage.walk():
+					if (part.get_content_type() == 'multipart/report'):
+						tempMessage = part
+				mdnMessage = tempMessage
+			if mdnMessage.get_content_type() == 'multipart/report':
+				for part in mdnMessage.walk():
+					if (part.get_content_type() == 'message/disposition-notification'):
+						mdn =  part.get_payload().pop()
+						mdnOMessageId = mdn.get('Original-Message-ID')
+						mdnStatus = mdn.get('Disposition').split(';')
+						if (mdnOMessageId == header['Message-ID'] and mdnStatus[1].strip() == 'processed'):
+							if mdn.get('Received-Content-MIC'): 
+								mdnMIC = mdn.get('Received-Content-MIC').split(',');
+								if (self.message.mic != mdnMIC[0]):
+									raise as2exception("File Transfer unsuccessful as Message Integrity check failed")
+						else:
+							raise as2exception("File Transfer failed because of message ID mismatch or processing errors. MDN status is %s"%(mdn.get('Disposition')))
+				
+			else:
+				raise as2exception("MDN message not found in the response")
+
+	def getSignPassphrase(self, anotherself) :
+		return signpass
+		return str(self.message.organization.signature_key.certificate_passphrase)
+
+	def getEncryptPassphrase(self, anotherself) :
+		return str(self.message.organization.encryption_key.certificate_passphrase)
+
+class as2exception(as2utils.AS2Error):
+	pass
+
+class as2partnernotfound(as2utils.AS2Error):
+        pass
+
+class as2insufficientsecurity(as2utils.AS2Error):
+        pass
+
+class as2partnernotfound(as2utils.AS2Error):
+        pass
+
+class as2decryptionfailed(as2utils.AS2Error):
+	pass
+
+class as2invalidsignature(as2utils.AS2Error):
+	pass
+

@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}
+Send Message
+{% endblock %}
+{% block content %}
+<br/>
+    <h1>Select File to Send</h1>
+<p>&nbsp;Make your required selections below:</p>
+<br/>
+<form action="{{ form.action }}" method="post" enctype="multipart/form-data" >{% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <br/>&nbsp;
+    <p></p>
+    <input type="submit" name="fromselect" value="{% trans 'Send File' %}" />
+</form>
+{% endblock %}

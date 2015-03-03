@@ -1,0 +1,38 @@
+{% extends "admin/base.html" %}
+{% load cycle from future %}
+{% load i18n %}
+{% block title %}
+Message
+{% endblock %}
+{% block content %}
+    <input onClick="history.back()" type="button" value="{% trans 'Back' %}" />
+    <table>
+        <tr><td>{% trans 'Timestamp' %}</td><td class="nowrap">{{message.timestamp|date:"Y-m-d H:i:s"}}</td></tr>
+        <tr><td>{% trans 'Message ID' %}</td><td class="nowrap">{{message.message_id}}</td></tr>
+        <tr><td>{% trans 'Status' %}</td><td>{{message.get_status_display}}</td></tr>
+        <tr><td>{% trans 'Direction' %}</td><td>{{message.get_direction_display}}</td></tr>
+        <tr><td>{% trans 'Organization' %}</td><td>{{message.organization}}</td></tr>
+        <tr><td>{% trans 'Partner' %}</td><td>{{message.partner}}</td></tr>
+	<tr><td>{% trans 'Payload' %}</td><td class="nowrap">{% if message.payload %} <a target="_blank" href="{% url 'payload_view' message.message_id %}?action=this">{{message.payload}}</a>{% endif %}</td></tr>
+        <tr><td>{% trans 'MDN' %}</td><td class="nowrap">{% if message.mdn %}<a target="_blank" href="{% url 'mdn_view' message.mdn.message_id %}?action=this">{{message.mdn}}{% endif %}</td></tr>
+        <tr><td>{% trans 'Advanced Status' %}</td><td>{{message.adv_status}}</td></tr>
+    </table>
+    <table id="pyas2table">
+        <thead>
+            <tr>
+                <th><button class="pyas2header" >{% trans 'Timestamp' %}</button></th>
+                <th><button class="pyas2header" >{% trans 'Status' %}</button></th>
+                <th><button class="pyas2header" >{% trans 'Text' %}</button></th>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+            <tr class="{% cycle 'row1' 'row2' %}">
+                <td class="nowrap">{{log.timestamp|date:"Y-m-d H:i:s"}}</td>
+                <td>{{log.get_status_display}}</td>
+                <td>{{log.text}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+

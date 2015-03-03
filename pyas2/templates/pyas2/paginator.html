@@ -1,0 +1,17 @@
+{% load i18n %}
+    {% if page_obj.has_previous %}
+        <a href="?page=1">&lt;&lt;</a>
+        <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+    {% else %}
+        <a>&lt;&lt;</a>
+        <a>&lt;</a>
+    {% endif %}
+    ({% trans 'Page' %} {{ page_obj.number }} {% trans 'of' %} {{ page_obj.paginator.num_pages }}; {{ page_obj.paginator.count }} {% trans 'items' %})
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">&gt;&gt;</a>
+    {% else %}
+        <a>&gt;</a>
+        <a>&gt;&gt;</a>
+    {% endif %}
+
