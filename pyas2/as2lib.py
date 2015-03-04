@@ -213,7 +213,8 @@ def build_message(message):
 	micContent = as2utils.mimetostring(payload, 0).replace('\n','\r\n') 
 	multipart.attach(payload)
 	signature = as2utils.sign_payload(
-	    micContent, 
+	    micContent,
+	    #as2utils.canonicalize(payload), 
 	    as2utils.join(init.gsettings['root_dir'], message.organization.signature_key.certificate.name),
 	    str(message.organization.signature_key.certificate_passphrase)
 	)
@@ -224,7 +225,9 @@ def build_message(message):
 	payload = multipart
     if message.partner.encryption: 
         models.Log.objects.create(message=message, status='S', text='Encrypting the AS2 message using partner key %s'%message.partner.encryption_key)
-	payload = as2utils.encrypt_payload(as2utils.mimetostring(payload, 78), as2utils.join(init.gsettings['root_dir'], message.partner.encryption_key.certificate.name), message.partner.encryption)
+	#init.logger.debug("MEssage -%s"%as2utils.mimetostring(payload, 0))
+	payload = as2utils.encrypt_payload(as2utils.mimetostring(payload, 0), message.partner.encryption_key.certificate.path , message.partner.encryption)
+	payload.set_type('application/pkcs7-mime')
 	content = payload.get_payload()
     if message.partner.mdn:
 	as2Header['disposition-notification-to'] = 'no-reply@pyas2.com' 

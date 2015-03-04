@@ -185,7 +185,7 @@ class SendMessage(View):
         form = self.form_class(request.POST, request.FILES)
         if form.is_valid():
 	    #botsglobal.logger.info(_(u'Run bots-engine with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
-	    python_executable_path = sys.executable
+	    python_executable_path = init.gsettings['python_path']
 	    managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
 	    ufile = as2utils.join(init.gsettings['root_dir'], request.FILES['file'].name) 
 	    with open(ufile, 'wb+') as destination:
@@ -254,9 +254,9 @@ def as2receive(request,*args,**kwargs):
                 as2payload = as2payload + '%s: %s\n'%(key.replace("HTTP_","").replace("_","-").lower(), request.META[key])
 	as2headers = as2payload
         as2payload = as2payload + '\n' + request.read()
-	#file = open("/Users/abhishekram/Documents/work/Research/AS2App/si.msg", 'wb')
-        #file.write(as2payload)
-        #file.close
+	file = open("compressed.msg", 'wb')
+        file.write(as2payload)
+        file.close
 	try:
 	    payload = email.message_from_string(as2payload)
 	    mdn = False

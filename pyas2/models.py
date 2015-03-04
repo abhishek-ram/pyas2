@@ -1,23 +1,26 @@
 from django.db import models
+from  django.core.files.storage import FileSystemStorage
 from pyas2 import init
 from pyas2 import as2utils
 import os
+import sys
 # Create your models here.
 
 DEFAULT_ENTRY = ('',"---------")
 init.initialize()
 init.initserverlogging('pyas2')
+upload_storage = FileSystemStorage(location=init.gsettings['root_dir'], base_url='/pyas2')
 
 class PrivateCertificate(models.Model):
-    certificate = models.FileField(upload_to=as2utils.join(init.gsettings['root_dir'],'certificates'))
-    ca_cert = models.FileField(upload_to=as2utils.join(init.gsettings['root_dir'],'certificates'), null=True, blank=True)
+    certificate = models.FileField(upload_to='certificates', storage=upload_storage)
+    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage, null=True, blank=True)
     certificate_passphrase = models.CharField(max_length=100)
     def __str__(self):
         return os.path.basename(self.certificate.name)
-   
+  
 class PublicCertificate(models.Model):
-    certificate = models.FileField(upload_to=as2utils.join(init.gsettings['root_dir'],'certificates'))
-    ca_cert = models.FileField(upload_to=as2utils.join(init.gsettings['root_dir'],'certificates'), null=True, blank=True)
+    certificate = models.FileField(upload_to='certificates', storage=upload_storage)
+    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage, null=True, blank=True) 
     def __str__(self):
         return os.path.basename(self.certificate.name)
 

@@ -52,3 +52,8 @@ docs/_build/
 
 # PyBuilder
 target/
+
+#PyAS2
+messages/
+certificates/
+logging/

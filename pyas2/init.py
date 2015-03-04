@@ -1,10 +1,18 @@
 import logging
 import os
+import tempfile
+import subprocess
+import sys
 from django.conf import settings
+from subprocess import Popen, PIPE
 from pyas2 import as2utils
+
+### Declare global variables
 gsettings = {}
 logger = None
 convertini2logger = {'DEBUG':logging.DEBUG,'INFO':logging.INFO,'WARNING':logging.WARNING,'ERROR':logging.ERROR,'CRITICAL':logging.CRITICAL,'STARTINFO':25}
+
+## initialize global settings
 
 def initialize():
     global gsettings
@@ -15,12 +23,21 @@ def initialize():
         gsettings['environment_text'] = pyas2_settings.get('ENVIRONMENTTEXT',' ')
         gsettings['environment_text_color'] = pyas2_settings.get('ENVIRONMENTTEXTCOLOR','Black')
 	gsettings['root_dir'] = os.path.dirname(os.path.dirname(__file__))
+	gsettings['python_path'] = pyas2_settings.get('PYTHONPATH', sys.executable)
 	if pyas2_settings.get('ROOTDIR') and os.path.isdir(pyas2_settings.get('ROOTDIR')): 
 	    gsettings['root_dir'] = pyas2_settings.get('ROOTDIR')
 	gsettings['payload_receive_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'payload', 'received')
 	gsettings['payload_send_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'payload', 'sent')
 	gsettings['mdn_receive_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'mdn', 'received')
 	gsettings['mdn_send_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'mdn', 'sent')
+	temp = tempfile.NamedTemporaryFile()
+	temp.write('ZLIB test')
+ 	p = Popen(['openssl', 'zlib', '-in', temp.name], stdin=PIPE, stdout=PIPE, stderr=PIPE,bufsize=-1)	
+	output, error = p.communicate()
+	if p.returncode == 0:
+	    gsettings['zlib'] = True
+	else:
+	    gsettings['zlib'] = False	
 	gsettings['logging'] = as2utils.join(gsettings['root_dir'], 'logging')
 	for sett in ['payload_receive_store', 'payload_send_store', 'mdn_receive_store', 'mdn_send_store', 'logging']:
 	    as2utils.dirshouldbethere(gsettings[sett])
@@ -31,6 +48,7 @@ def initialize():
         gsettings['mdn_url'] = pyas2_settings.get('MDNURL','http://localhost:8080/pyas2/as2receive')
         gsettings['async_mdn_wait'] = pyas2_settings.get('ASYNCMDNWAIT',30)
         gsettings['max_arch_days'] = pyas2_settings.get('MAXARCHDAYS',30)
+	
 
 def get_settings():
     return gsettings

@@ -26,6 +26,17 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
+TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'pyas2/templates'),)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.request',
+    'django.contrib.messages.context_processors.messages',
+    'django.core.context_processors.static',
+    'pyas2.context.set_context',
+)
 
 # Application definition
 
@@ -36,6 +47,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'pyas2',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -51,7 +63,6 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'djproject.urls'
 
 WSGI_APPLICATION = 'djproject.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -81,3 +92,29 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
+
+PYAS2 = {
+    ## Full path to the base directory for storing files, logs ...
+    'ROOTDIR' : os.path.dirname(os.path.dirname(__file__)),
+    ## Path to the python executable, neccessary with virtual environments
+    'PYTHONPATH' : '/opt/pyenv/python26/dj_latest/bin/python',
+    ## environment_text: text displayed on right of the logo. Useful to indicate different environments.
+    'ENVIRONMENTTEXT' : 'BETA',   
+    ## environment_text_color: Use HTML valid "color name" or #RGB values. Default: Black (#000000)
+    'ENVIRONMENTTEXTCOLOR' : 'Yellow',
+    ## level for logging to log file. Values: DEBUG,INFO,STARTINFO,WARNING,ERROR or CRITICAL. Default: INFO
+    'LOGLEVEL' : 'DEBUG',
+    ## console logging on (True) or off (False); default is True.
+    'LOGCONSOLE' : True,
+    ## level for logging to console/screen. Values: DEBUG,INFO,STARTINFO,WARNING,ERROR or CRITICAL. Default: STARTINFO  
+    'LOGCONSOLELEVEL' : 'DEBUG',
+    ## Maximum number of retries for failed outgoing messages, defaule is 10
+    'MAXRETRIES': 5,	
+    ## Return url for receiving async MDNs from partners
+    'MDNURL' : 'http://104.155.212.52/:8001/pyas2/as2receive',
+    ## Maximum wait time in minutes for asyn MDNs from partner, post which message will be marked as failed
+    'ASYNCMDNWAIT' : 30,
+    ## number of days files and messages are kept in storage; default is 30
+    'MAXARCHDAYS' : 30,
+}
+
