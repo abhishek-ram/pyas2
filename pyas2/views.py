@@ -252,85 +252,81 @@ def as2receive(request,*args,**kwargs):
         for key in request.META:
             if key.startswith('HTTP') or key.startswith('CONTENT'):
                 as2payload = as2payload + '%s: %s\n'%(key.replace("HTTP_","").replace("_","-").lower(), request.META[key])
-	as2headers = as2payload
+        as2headers = as2payload
         as2payload = as2payload + '\n' + request.read()
-	file = open("compressed.msg", 'wb')
+        file = open("compressed.msg", 'wb')
         file.write(as2payload)
         file.close
-	try:
-	    payload = email.message_from_string(as2payload)
-	    mdn = False
-	    if payload.get_content_type() == 'multipart/report':
-		mdn = True
-		mdn_message = payload
-	    elif payload.get_content_type() == 'multipart/signed':
-		for part in payload.walk():
-		    if part.get_content_type() == 'multipart/report':
-			mdn = True
-			mdn_message = part
-	    if mdn:
-		for part in mdn_message.walk():
-		    if (part.get_content_type() == 'message/disposition-notification'):
-			msg_id = part.get_payload().pop().get('Original-Message-ID')
-		message = models.Message.objects.get(message_id=msg_id.strip('<>'))
-		models.Log.objects.create(message=message, status='S', text='Processing asynchronous mdn received from partner')
-		try:	
-		    as2lib.save_mdn(message, as2payload)
-		    message.status = 'S'
-		    message.adv_status = 'Completed'
-		    models.Log.objects.create(message=message, status='S', text='File Transferred successfully to the partner')
-		except Exception,e:
-		    message.status = 'E'
-		    message.adv_status = 'Failed to send message, error is %s' %e
-		    models.Log.objects.create(message=message, status='E', text = message.adv_status)		
-		finally:
-		    message.save()    
-		    return HttpResponse("AS2 ASYNC MDN has been received")
-	    else:
-        	try:
-	            if  models.Message.objects.filter(message_id=payload.get('message-id').strip('<>')).exists():
-			message = models.Message.objects.create(message_id='%s_%s'%(payload.get('message-id').strip('<>'),payload.get('date')),direction='IN', status='IP', headers=as2headers)
-			raise as2lib.as2duplicatedocument("An identical message has already been sent to our server")
-		    message = models.Message.objects.create(message_id=payload.get('message-id').strip('<>'),direction='IN', status='IP', headers=as2headers)	
-		    payload = as2lib.save_message(message, as2payload)
-		    outputdir = as2utils.join(init.gsettings['root_dir'], 'messages', message.organization.as2_name, 'inbox', message.partner.as2_name)
-		    storedir = init.gsettings['payload_receive_store'] 
-		    filename = payload.get_filename() or message.message_id.strip('<>')
-		    fullfilename = as2utils.join(outputdir, filename)
-		    storefilename = as2utils.join(storedir, filename)
-		    file = open(fullfilename , 'wb')
-		    file.write(payload.get_payload(decode=True))
-		    file.close()
-		    shutil.copyfile(fullfilename, storefilename) 
-		    models.Log.objects.create(message=message, status='S', text='Message has been saved successfully to %s'%fullfilename)
-		    message.payload = models.Payload.objects.create(name=filename, file=storefilename, content_type=payload.get_content_type())
-		    status, adv_status, status_message = 'success', '', ''
-		    message.save()
-		except as2lib.as2duplicatedocument,e:
-		    status, adv_status, status_message = 'warning', 'duplicate-document', 'An error occured during the AS2 message processing: %s'%e
-		except as2lib.as2partnernotfound,e:
-		    status, adv_status, status_message = 'error', 'unknown-trading-partner', 'An error occured during the AS2 message processing: %s'%e
-		except as2lib.as2insufficientsecurity,e:
-		    status, adv_status, status_message = 'error', 'insufficient-message-security', 'An error occured during the AS2 message processing: %s'%e 
-		except as2lib.as2decryptionfailed,e:
-		    status, adv_status, status_message = 'error', 'decryption-failed', 'An error occured during the AS2 message processing: %s'%e
-		except as2lib.as2invalidsignature,e:
-		    print traceback.format_exc(None).decode('utf-8','ignore')
-		    status, adv_status, status_message = 'error', 'integrity-check-failed', 'An error occured during the AS2 message processing: %s'%e
-		except Exception,e:
-		    status, adv_status, status_message = 'error', 'unexpected-processing-error', 'An error occured during the AS2 message processing: %s'%e
-		finally:
-		    mdnbody, mdnmessage = as2lib.build_mdn(message, status, adv_status=adv_status, status_message=status_message)
-		    if mdnbody:
-            		mdnresponse = HttpResponse(mdnbody, content_type=mdnmessage.get_content_type())
-            		for key,value in mdnmessage.items():
-                	     mdnresponse[key] = value
-            		return mdnresponse
-		    else:
-	    		return HttpResponse("AS2 message has been received")
-	except Exception,e:
-	    print traceback.format_exc(None).decode('utf-8','ignore')
-	    print e	
+        try:
+            payload = email.message_from_string(as2payload)
+            mdn_message = None 
+            if payload.get_content_type() == 'multipart/report':
+                mdn_message = payload
+            elif payload.get_content_type() == 'multipart/signed':
+                for part in payload.walk():
+                    if part.get_content_type() == 'multipart/report':
+                        mdn_message = part
+            if mdn_message:
+                for part in mdn_message.walk():
+                    if (part.get_content_type() == 'message/disposition-notification'):
+                        msg_id = part.get_payload().pop().get('Original-Message-ID')
+                message = models.Message.objects.get(message_id=msg_id.strip('<>'))
+                models.Log.objects.create(message=message, status='S', text='Processing asynchronous mdn received from partner')
+                try:	
+                    as2lib.save_mdn(message, as2payload)
+                except Exception,e:
+                    message.status = 'E'
+                    message.adv_status = 'Failed to send message, error is %s' %e
+                    models.Log.objects.create(message=message, status='E', text = message.adv_status)		
+                finally:
+                    message.save()    
+                    return HttpResponse("AS2 ASYNC MDN has been received")
+            else:
+                try:
+                    if  models.Message.objects.filter(message_id=payload.get('message-id').strip('<>')).exists():
+                        message = models.Message.objects.create(message_id='%s_%s'%(payload.get('message-id').strip('<>'),payload.get('date')),direction='IN', status='IP', headers=as2headers)
+                        raise as2lib.as2duplicatedocument("An identical message has already been sent to our server")
+                    message = models.Message.objects.create(message_id=payload.get('message-id').strip('<>'),direction='IN', status='IP', headers=as2headers)	
+                    payload = as2lib.save_message(message, as2payload)
+                    outputdir = as2utils.join(init.gsettings['root_dir'], 'messages', message.organization.as2_name, 'inbox', message.partner.as2_name)
+                    storedir = init.gsettings['payload_receive_store'] 
+                    filename = payload.get_filename() or message.message_id.strip('<>')
+                    fullfilename = as2utils.join(outputdir, filename)
+                    storefilename = as2utils.join(storedir, filename)
+                    file = open(fullfilename , 'wb')
+                    file.write(payload.get_payload(decode=True))
+                    file.close()
+                    shutil.copyfile(fullfilename, storefilename) 
+                    models.Log.objects.create(message=message, status='S', text='Message has been saved successfully to %s'%fullfilename)
+                    message.payload = models.Payload.objects.create(name=filename, file=storefilename, content_type=payload.get_content_type())
+                    status, adv_status, status_message = 'success', '', ''
+                    message.save()
+                except as2lib.as2duplicatedocument,e:
+                    status, adv_status, status_message = 'warning', 'duplicate-document', 'An error occured during the AS2 message processing: %s'%e
+                except as2lib.as2partnernotfound,e:
+                    status, adv_status, status_message = 'error', 'unknown-trading-partner', 'An error occured during the AS2 message processing: %s'%e
+                except as2lib.as2insufficientsecurity,e:
+                    status, adv_status, status_message = 'error', 'insufficient-message-security', 'An error occured during the AS2 message processing: %s'%e 
+                except as2lib.as2decryptionfailed,e:
+                    status, adv_status, status_message = 'error', 'decryption-failed', 'An error occured during the AS2 message processing: %s'%e
+                except as2lib.as2decompressionfailed,e:
+                    status, adv_status, status_message = 'error', 'decompression-failed', 'An error occured during the AS2 message processing: %s'%e
+                except as2lib.as2invalidsignature,e:
+                    #print traceback.format_exc(None).decode('utf-8','ignore')
+                    status, adv_status, status_message = 'error', 'integrity-check-failed', 'An error occured during the AS2 message processing: %s'%e
+                except Exception,e:
+                    status, adv_status, status_message = 'error', 'unexpected-processing-error', 'An error occured during the AS2 message processing: %s'%e
+                finally:
+                    mdnbody, mdnmessage = as2lib.build_mdn(message, status, adv_status=adv_status, status_message=status_message)
+                    if mdnbody:
+                        mdnresponse = HttpResponse(mdnbody, content_type=mdnmessage.get_content_type())
+                        for key,value in mdnmessage.items():
+                            mdnresponse[key] = value
+                        return mdnresponse
+                    else:
+                        return HttpResponse("AS2 message has been received")
+        except Exception,e:
+            init.logger.error(traceback.format_exc(None).decode('utf-8','ignore'))
     elif request.method == 'GET':
         return HttpResponse("To submit an AS2 message, you must POST the message to this URL ")
     elif request.method == 'OPTIONS':

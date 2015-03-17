@@ -1,6 +1,6 @@
 {% extends "admin/base.html" %}
 {% load cycle from future %}
-{% load i18n %}
+{% load i18n static %}
 {% block title %}
 Message
 {% endblock %}
@@ -13,7 +13,40 @@ Message
         <tr><td>{% trans 'Direction' %}</td><td>{{message.get_direction_display}}</td></tr>
         <tr><td>{% trans 'Organization' %}</td><td>{{message.organization}}</td></tr>
         <tr><td>{% trans 'Partner' %}</td><td>{{message.partner}}</td></tr>
-	<tr><td>{% trans 'Payload' %}</td><td class="nowrap">{% if message.payload %} <a target="_blank" href="{% url 'payload_view' message.message_id %}?action=this">{{message.payload}}</a>{% endif %}</td></tr>
+        <tr>
+            <td>{% trans 'Compressed' %}</td>
+            <td>
+                {% if message.compressed %}
+                    <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
+                {% else %}
+                    <img src="{% static "admin/img/icon_error.gif" %}" style="width: 1em;"/>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>{% trans 'Encrypted' %}</td>
+            <td>
+                {% if message.encrypted %}
+                    <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
+                {% else %}
+                    <img src="{% static "admin/img/icon_error.gif" %}" style="width: 1em;"/>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>{% trans 'Signed' %}</td>
+            <td>
+                {% if message.signed %}
+                    <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
+                {% else %}
+                    <img src="{% static "admin/img/icon_error.gif" %}" style="width: 1em;"/>
+                {% endif %}
+            </td>
+        </tr>
+	    <tr>
+            <td>{% trans 'Payload' %}</td>
+            <td class="nowrap">{% if message.payload %} <a target="_blank" href="{% url 'payload_view' message.message_id %}?action=this">{{message.payload}}</a>{% endif %}</td>
+        </tr>
         <tr><td>{% trans 'MDN' %}</td><td class="nowrap">{% if message.mdn %}<a target="_blank" href="{% url 'mdn_view' message.mdn.message_id %}?action=this">{{message.mdn}}{% endif %}</td></tr>
         <tr><td>{% trans 'Advanced Status' %}</td><td>{{message.adv_status}}</td></tr>
     </table>
@@ -28,7 +61,15 @@ Message
         {% for log in logs %}
             <tr class="{% cycle 'row1' 'row2' %}">
                 <td class="nowrap">{{log.timestamp|date:"Y-m-d H:i:s"}}</td>
-                <td>{{log.get_status_display}}</td>
+                <td>
+                    {% if log.status == "S" %}
+                        <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
+                    {% elif log.status == "E" %}
+                        <img src="{% static "admin/img/icon_error.gif" %}" style="width: 1em;"/>
+                    {% elif log.status == "W" %}
+                        <img src="{% static "admin/img/icon_alert.gif" %}" style="width: 1em;"/>
+                    {% endif %}
+                </td>
                 <td>{{log.text}}</td>
             </tr>
         {% endfor %}

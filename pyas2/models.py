@@ -13,14 +13,14 @@ upload_storage = FileSystemStorage(location=init.gsettings['root_dir'], base_url
 
 class PrivateCertificate(models.Model):
     certificate = models.FileField(upload_to='certificates', storage=upload_storage)
-    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage, null=True, blank=True)
+    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage,  verbose_name='Local CA Store', null=True, blank=True)
     certificate_passphrase = models.CharField(max_length=100)
     def __str__(self):
         return os.path.basename(self.certificate.name)
   
 class PublicCertificate(models.Model):
     certificate = models.FileField(upload_to='certificates', storage=upload_storage)
-    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage, null=True, blank=True) 
+    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage, verbose_name='Local CA Store', null=True, blank=True) 
     def __str__(self):
         return os.path.basename(self.certificate.name)
 
@@ -61,24 +61,46 @@ class Partner(models.Model):
     )
     name = models.CharField(max_length=100)
     as2_name = models.CharField(max_length=100, primary_key=True)
-    http_auth = models.BooleanField(verbose_name='HTTP Authentication', default=False)
+    email_address = models.EmailField(null=True, blank=True)
+    http_auth = models.BooleanField(verbose_name='Enable Authentication', default=False)
     http_auth_user = models.CharField(max_length=100, null=True, blank=True)
     http_auth_pass = models.CharField(max_length=100, null=True, blank=True)
+    https_ca_cert = models.FileField(upload_to='certificates', verbose_name='HTTPS Local CA Store', storage=upload_storage, null=True, blank=True)
     target_url = models.URLField()
     subject = models.CharField(max_length=255, default='EDI Message sent using pyas2')
-    content_type = models.CharField(max_length=100, choices=CONTENT_TYPE_CHOICES, default='application/edi-consent')    
-    encryption = models.CharField(max_length=20, choices=ENCRYPT_ALG_CHOICES, null=True, blank=True)
+    content_type = models.CharField(max_length=100, choices=CONTENT_TYPE_CHOICES, default='application/edi-consent')  
+    compress = models.BooleanField(verbose_name='Compress Message', default=True)  
+    encryption = models.CharField(max_length=20, verbose_name='Encrypt Message', choices=ENCRYPT_ALG_CHOICES, null=True, blank=True)
     encryption_key = models.ForeignKey(PublicCertificate,related_name='enc_partner',null=True, blank=True)
-    signature = models.CharField(max_length=20, choices=SIGN_ALG_CHOICES, null=True, blank=True)
-    signature_key = models.ForeignKey(PublicCertificate,related_name='sign_partner',null=True, blank=True)
+    signature = models.CharField(max_length=20, verbose_name='Sign Message', choices=SIGN_ALG_CHOICES, null=True, blank=True)
+    signature_key = models.ForeignKey(PublicCertificate, related_name='sign_partner', null=True, blank=True)
     mdn = models.BooleanField(verbose_name='Request MDN', default=True)
     mdn_mode = models.CharField(max_length=20, choices=MDN_TYPE_CHOICES, default='SYNC')
-    mdn_sign = models.BooleanField(verbose_name='Request Signed MDN', default=True) 
+    mdn_sign = models.BooleanField(verbose_name='Request Signed MDN', default=False) 
+    keep_filename = models.BooleanField(
+        verbose_name='Keep Original Filename', 
+        default=False, 
+        help_text='Use Original Filename to to store file on receipt, use this option only if you are sure partner sends unique names'
+    ) 
+    cmd_send = models.CharField(
+        max_length=255, 
+        verbose_name='Command on Message Send', 
+        null=True, 
+        blank=True , 
+        help_text='Command exectued after successful message send, replacements are ${filename}, ${subject}, ${sender}, ${recevier}, ${messageid}'
+    )
+    cmd_receive = models.CharField(
+        max_length=255, 
+        verbose_name='Command on Message Receipt', 
+        null=True, 
+        blank=True, 
+        help_text='Command exectued after successful message receipt, replacements are ${filename}, ${fullfilename}, ${subject}, ${sender}, ${recevier}, ${messageid}'
+    )
     def __str__(self):
         return self.name
     def save(self, *args, **kwargs):
-	update_dirs()
-	super(Partner,self).save(*args,**kwargs)
+        update_dirs()
+        super(Partner,self).save(*args,**kwargs)
 
 class Message(models.Model):
     DIRECTION_CHOICES = (
@@ -90,6 +112,7 @@ class Message(models.Model):
         ('E', 'Error'),
         ('W', 'Warning'),
         ('P', 'Pending'),
+        ('R', 'Retry'),
         ('IP', 'In Process'),
     )
     MODE_CHOICES = (
@@ -105,9 +128,13 @@ class Message(models.Model):
     organization = models.ForeignKey(Organization, null=True) 
     partner = models.ForeignKey(Partner, null=True)
     payload = models.OneToOneField('Payload', null=True, related_name='message')
+    compressed = models.BooleanField(default=False)
+    encrypted = models.BooleanField(default=False)
+    signed= models.BooleanField(default=False)
     mdn = models.OneToOneField('MDN', null=True, related_name='omessage')
     mic = models.CharField(max_length=100, null=True)
     mdn_mode = models.CharField(max_length=2, choices=MODE_CHOICES, null=True)
+    reties = models.IntegerField(null=True)
     def __str__(self):
         return self.message_id
         
@@ -141,6 +168,7 @@ class MDN(models.Model):
     file = models.CharField(max_length=255)
     headers = models.TextField(null=True)
     return_url = models.URLField(null=True)
+    signed= models.BooleanField(default=False)
     def __str__(self):
         return self.message_id
 

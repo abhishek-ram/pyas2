@@ -35,7 +35,7 @@ class Command(BaseCommand):
 	    payload = as2lib.build_message(message)
 	    as2lib.send_message(message, payload)	
 	except Exception,e:
-	    #print traceback.format_exc(None).decode('utf-8','ignore')
+	    init.logger.debug(traceback.format_exc(None).decode('utf-8','ignore'))
 	    message.status = 'E'
 	    message.adv_status = 'Failed to send message, error is %s' %e
 	    models.Log.objects.create(message=message, status='E', text = message.adv_status)

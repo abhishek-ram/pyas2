@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% load cycle from future %}
 {% block title %}
 Messages
@@ -18,8 +18,6 @@ Messages
                 <th><button class="pyas2header" type="submit" name="order" value="organization" >{% trans 'Organization' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="partner" >{% trans 'Partner' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="payload" >{% trans 'Payload' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="encryption" >{% trans 'Encryption' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="signature" >{% trans 'Signature' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="mdn mode" >{% trans 'MDN Mode' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="mdn" >{% trans 'MDN' %}</button></th>
             </tr>
@@ -30,12 +28,22 @@ Messages
                 <td class="nowrap">{{row.timestamp|date:"Y-m-d H:i:s" }}</td>
                 <td class="nowrap">{{row.get_direction_display}}</td>
                 <td class="nowrap"><a href="{% url "message_detail" row.message_id %}" class="pyas2link">{{row.message_id}}</a></td>
-                <td class="nowrap">{{row.get_status_display}}</td>
+                <td class="nowrap">
+                    {% if row.status == "S" %}
+                        <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
+                    {% elif row.status == "E" %}
+                        <img src="{% static "admin/img/icon_error.gif" %}" style="width: 1em;"/>
+                    {% elif row.status == "W" %}
+                        <img src="{% static "admin/img/icon_alert.gif" %}" style="width: 1em;"/>
+                    {% elif row.status == "P" %}
+                        <img src="{% static "admin/img/icon_clock.gif" %}" style="width: 1em;"/>
+                    {% elif row.status == "IP" %}
+                        <img src="{% static "images/icon-pass.gif" %}" style="width: 1em;"/>
+                    {% endif %}
+                </td>
                 <td class="nowrap">{{row.organization}}</td>
                 <td class="nowrap">{{row.partner}}</td>
                 <td class="nowrap">{% if row.payload %} <a target="_blank" href="{% url 'payload_view' row.message_id %}?action=this">{{row.payload}}</a>{% endif %}</td>
-                <td class="nowrap">{{row.partner.get_encryption_display}}</td>
-                <td class="nowrap">{{row.partner.get_signature_display}}</td>
                 <td class="nowrap">{{row.get_mdn_mode_display}}</td>
                 <td class="nowrap">{% if row.mdn %}<a target="_blank" href="{% url 'mdn_view' row.mdn.message_id %}?action=this">{{row.mdn}}{% endif %}</td>
             </tr>

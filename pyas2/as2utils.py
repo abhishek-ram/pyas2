@@ -1,8 +1,11 @@
-import re, os
+import re, os, sys
 import email.utils
 import email.message
 import codecs
 import collections
+import zlib
+from pyasn1.type import univ, namedtype, tag, namedval, constraint
+from pyasn1.codec.ber import encoder, decoder
 from M2Crypto import BIO, Rand, SMIME, X509
 from cStringIO import StringIO
 from email.generator import Generator
@@ -130,29 +133,79 @@ def escape_as2name(uename):
 		return uename	
 
 def extractpayload(message, **kwargs):
-        if message.is_multipart():
-                headerlen = kwargs.get('headerlen', 78)
-                messagestr = mimetostring(message, headerlen) #.replace('\n','\r\n')
-                boundary = '--' + message.get_boundary()
-                temp = messagestr.split(boundary)
-                temp.pop(0)
-                return boundary + boundary.join(temp)
-        else:
-                return message.get_payload()
+    if message.is_multipart():
+         headerlen = kwargs.get('headerlen', 78)
+         messagestr = mimetostring(message, headerlen) #.replace('\n','\r\n')
+         boundary = '--' + message.get_boundary()
+         temp = messagestr.split(boundary)
+         temp.pop(0)
+         return boundary + boundary.join(temp)
+    else:
+         return message.get_payload()
   
 def mimetostring(msg, headerlen):
-        fp = StringIO()
-        g = Generator(fp, mangle_from_=False, maxheaderlen=headerlen)
-        g.flatten(msg)
-        return fp.getvalue()
+    fp = StringIO()
+    g = Generator(fp, mangle_from_=False, maxheaderlen=headerlen)
+    g.flatten(msg)
+    return fp.getvalue()
 
 def canonicalize(msg):
-        result = ''
-        header = list()
-        for key,value in msg.items():
-                header.append("%s: %s"%(key,value))
-        result = "%s\r\n\r\n%s"%("\r\n".join(header),extractpayload(msg))
-        return result
+    result = ''
+    header = list()
+    for key,value in msg.items():
+        header.append("%s: %s"%(key,value))
+    result = "%s\r\n\r\n%s"%("\r\n".join(header),extractpayload(msg))
+    return result
+
+## Classes that define the ASN.1 structure for building  smime compressed message
+class CompressedDataAttr(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType('compressionAlgorithm', univ.ObjectIdentifier()),
+    )
+class Content(univ.OctetString):
+    tagSet = univ.OctetString.tagSet.tagExplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+    )
+class CompressedDataPayload(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType('content-type', univ.ObjectIdentifier()),
+        namedtype.NamedType('content',Content()),
+    )
+class CompressedData(univ.Sequence):
+    tagSet = univ.Sequence.tagSet.tagExplicitly(
+        tag.Tag(tag.tagClassContext, tag.tagFormatSimple, 0)
+    )
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType('version', univ.Integer()),
+        namedtype.NamedType('attributes', CompressedDataAttr()),
+        namedtype.NamedType('payload', CompressedDataPayload()),
+    )
+class CompressedDataMain(univ.Sequence):
+    componentType = namedtype.NamedTypes(
+        namedtype.NamedType('id-ct-compressedData', univ.ObjectIdentifier()),
+        namedtype.NamedType('compressedData', CompressedData()),
+    )
+
+def compress_payload(payload):
+    cdata_attr = CompressedDataAttr()
+    cdata_attr.setComponentByName('compressionAlgorithm',(1,2,840,113549,1,9,16,3,8))
+    cdata_payload = CompressedDataPayload()
+    cdata_payload.setComponentByName('content-type',(1,2,840,113549,1,7,1))
+    cdata_payload.setComponentByName('content',Content(univ.OctetString(hexValue=zlib.compress(payload).encode('hex'))))
+    cdata = CompressedData()
+    cdata.setComponentByName('version',0)
+    cdata.setComponentByName('attributes',cdata_attr)
+    cdata.setComponentByName('payload',cdata_payload)
+    #cdata_payload.setComponentByName('enum', 'no-error')
+    cdata_main = CompressedDataMain()
+    cdata_main.setComponentByName('id-ct-compressedData',(1,2,840,113549,1,9,16,1,9))
+    cdata_main.setComponentByName('compressedData',cdata)
+    return encoder.encode(cdata_main,defMode=False).encode('base64')
+
+def decompress_payload(payload):
+    decoded_content,substrate = decoder.decode(payload,asn1Spec=CompressedDataMain())
+    compressed_content = decoded_content.getComponentByName('compressedData').getComponentByName('payload').getComponentByName('content')
+    return zlib.decompress(compressed_content.asOctets())
 
 def encrypt_payload(payload, key, cipher):
     encrypter = SMIME.SMIME()

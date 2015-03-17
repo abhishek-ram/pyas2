@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% load cycle from future %}
 {% block title %}
 MDNs
@@ -15,9 +15,10 @@ MDNs
                 <th><button class="pyas2header" type="submit" name="order" value="status" >{% trans 'Status' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="messageid" >{% trans 'Message ID' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="omessageid" >{% trans 'Original Message ID' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="mode" >{% trans 'Mode' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="organization" >{% trans 'Organization' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="partner" >{% trans 'Partner' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="mode" >{% trans 'Mode' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="signed" >{% trans 'Signed' %}</button></th>
             </tr>
         </thead>
         <tbody>
@@ -26,10 +27,17 @@ MDNs
                 <td class="nowrap">{{row.timestamp|date:"Y-m-d H:i:s" }}</td>
                 <td class="nowrap">{{row.get_status_display}}</td>
                 <td class="nowrap"><a href="{% url "mdn_view" row.message_id %}?action=this" target="_blank" class="pyas2link">{{row.message_id}}</a></td>
-		<td class="nowrap"><a href="{% url "message_detail" row.omessage.message_id %}" target="_blank" class="pyas2link">{{row.omessage.message_id}}</a></td>
-                <td class="nowrap">{{row.omessage.get_mdn_mode_display}}</td>
+		        <td class="nowrap"><a href="{% url "message_detail" row.omessage.message_id %}" target="_blank" class="pyas2link">{{row.omessage.message_id}}</a></td>
                 <td class="nowrap">{{row.omessage.organization}}</td>
                 <td class="nowrap">{{row.omessage.partner}}</td>
+                <td class="nowrap">{{row.omessage.get_mdn_mode_display}}</td>
+                <td class="nowrap">
+                    {% if row.signed %}
+                        <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
+                    {% else %}
+                        <img src="{% static "admin/img/icon_error.gif" %}" style="width: 1em;"/>
+                    {% endif %}
+                </td>
             </tr>
         {% endfor %}
         </tbody>

@@ -111,7 +111,7 @@ PYAS2 = {
     ## Maximum number of retries for failed outgoing messages, defaule is 10
     'MAXRETRIES': 5,	
     ## Return url for receiving async MDNs from partners
-    'MDNURL' : 'http://104.155.212.52/:8001/pyas2/as2receive',
+    'MDNURL' : 'http://104.155.212.52:8001/pyas2/as2receive',
     ## Maximum wait time in minutes for asyn MDNs from partner, post which message will be marked as failed
     'ASYNCMDNWAIT' : 30,
     ## number of days files and messages are kept in storage; default is 30
