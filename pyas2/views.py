@@ -283,9 +283,6 @@ def as2receive(request,*args,**kwargs):
                 as2payload = as2payload + '%s: %s\n'%(key.replace("HTTP_","").replace("_","-").lower(), request.META[key])
         as2headers = as2payload
         as2payload = as2payload + '\n' + request.read()
-        file = open("compressed.msg", 'wb')
-        file.write(as2payload)
-        file.close
         try:
             payload = email.message_from_string(as2payload)
             mdn_message = None 
