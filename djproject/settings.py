@@ -97,7 +97,7 @@ PYAS2 = {
     ## Full path to the base directory for storing files, logs ...
     'ROOTDIR' : os.path.dirname(os.path.dirname(__file__)),
     ## Path to the python executable, neccessary with virtual environments
-    'PYTHONPATH' : '/Users/abhishekram/Documents/work/Research/pythondev/bin/python',
+    #'PYTHONPATH' : '/Users/abhishekram/Documents/work/Research/pythondev/bin/python',
     ## environment_text: text displayed on right of the logo. Useful to indicate different environments.
     'ENVIRONMENTTEXT' : 'BETA',   
     ## environment_text_color: Use HTML valid "color name" or #RGB values. Default: Black (#000000)
