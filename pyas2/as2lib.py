@@ -103,7 +103,9 @@ def build_mdn(message, status, **kwargs):
     try:
         hparser = HeaderParser()
         message_header = hparser.parsestr(message.headers)
+        text = "The AS2 message has been processed. Thank you for exchanging AS2 messages with Pyas2."
         if status != 'success':
+            text = "The AS2 message could not be processed. The disposition-notification message has additional details."
             models.Log.objects.create(message=message, status='E', text = kwargs['status_message'])
             message.status = 'E'
             message.adv_status = kwargs['status_message']
@@ -114,9 +116,6 @@ def build_mdn(message, status, **kwargs):
             return None, None
         models.Log.objects.create(message=message, status='S', text='Building MDN to be sent back to partner')
         main = MIMEMultipart('report', report_type="disposition-notification")
-        text = "The AS2 message has been received. Thank you for exchanging AS2 messages with Pyas2."
-        if kwargs.get('status_message'):
-            text = kwargs['status_message']
         textmessage = email.Message.Message()
         textmessage.set_payload("%s\n"%text)
         textmessage.set_type('text/plain')
@@ -160,7 +159,7 @@ def build_mdn(message, status, **kwargs):
             mdnmessage = main
         mdnbody = as2utils.extractpayload(mdnmessage)
         mainboundary = '--' + main.get_boundary() + '--'
-        mdnbody = mdnbody.replace(mainboundary, mainboundary + '\n')
+        mdnbody = mdnbody.replace(mainboundary, mainboundary + '\n').replace('\n','\r\n')
         mdnmessage.add_header('ediint-features', 'CEM')
         mdnmessage.add_header('as2-from', message_header.get('as2-to'))
         mdnmessage.add_header('as2-to', message_header.get('as2-from')) 
@@ -193,7 +192,7 @@ def build_mdn(message, status, **kwargs):
             message.mdn = models.MDN.objects.create(message_id=mdnmessage.get('message-id').strip('<>'),file=fullfilename, status='S', signed=mdnsigned, headers=mdn_headers)
             message.mdn_mode = 'SYNC'
             models.Log.objects.create(message=message, status='S', text='MDN created successfully, sending it to partner')
-        return mdnbody.replace('\n','\r\n'), mdnmessage
+        return mdnbody, mdnmessage
     finally:
         message.save()	
 
@@ -261,7 +260,7 @@ def build_message(message):
     if message.partner.mdn:
         as2Header['disposition-notification-to'] = 'no-reply@pyas2.com' 
         if message.partner.mdn_sign:			
-            as2Header['disposition-notification-options'] = 'signed-receipt-protocol=required, pkcs7-signature; signed-receipt-micalg=optional, sha1'
+            as2Header['disposition-notification-options'] = 'signed-receipt-protocol=required, pkcs7-signature; signed-receipt-micalg=optional, %s'%message.partner.mdn_sign
         message.mdn_mode = 'SYNC'
         if message.partner.mdn_mode == 'ASYNC':
             as2Header['receipt-delivery-option'] = init.gsettings['mdn_url']
@@ -274,9 +273,6 @@ def build_message(message):
         message.headers = message.headers + '%s: %s\n'%(key, as2Header[key])
     message.save()
     models.Log.objects.create(message=message, status='S', text='AS2 message has been built successfully, sending it to the partner')
-    fil = open('content','wb')
-    fil.write(content)
-    fil.close()
     return content 
 
 def send_message(message, payload):
@@ -285,8 +281,15 @@ def send_message(message, payload):
     auth = None
     if message.partner.http_auth:
         auth = (message.partner.http_auth_user, message.partner.http_auth_pass)
-    response = requests.post(message.partner.target_url,  auth = auth, headers = dict(message_header.items()), data = payload)
-    response.raise_for_status()
+    try:
+        response = requests.post(message.partner.target_url,  auth = auth, headers = dict(message_header.items()), data = payload)
+        response.raise_for_status()
+    except Exception,e:
+        message.status = 'R'
+        models.Log.objects.create(message=message, status='E', text='Message send failed with error %s'%e)
+        message.adv_status = 'Message send failed due to communcation error'
+        message.save()
+        return
     models.Log.objects.create(message=message, status='S', text='AS2 message sent to the partner, checking for mdn if requested')
     if message.partner.mdn:
         if message.partner.mdn_mode == 'ASYNC':
@@ -362,8 +365,8 @@ def save_mdn(message, mdnContent):
                                 message.status = 'S'
                                 message.adv_status = 'Completed'
                                 models.Log.objects.create(message=message, status='S', text='File Transferred successfully to the partner')
-                        else:
-                            raise as2exception("Partner failed to process file. MDN status is %s"%(mdn.get('Disposition')))        
+                    else:
+                        raise as2exception("Partner failed to process file. MDN status is %s"%(mdn.get('Disposition')))        
         else:
             raise as2exception("MDN message not found in the response")
     finally:

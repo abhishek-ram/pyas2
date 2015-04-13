@@ -1,4 +1,6 @@
-{% load admin_static %}{% load url from future %}<!DOCTYPE html>
+{% load admin_static %}{% load url from future %}
+{% load pyas2_extras %}
+<!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -21,7 +23,7 @@
 	<img src="{% static "images/pyas2logo.png" %}" />
     </div>
     <div id="environment">
-        <div style="color:{{ environment_text_color }}">{{ environment_text }} SERVER</div>
+        <div style="color:{% get_init "environment_text_color" %}">{% get_init "environment_text" %} SERVER</div>
     </div>
     {% include "pyas2/menu.html" %}
 {% endif %}

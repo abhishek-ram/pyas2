@@ -11,6 +11,7 @@ Messages
     <table id="pyas2table">
         <thead>
             <tr>
+                <th></th>
                 <th><button class="pyas2header" type="submit" name="order" value="timestamp" >{% trans 'Timestamp' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="direction" >{% trans 'Direction' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="messageid" >{% trans 'Message ID' %}</button></th>
@@ -25,6 +26,25 @@ Messages
         <tbody>
         {% for row in message_list %}
             <tr class="{% cycle 'row1' 'row2' %}">
+                <td>
+                    <div class="dropdown">
+                        <img class="action" src="{% static "images/star.png" %}" />
+                        <ul>
+                            <li><button class="pyas2header" onclick="document.location.href='{% url "message_detail" row.message_id %}'; return false;" >{% trans 'View Detail' %}</button></li>
+                            {% if row.payload %}
+                                <li><button class="pyas2header" onclick="window.open('{% url 'payload_view' row.message_id %}?action=this'); return false;" >{% trans 'View Payload' %}</button></li>
+                            {% endif %}
+                            {% if row.mdn %}
+                                <li><button class="pyas2header" onclick="window.open('{% url 'mdn_view' row.mdn.message_id %}?action=this'); return false;" >{% trans 'View MDN' %}</button></li>
+                            {% endif %}
+                            {% if row.status == "R" %} 
+                            <li><button class="pyas2header" onclick="document.location.href='{% url 'cancelretries' row.message_id %}'; return false;">{% trans 'Cancel Retries' %}</button></li>
+                            {% endif %}
+                            {% if row.direction == 'OUT' %}
+                            <li><button class="pyas2header" onclick="document.location.href='{% url "resendmessage" row.message_id %}'; return false;" >{% trans 'Resend as new message' %}</button></li>
+                            {% endif %}
+                        </ul>
+                    </div>
                 <td class="nowrap">{{row.timestamp|date:"Y-m-d H:i:s" }}</td>
                 <td class="nowrap">{{row.get_direction_display}}</td>
                 <td class="nowrap"><a href="{% url "message_detail" row.message_id %}" class="pyas2link">{{row.message_id}}</a></td>
@@ -33,7 +53,7 @@ Messages
                         <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
                     {% elif row.status == "E" %}
                         <img src="{% static "admin/img/icon_error.gif" %}" style="width: 1em;"/>
-                    {% elif row.status == "W" %}
+                    {% elif row.status == "W" or row.status == "R" %}
                         <img src="{% static "admin/img/icon_alert.gif" %}" style="width: 1em;"/>
                     {% elif row.status == "P" %}
                         <img src="{% static "admin/img/icon_clock.gif" %}" style="width: 1em;"/>

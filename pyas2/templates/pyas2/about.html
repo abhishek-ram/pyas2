@@ -18,13 +18,39 @@ Home
     <tr>
         <td>{% trans 'Last login' %}</td><td>{{ user.last_login|date:"Y-m-d G:i" }}</td>
     </tr>
-    {% for key, value in pyas2info.items %}
-        {% if value %}
-        <tr>
-            <td>{{ key|upper }}</td><td>{{ value }}</td>
-        </tr>
-        {% endif %}
-    {% endfor %}
+    <tr>
+        <td>Environment</td><td>{{ pyas2info.environment_text }}</td>
+    </tr>
+    <tr>
+        <td>Python Path</td><td>{{ pyas2info.python_path }}</td>
+    </tr>
+    <tr>
+        <td>Base Data Dir</td><td>{{ pyas2info.root_dir }}</td>
+    </tr>
+    <tr>
+        <td>ASYNC MDN Receive URL</td><td>{{ pyas2info.mdn_url }}</td>
+    </tr>
+    <tr>
+        <td>ASYNC MDN Max Wait Mins</td><td>{{ pyas2info.async_mdn_wait }}</td>
+    </tr>
+    <tr>
+        <td>Max Retries</td><td>{{ pyas2info.max_retries }}</td>
+    </tr>
+    <tr>
+        <td>Log Folder</td><td>{{ pyas2info.log_dir }}</td>
+    </tr>
+    <tr>
+        <td>Log Level</td><td>{{ pyas2info.log_level }}</td>
+    </tr>
+    <tr>
+        <td>Log Console</td><td>{{ pyas2info.log_console }}</td>
+    </tr>
+    <tr>
+        <td>Log Console Level</td><td>{{ pyas2info.log_console_level }}</td>
+    </tr>
+    <tr>
+        <td>Max Archive Days</td><td>{{ pyas2info.max_arch_days }}</td>
+    </tr>
 </table>
 {% endblock %}
 

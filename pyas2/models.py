@@ -74,9 +74,9 @@ class Partner(models.Model):
     encryption_key = models.ForeignKey(PublicCertificate,related_name='enc_partner',null=True, blank=True)
     signature = models.CharField(max_length=20, verbose_name='Sign Message', choices=SIGN_ALG_CHOICES, null=True, blank=True)
     signature_key = models.ForeignKey(PublicCertificate, related_name='sign_partner', null=True, blank=True)
-    mdn = models.BooleanField(verbose_name='Request MDN', default=True)
-    mdn_mode = models.CharField(max_length=20, choices=MDN_TYPE_CHOICES, default='SYNC')
-    mdn_sign = models.BooleanField(verbose_name='Request Signed MDN', default=False) 
+    mdn = models.BooleanField(verbose_name='Request MDN', default=True) 
+    mdn_mode = models.CharField(max_length=20, choices=MDN_TYPE_CHOICES, null=True, blank=True)
+    mdn_sign = models.CharField(max_length=20, verbose_name='Request Signed MDN', choices=SIGN_ALG_CHOICES, null=True, blank=True)
     keep_filename = models.BooleanField(
         verbose_name='Keep Original Filename', 
         default=False, 
@@ -134,7 +134,7 @@ class Message(models.Model):
     mdn = models.OneToOneField('MDN', null=True, related_name='omessage')
     mic = models.CharField(max_length=100, null=True)
     mdn_mode = models.CharField(max_length=2, choices=MODE_CHOICES, null=True)
-    reties = models.IntegerField(null=True)
+    retries = models.IntegerField(null=True)
     def __str__(self):
         return self.message_id
         

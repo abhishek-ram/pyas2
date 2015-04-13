@@ -1,13 +1,14 @@
 from django.contrib import admin
-from pyas2.forms import PrivateCertificateForm
+from pyas2 import forms
 from pyas2 import models 
 
 # Register your models here.
 
 class PrivateCertificateAdmin(admin.ModelAdmin):
-    form = PrivateCertificateForm
+    form = forms.PrivateCertificateForm
 
 class PartnerAdmin(admin.ModelAdmin):
+    form = forms.PartnerForm
     list_display = ['name', 'as2_name', 'target_url', 'encryption', 'encryption_key', 'signature', 'signature_key', 'mdn', 'mdn_mode']
     list_filter = ('name','as2_name')
     fieldsets = (

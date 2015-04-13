@@ -18,6 +18,7 @@ from pyas2 import init
 from pyas2 import viewlib
 import subprocess
 import sys
+import tempfile
 import os
 import traceback, email, shutil
 # Create your views here.
@@ -37,22 +38,22 @@ class MessageList(ListView):
     model = models.Message
     paginate_by = 25
     def get_queryset(self):
-	if self.request.GET:
-		qstring = dict()
-		for param in self.request.GET.items():
-		    if param[1]:
-		        if param[0] == 'dateuntil':
-		            qstring['timestamp__lt'] = param[1]
-		        elif param[0] == 'datefrom':
-			    qstring['timestamp__gte'] = param[1]
-		        elif param[0] in ['organization','partner']:
-			    qstring[param[0] + '__as2_name'] = param[1]
-		        elif param[0] == 'filename':
-			    qstring['payload__name'] = param[1]
-			elif param[0] in ['direction', 'status', 'message_id']:
-			    qstring[param[0]] = param[1]
-		return models.Message.objects.filter(**qstring).order_by('-timestamp')
-	return models.Message.objects.all().order_by('-timestamp')
+        if self.request.GET:
+            qstring = dict()
+            for param in self.request.GET.items():
+                if param[1]:
+                    if param[0] == 'dateuntil':
+                        qstring['timestamp__lt'] = param[1]
+                    elif param[0] == 'datefrom':
+                        qstring['timestamp__gte'] = param[1]
+                    elif param[0] in ['organization','partner']:
+                        qstring[param[0] + '__as2_name'] = param[1]
+                    elif param[0] == 'filename':
+                        qstring['payload__name'] = param[1]
+                    elif param[0] in ['direction', 'status', 'message_id']:
+                        qstring[param[0]] = param[1]
+            return models.Message.objects.filter(**qstring).order_by('-timestamp')
+        return models.Message.objects.all().order_by('-timestamp')
 
 class MessageDetail(DetailView):
     model = models.Message
@@ -130,6 +131,7 @@ class MDNList(ListView):
                 return models.MDN.objects.filter(**qstring).order_by('-timestamp')
         return models.MDN.objects.all().order_by('-timestamp')
 
+
 class MDNSearch(View):
     form_class = forms.MDNSearchForm
     template_name = 'pyas2/mdn_search.html'
@@ -184,52 +186,79 @@ class SendMessage(View):
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST, request.FILES)
         if form.is_valid():
-	    #botsglobal.logger.info(_(u'Run bots-engine with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
-	    python_executable_path = init.gsettings['python_path']
-	    managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
-	    ufile = as2utils.join(init.gsettings['root_dir'], request.FILES['file'].name) 
-	    with open(ufile, 'wb+') as destination:
-		for chunk in request.FILES['file'].chunks():
-		    destination.write(chunk)
-	    lijst = [python_executable_path,managepy_path,'sendmessage',form.cleaned_data['organization'],form.cleaned_data['partner'], ufile]
-	    print lijst
-	    try:
+            python_executable_path = init.gsettings['python_path']
+            managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
+            temp = tempfile.NamedTemporaryFile(prefix=request.FILES['file'].name,delete=False)
+            for chunk in request.FILES['file'].chunks():
+                temp.write(chunk)
+            lijst = [python_executable_path,managepy_path,'sendmessage',form.cleaned_data['organization'],form.cleaned_data['partner'], temp.name]
+            init.logger.info(_(u'Send message started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
+            try:
                 terug = subprocess.Popen(lijst).pid
             except Exception as msg:
                 notification = _(u'Errors while trying to run send message: "%s".')%msg
                 messages.add_message(request, messages.INFO, notification)
-                #botsglobal.logger.info(notification)
+                init.logger.info(notification)
             else:
                 messages.add_message(request, messages.INFO, _(u'Sending the message to your partner ......'))
             return HttpResponseRedirect(reverse('home'))
         else:
             return render(request, self.template_name, {'form': form})
 
+def resendmessage(request,pk,*args,**kwargs):
+    orig_message = models.Message.objects.get(message_id=pk)
+    python_executable_path = init.gsettings['python_path']
+    managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
+    temp = tempfile.NamedTemporaryFile(prefix=orig_message.payload.name,delete=False)
+    with open(orig_message.payload.file, 'rb+') as source:
+        temp.write(source.read())
+    lijst = [python_executable_path,managepy_path,'sendmessage',orig_message.organization.as2_name,orig_message.partner.as2_name,temp.name]
+    init.logger.info(_(u'Re-send message started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
+    try:
+        terug = subprocess.Popen(lijst).pid
+    except Exception as msg:
+        notification = _(u'Errors while trying to re-send message: "%s".')%msg
+        messages.add_message(request, messages.INFO, notification)
+        init.logger.info(notification)
+    else:
+        messages.add_message(request, messages.INFO, _(u'Re-Sending the message to your partner ......'))
+    return HttpResponseRedirect(reverse('home'))
+    
 def sendasyncmdn(request,*args,**kwargs):
-    python_executable_path = sys.executable
+    python_executable_path = init.gsettings['python_path']
     managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
     lijst = [python_executable_path,managepy_path,'sendasyncmdn']
-    try:
-	terug = subprocess.Popen(lijst).pid
-    except Exception as msg:
-	notification = _(u'Errors while trying to run send async MDNs: "%s".')%msg
-	messages.add_message(request, messages.INFO, notification)
-    else:
-	messages.add_message(request, messages.INFO, _(u'Sending all pending asynchronous MDNs .....'))
-    return HttpResponseRedirect(reverse('home'))
-
-def retryfailedmessages(request,*args,**kwargs):
-    python_executable_path = sys.executable
-    managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
-    lijst = [python_executable_path,managepy_path,'retryfailedmessages']
+    init.logger.info(_(u'Send async MDNs started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
     try:
         terug = subprocess.Popen(lijst).pid
     except Exception as msg:
         notification = _(u'Errors while trying to run send async MDNs: "%s".')%msg
         messages.add_message(request, messages.INFO, notification)
     else:
-        messages.add_message(request, messages.INFO, _(u'Retrying failed outbound messages .....'))
+        messages.add_message(request, messages.INFO, _(u'Sending all pending asynchronous MDNs .....'))
     return HttpResponseRedirect(reverse('home'))
+
+def retryfailedcomms(request,*args,**kwargs):
+    python_executable_path = init.gsettings['python_path']
+    managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
+    lijst = [python_executable_path,managepy_path,'retryfailedcomms']
+    init.logger.info(_(u'Retry Failed communications started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
+    try:
+        terug = subprocess.Popen(lijst).pid
+    except Exception as msg:
+        notification = _(u'Errors while trying to retrying failed communications: "%s".')%msg
+        messages.add_message(request, messages.INFO, notification)
+    else:
+        messages.add_message(request, messages.INFO, _(u'Retrying failed communications .....'))
+    return HttpResponseRedirect(reverse('home'))
+
+def cancelretries(request,pk,*args,**kwargs):
+    message = models.Message.objects.get(message_id=pk)
+    message.status = 'E'
+    message.adv_status = _(u'User cancelled furthur retires for this message')
+    message.save()
+    messages.add_message(request, messages.INFO, _(u'Cancelled retries for message %s'%pk))
+    return HttpResponseRedirect(reverse('messages'))
 
 def sendtestmailmanagers(request,*args,**kwargs):
     from django.core.mail import mail_managers

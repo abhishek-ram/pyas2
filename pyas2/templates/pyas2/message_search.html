@@ -1,6 +1,7 @@
 {% extends "admin/base.html" %}
 {% load i18n %}
 {% load static %}
+{% load pyas2_extras %}
 {% block title %}
 Search Messages
 {% endblock %}
@@ -17,14 +18,14 @@ Search Messages
         $("#id_datefrom").datetimepicker({
             dateFormat: 'yy-mm-dd',
             timeFormat: 'hh:mm:ss',
-            minDate: {{ minDate }},
+            minDate: {% get_init "minDate" %},
             maxDate: 0.1,
         });
         $("#id_dateuntil").datetimepicker({
             ampm: false,
             dateFormat: 'yy-mm-dd',
             timeFormat: 'hh:mm:ss',
-            minDate: {{ minDate }},
+            minDate: {% get_init "minDate" %},
             maxDate: 0.1,
         });
     });

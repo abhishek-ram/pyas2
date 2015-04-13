@@ -28,16 +28,6 @@ ALLOWED_HOSTS = []
 
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'pyas2/templates'),)
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.request',
-    'django.contrib.messages.context_processors.messages',
-    'django.core.context_processors.static',
-    'pyas2.context.set_context',
-)
-
 # Application definition
 
 INSTALLED_APPS = (
@@ -93,6 +83,16 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+MANAGERS = (    #pyas2 will send error reports to the MANAGERS
+        ('abhishek ram', 'abhishek8816@gmail.com'),
+    )
+EMAIL_HOST = 'localhost'             #Default: 'localhost'
+EMAIL_PORT = '25'             #Default: 25
+EMAIL_USE_TLS = False       #Default: False
+EMAIL_HOST_USER = ''        #Default: ''. Username to use for the SMTP server defined in EMAIL_HOST. If empty, Django won't attempt authentication.
+EMAIL_HOST_PASSWORD = ''    #Default: ''. PASSWORD to use for the SMTP server defined in EMAIL_HOST. If empty, Django won't attempt authentication.
+
+## PYAS2 app settings
 PYAS2 = {
     ## Full path to the base directory for storing files, logs ...
     'ROOTDIR' : os.path.dirname(os.path.dirname(__file__)),

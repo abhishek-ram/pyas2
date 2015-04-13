@@ -37,8 +37,8 @@
         <ul>
                 <a>{% trans 'Run' %}</a>
                 <li><a href="{% url "sendmessage" %}" >{% trans 'Send Message' %}</a></li>
-                <li><a href="{% url "sendasyncmdn" %}" >{% trans 'Send Pending ASYNC MDNs' %}</a></li>
-                <li><a href="{% url "retryfailedmessages" %}" >{% trans 'Retry failed outbound messages' %}</a></li>
+                <li><a href="{% url "sendasyncmdn" %}" >{% trans 'Send Asynchronous MDNs' %}</a></li>
+                <li><a href="{% url "retryfailedcomms" %}" >{% trans 'Retry failed communications' %}</a></li>
         </ul>
         {% endif %}
         {% if custom_menus %}

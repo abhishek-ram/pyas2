@@ -1,0 +1,38 @@
+from django.core.management.base import BaseCommand, CommandError
+from django.utils.translation import ugettext as _
+from pyas2 import models
+from pyas2 import init
+from pyas2 import as2lib
+from email.parser import HeaderParser
+from django.utils import timezone
+from datetime import datetime, timedelta
+import requests
+import email.utils
+import os
+
+class Command(BaseCommand):
+    help = _(u'Retrying all failed outbound communications')
+
+    def handle(self, *args, **options):
+        init.logger.info(_(u'Retrying all failed outbound messages'))
+        failed_msgs = models.Message.objects.filter(status='R',direction='OUT')
+        for failed_msg in failed_msgs:
+            if not failed_msg.retries:
+                failed_msg.retries = 1
+            else:
+                failed_msg.retries = failed_msg.retries + 1
+            if failed_msg.retries > init.gsettings['max_retries']:
+                failed_msg.status = 'E'
+                failed_msg.adv_status = _(u'Message exceeded maximum retries, marked as error')
+                failed_msg.save()
+                continue
+            init.logger.info(_(u'Retrying send of message with ID %s'%failed_msg))
+            try:
+                payload = as2lib.build_message(failed_msg)
+                as2lib.send_message(failed_msg,payload)
+            except Exception,e:
+                failed_msg.status = 'E'
+                message.failed_msg = 'Failed to send message, error is %s' %e
+                models.Log.objects.create(message=failed_msg, status='E', text = failed_msg.adv_status)
+                failed_msg.save()
+        init.logger.info(_(u'Successfully processed all failed outbound messages'))

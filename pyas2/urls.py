@@ -20,8 +20,10 @@ urlpatterns = patterns('',
     url(r'^mdn/$', login_required(views.MDNList.as_view(), login_url='login'), name='mdns'),
     url(r'^mdn/(?P<pk>.+)/$', login_required(views.MDNView.as_view(), login_url='login'), name='mdn_view'),
     url(r'^sendmessage/$', login_required(views.SendMessage.as_view(), login_url='login'), name='sendmessage'),
+    url(r'^resendmessage/(?P<pk>.+)/$', login_required(views.resendmessage, login_url='login'), name='resendmessage'),
     url(r'^sendasyncmdn/$', login_required(views.sendasyncmdn, login_url='login'), name='sendasyncmdn'),
-    url(r'^retryfailedmessages/$', login_required(views.retryfailedmessages, login_url='login'), name='retryfailedmessages'),
+    url(r'^retryfailedcomms/$', login_required(views.retryfailedcomms, login_url='login'), name='retryfailedcomms'),
+    url(r'^cancelretries/(?P<pk>.+)/$', login_required(views.cancelretries, login_url='login'), name='cancelretries'),
     #only superuser
     url(r'^sendtestmail$', superuser_required(views.sendtestmailmanagers), name='sendtestmail'), 
     # as2 asynchronous mdn and message receive url
