@@ -15,7 +15,7 @@ if os.name == 'nt':
     try:
         import win32file, win32con
     except Exception as msg: 
-        raise ImportError(u'Dependency failure: bots directory monitoring requires python library "Python Win32 Extensions" on windows.')
+        raise ImportError(u'Dependency failure: pyas2 directory monitoring requires python library "Python Win32 Extensions" on windows.')
    
     def windows_event_handler(logger,dir_watch,cond,tasks):
         ACTIONS = { 1 : "Created  ",      #tekst for printing results
@@ -40,7 +40,7 @@ if os.name == 'nt':
         while True:
             results = win32file.ReadDirectoryChangesW(  hDir,
                                                         8192,                   #buffer size was 1024, do not want to miss anything
-                                                        dir_watch['rec'],       #recursive 
+                                                        False,       #recursive 
                                                         win32con.FILE_NOTIFY_CHANGE_FILE_NAME |         
                                                         #~ win32con.FILE_NOTIFY_CHANGE_DIR_NAME |
                                                         #~ win32con.FILE_NOTIFY_CHANGE_ATTRIBUTES |
@@ -55,7 +55,7 @@ if os.name == 'nt':
             if results:
                 #for each incoming event: place route to run in a set. Main thread takes action.
                 for action, filename in results:
-                    logger.debug(u'Event: %(action)s %(filename)s',{'action':ACTIONS.get(action,"Unknown"),'filename':filename})
+                    init.logger.debug(u'Event: %(action)s %(filename)s',{'action':ACTIONS.get(action,"Unknown"),'filename':filename})
                 for action, filename in results:
                     if action in [1,3,5]:       ###and fnmatch.fnmatch(filename, dir_watch['filemask']):
                         #~ if dir_watch['rec'] and os.sep in filename:
