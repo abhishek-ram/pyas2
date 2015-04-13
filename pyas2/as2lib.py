@@ -7,6 +7,7 @@ import traceback
 import os 
 import re
 import sys
+import base64
 from email.mime.multipart import MIMEMultipart
 from email.parser import HeaderParser
 from M2Crypto import BIO, Rand, SMIME, X509
@@ -27,7 +28,7 @@ def save_message(message, raw_payload):
         models.Log.objects.create(
             message=message, 
             status='S', 
-            text='Organization "%s" and partner "%s" related to message has been identified'%(message.organization, message.partner)
+            text='Message is for Organization "%s" from partner "%s"'%(message.organization, message.partner)
         )
         micContent = payload.get_payload()
         filename = payload.get_filename()
@@ -87,7 +88,12 @@ def save_message(message, raw_payload):
             models.Log.objects.create(message=message, status='S', text='Decompressing the payload')
             message.compressed = True
             try:
-                dcontent = as2utils.decompress_payload(payload.get_payload())
+                payload.get_payload().encode('ascii')
+                cdata = base64.b64decode(payload.get_payload())
+            except Exception,e:
+                cdata = payload.get_payload()
+            try:
+                dcontent = as2utils.decompress_payload(cdata)
                 if not message.signed :
                     micContent = dcontent
                 payload = email.message_from_string(dcontent)
@@ -276,34 +282,39 @@ def build_message(message):
     return content 
 
 def send_message(message, payload):
-    hparser = HeaderParser()
-    message_header = hparser.parsestr(message.headers)
-    auth = None
-    if message.partner.http_auth:
-        auth = (message.partner.http_auth_user, message.partner.http_auth_pass)
     try:
-        response = requests.post(message.partner.target_url,  auth = auth, headers = dict(message_header.items()), data = payload)
-        response.raise_for_status()
-    except Exception,e:
-        message.status = 'R'
-        models.Log.objects.create(message=message, status='E', text='Message send failed with error %s'%e)
-        message.adv_status = 'Message send failed due to communcation error'
-        message.save()
-        return
-    models.Log.objects.create(message=message, status='S', text='AS2 message sent to the partner, checking for mdn if requested')
-    if message.partner.mdn:
-        if message.partner.mdn_mode == 'ASYNC':
-            models.Log.objects.create(message=message, status='S', text='ASYNC MDN requested, waiting for partner to send it ........')
-            message.adv_status = 'Waiting for asynchronous MDN'
-            message.status = 'P'
-            message.save()
+        hparser = HeaderParser()
+        message_header = hparser.parsestr(message.headers)
+        auth = None
+        if message.partner.http_auth:
+            auth = (message.partner.http_auth_user, message.partner.http_auth_pass)
+        try:
+            response = requests.post(message.partner.target_url,  auth = auth, headers = dict(message_header.items()), data = payload)
+            response.raise_for_status()
+        except Exception,e:
+            message.status = 'R'
+            models.Log.objects.create(message=message, status='E', text='Message send failed with error %s'%e)
+            message.adv_status = 'Message send failed due to communcation error'
             return
-        mdnContent = '';
-        for key in response.headers:
-            mdnContent = mdnContent + '%s: %s\n'%(key, response.headers[key])
-        mdnContent = mdnContent + '\n' + response.content
-        models.Log.objects.create(message=message, status='S', text='Processing synchronous mdn received from partner')
-        save_mdn(message, mdnContent)
+        models.Log.objects.create(message=message, status='S', text='AS2 message sent to the partner, checking for mdn if requested')
+        if message.partner.mdn:
+            if message.partner.mdn_mode == 'ASYNC':
+                models.Log.objects.create(message=message, status='S', text='ASYNC MDN requested, waiting for partner to send it ........')
+                message.adv_status = 'Waiting for asynchronous MDN'
+                message.status = 'P'
+                return
+            mdnContent = '';
+            for key in response.headers:
+                mdnContent = mdnContent + '%s: %s\n'%(key, response.headers[key])
+            mdnContent = mdnContent + '\n' + response.content
+            models.Log.objects.create(message=message, status='S', text='Processing synchronous mdn received from partner')
+            save_mdn(message, mdnContent)
+        else:
+            message.status = 'S'
+            message.adv_status = 'Completed'
+            models.Log.objects.create(message=message, status='S', text='No MDN requested, File Transferred successfully to the partner')
+    finally:
+        message.save()
 
 def save_mdn(message, mdnContent):
     try:

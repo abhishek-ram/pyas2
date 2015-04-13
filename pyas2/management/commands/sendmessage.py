@@ -49,6 +49,6 @@ class Command(BaseCommand):
             message.adv_status = 'Failed to send message, error is %s' %e
             models.Log.objects.create(message=message, status='E', text = message.adv_status)
             message.save()	
-            sys.exit(2)
-    sys.exit(0)
+            raise CommandError(message.adv_status)
+        sys.exit(0)
 #	self.stdout.write('Processed message "%s"' % args[2]) 
