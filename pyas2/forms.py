@@ -18,6 +18,8 @@ class PartnerForm(forms.ModelForm):
             self._errors['signature_key'] =  self.error_class(['Signature Key is mandatory when message signature is enabled'])
         if cleaned_data.get('mdn') and not cleaned_data.get('mdn_mode'):
             self._errors['mdn_mode'] = self.error_class(['MDN Mode needs to be specified'])
+        if cleaned_data.get('mdn_sign') and not cleaned_data.get('signature_key'):
+            self._errors['signature_key'] =  self.error_class(['Signature Key is mandatory when signed mdn is requested'])
         return cleaned_data
     class Meta:
         model = models.Partner

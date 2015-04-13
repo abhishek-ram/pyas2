@@ -60,6 +60,8 @@ def save_message(message, raw_payload):
         if message.partner.signature and payload.get_content_type() != 'multipart/signed':
             raise as2insufficientsecurity('Incoming messages from AS2 partner %s are defined to be signed'%message.partner.as2_name)
         if payload.get_content_type() == 'multipart/signed':
+            if not message.partner.signature_key:
+                raise as2insufficientsecurity('Partner has no signature varification key defined')
             models.Log.objects.create(message=message, status='S', text='Begin Verifying the signature using public key %s'%message.partner.signature_key)
             message.signed = True
             main_boundary = '--' + payload.get_boundary()
