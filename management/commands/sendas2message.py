@@ -39,7 +39,8 @@ class Command(BaseCommand):
             #raise CommandError('Insufficient file permission for payload %s' % args[2])
         outdir = as2utils.join(init.gsettings['payload_send_store'],time.strftime('%Y%m%d'))    
         as2utils.dirshouldbethere(outdir)
-        shutil.copy2(args[2], outdir)
+        outfile = as2utils.join(outdir, os.path.basename(args[2]))
+        shutil.copy2(args[2], outfile)
         if options['delete']:
             os.remove(args[2])
         payload = models.Payload.objects.create(name=os.path.basename(args[2]), file=outfile, content_type=partner.content_type)

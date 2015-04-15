@@ -1,4 +1,4 @@
-import requests
+
 import email.Message
 import email.utils
 import hashlib
@@ -48,7 +48,7 @@ def save_message(message, raw_payload):
             try:
                 decrypted_content = as2utils.decrypt_payload(
                     as2utils.mimetostring(payload,78),
-                    message.organization.encryption_key.certificate.path,
+                    str(message.organization.encryption_key.certificate.path),
                     str(message.organization.encryption_key.certificate_passphrase)
                 )
                 micContent,raw_payload = decrypted_content,decrypted_content
@@ -246,7 +246,7 @@ def build_message(message):
         del multipart['MIME-Version']
         micContent = as2utils.mimetostring(payload, 0).replace('\n','\r\n') 
         multipart.attach(payload)
-        signature = as2utils.sign_payload(micContent, message.organization.signature_key.certificate.path, str(message.organization.signature_key.certificate_passphrase))
+        signature = as2utils.sign_payload(micContent, str(message.organization.signature_key.certificate.path), str(message.organization.signature_key.certificate_passphrase))
         multipart.attach(signature)
         multipart.as_string()
         content = as2utils.extractpayload(multipart).replace('\n','\r\n')
