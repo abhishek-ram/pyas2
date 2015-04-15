@@ -48,7 +48,6 @@ Message
             <td class="nowrap">{% if message.payload %} <a target="_blank" href="{% url 'payload_view' message.message_id %}?action=this">{{message.payload}}</a>{% endif %}</td>
         </tr>
         <tr><td>{% trans 'MDN' %}</td><td class="nowrap">{% if message.mdn %}<a target="_blank" href="{% url 'mdn_view' message.mdn.message_id %}?action=this">{{message.mdn}}{% endif %}</td></tr>
-        <tr><td>{% trans 'Advanced Status' %}</td><td>{{message.adv_status}}</td></tr>
     </table>
     <table id="pyas2table">
         <thead>

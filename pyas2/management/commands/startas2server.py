@@ -1,0 +1,49 @@
+from django.core.management.base import BaseCommand, CommandError
+from django.core.handlers.wsgi import WSGIHandler
+from django.utils.translation import ugettext as _
+from django.conf import settings
+from pyas2 import as2utils
+from pyas2 import init
+import os 
+import traceback
+import sys
+
+class Command(BaseCommand):
+    help = _(u'Starts the PyAS2 server')
+    def handle(self, *args, **options):
+        try:
+            import cherrypy
+            from cherrypy import wsgiserver
+        except Exception as msg:
+            raise ImportError(_(u'Dependency failure: cherrypy library is needed to start the as2 server'))
+        cherrypy.config.update({'global': {'log.screen': False, 'server.environment':init.gsettings['environment']}})
+        #cherrypy handling of static files
+        conf = {'/': {'tools.staticdir.on' : True,'tools.staticdir.dir' : 'static' ,'tools.staticdir.root':as2utils.join(settings.BASE_DIR,'pyas2')}}
+        servestaticfiles = cherrypy.tree.mount(None, '/static', conf)
+        #cherrypy handling of django
+        servedjango = WSGIHandler()     #was: servedjango = AdminMediaHandler(WSGIHandler())  but django does not need the AdminMediaHandler in this setup. is much faster.
+        #cherrypy uses a dispatcher in order to handle the serving of static files and django.
+        dispatcher = wsgiserver.WSGIPathInfoDispatcher({'/': servedjango, '/static': servestaticfiles})
+        pyas2server = wsgiserver.CherryPyWSGIServer(bind_addr=('0.0.0.0', init.gsettings['port']), wsgi_app=dispatcher, server_name='pyas2-webserver')
+        init.logger.log(25,_(u'PyAS2 server running at port: "%(port)s".'),
+                                {'port':init.gsettings['port']})
+        #handle ssl: cherrypy < 3.2 always uses pyOpenssl. cherrypy >= 3.2 uses python buildin ssl (python >= 2.6 has buildin support for ssl).
+        ssl_certificate = init.gsettings['ssl_certificate']
+        ssl_private_key = init.gsettings['ssl_private_key']
+        if ssl_certificate and ssl_private_key:
+            if cherrypy.__version__ >= '3.2.0':
+                adapter_class = wsgiserver.get_ssl_adapter_class('builtin')
+                pyas2server.ssl_adapter = adapter_class(ssl_certificate,ssl_private_key)
+            else:
+                #but: pyOpenssl should be there!
+                pyas2server.ssl_certificate = ssl_certificate
+                pyas2server.ssl_private_key = ssl_private_key
+            init.logger.log(25,_(u'PyAS2 server uses ssl (https).'))
+        else:
+            init.logger.log(25,_(u'PyAS2 server uses plain http (no ssl).'))
+        
+        #***start the cherrypy webserver.************************************************
+        try:
+            pyas2server.start()
+        except KeyboardInterrupt:
+            pyas2server.stop()

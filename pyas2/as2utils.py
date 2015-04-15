@@ -4,6 +4,7 @@ import email.message
 import codecs
 import collections
 import zlib
+import time
 from pyasn1.type import univ, namedtype, tag, namedval, constraint
 from pyasn1.codec.ber import encoder, decoder
 from M2Crypto import BIO, Rand, SMIME, X509
@@ -11,6 +12,48 @@ from cStringIO import StringIO
 from email.generator import Generator
 
 key_pass = ''
+
+#**********************************************************/**
+#*************************Logging, Error handling********************/**
+#**********************************************************/**
+
+def txtexc(mention_exception_type=True):
+    ''' Process last exception, get an errortext.
+        Errortext should be valid unicode.
+    '''
+    from pyas2 import init
+    if init.gsettings['log_level'] == 'DEBUG':
+        return safe_unicode(traceback.format_exc(limit=None))
+    else:
+        terug = safe_unicode(traceback.format_exc(limit=0))
+        terug = terug.replace(u'Traceback (most recent call last):\n',u'')
+        if not mention_exception_type:
+            terug = terug.partition(': ')[2]
+        return terug
+
+def safe_unicode(value):
+    ''' For errors: return best possible unicode...should never lead to errors.
+    '''
+    try:
+        if isinstance(value, unicode):      #is already unicode, just return
+            return value            
+        elif isinstance(value, str):        #string, encoding unknown.   
+            for charset in ['utf_8','latin_1']:
+                try:
+                    return value.decode(charset, 'strict')  #decode strict
+                except:
+                    continue
+            return value.decode('utf_8', 'ignore')  #decode as if it is utf-8, ignore errors.
+        else:
+            return unicode(value)
+    except:
+        try:
+            return repr(value)
+        except:
+            return u'Error while displaying error'
+#**********************************************************/**
+#**************  Exception classes ***************************
+#**********************************************************/**
 
 class AS2Error(Exception):
     ''' formats the error messages. Under all circumstances: give (reasonable) output, no errors.
@@ -41,26 +84,30 @@ class AS2Error(Exception):
     def __str__(self):
         return self.__unicode__()
 
-def safe_unicode(value):
-    ''' For errors: return best possible unicode...should never lead to errors.
-    '''
-    try:
-        if isinstance(value, unicode):      #is already unicode, just return
-            return value
-        elif isinstance(value, str):        #string, encoding unknown.
-            for charset in ['utf_8','latin_1']:
-                try:
-                    return value.decode(charset, 'strict')  #decode strict
-                except:
-                    continue
-            return value.decode('utf_8', 'ignore')  #decode as if it is utf-8, ignore errors.
-        else:
-            return unicode(value)
-    except:
-        try:
-            return repr(value)
-        except:
-            return u'Error while displaying error'
+class as2exception(AS2Error):
+    pass
+
+class as2duplicatedocument(AS2Error):
+    pass
+
+class as2partnernotfound(AS2Error):
+    pass
+
+class as2insufficientsecurity(AS2Error):
+    pass
+
+class as2decompressionfailed(AS2Error):
+    pass
+
+class as2decryptionfailed(AS2Error):
+    pass
+
+class as2invalidsignature(AS2Error):
+    pass
+
+#**********************************************************/**
+#*************************File handling os.path etc***********************/**
+#**********************************************************/**
 
 def join(*paths):
     '''Does does more as join.....
@@ -74,31 +121,6 @@ def dirshouldbethere(path):
         os.makedirs(path)
         return True
     return False
-
-def abspath(soort,filename):
-    ''' get absolute path for internal files; path is a section in bots.ini '''
-    directory = botsglobal.ini.get('directories',soort)
-    return join(directory,filename)
-
-def abspathdata(filename):
-    ''' abspathdata if filename incl dir: return absolute path; else (only filename): return absolute path (datadir)'''
-    if '/' in filename: #if filename already contains path
-        return join(filename)
-    else:
-        directory = botsglobal.ini.get('directories','data')
-        datasubdir = filename[:-3]
-        if not datasubdir:
-            datasubdir = '0'
-        return join(directory,datasubdir,filename)
-
-def deldata(filename):
-    ''' delete internal data file.'''
-    filename = abspathdata(filename)
-    try:
-        os.remove(filename)
-    except:
-        #~ print 'not deleted', filename
-        pass
 
 def opendata(filename,mode,charset=None,errors='strict'):
     ''' open internal data file. if no encoding specified: read file raw/binary.'''
@@ -117,17 +139,28 @@ def readdata(filename,charset=None,errors='strict'):
     filehandler.close()
     return content
 
+def storefile(targetdir,filename,content,archive):
+    ''' Save data to file system and optionally add date as sub directory for archiving'''
+    if archive:
+        targetdir = join(targetdir,time.strftime('%Y%m%d'))
+    dirshouldbethere(targetdir)
+    if os.path.isfile(join(targetdir,filename)):
+        filename = os.path.splitext(filename)[0] + time.strftime('_%H%M%S') + os.path.splitext(filename)[1]
+    absfilename = join(targetdir,filename)
+    sfile = open(absfilename , 'wb')
+    sfile.write(content)
+    sfile.close()
+    return absfilename
+ 
+#**********************************************************/**
+#************************MIME Helper Functions***********************/**
+#**********************************************************/**
 
 def unescape_as2name(ename):
-	#uename = re.sub(r'^"|"$', "", ename)
-	#uename = re.sub(r'\\\\','\\', uename)
-	#uename = re.sub(r'\\"','"', uename)
 	return email.utils.unquote(ename)
 
 def escape_as2name(uename):
 	if re.search( r'[\\" ]', uename, re.M):
-		#ename = re.sub(r'\\', '\\\\\\\\', ename)
-		#ename = re.sub(r'"', '\\"', ename)
 		return '"' + email.utils.quote(uename) + '"'
 	else:
 		return uename	
@@ -156,6 +189,10 @@ def canonicalize(msg):
         header.append("%s: %s"%(key,value))
     result = "%s\r\n\r\n%s"%("\r\n".join(header),extractpayload(msg))
     return result
+
+#**********************************************************/**
+#*************************Smime Functions such as compress, encrypt..***********************/**
+#**********************************************************/**
 
 ## Classes that define the ASN.1 structure for building  smime compressed message
 class CompressedDataAttr(univ.Sequence):
@@ -196,7 +233,6 @@ def compress_payload(payload):
     cdata.setComponentByName('version',0)
     cdata.setComponentByName('attributes',cdata_attr)
     cdata.setComponentByName('payload',cdata_payload)
-    #cdata_payload.setComponentByName('enum', 'no-error')
     cdata_main = CompressedDataMain()
     cdata_main.setComponentByName('id-ct-compressedData',(1,2,840,113549,1,9,16,1,9))
     cdata_main.setComponentByName('compressedData',cdata)
@@ -243,27 +279,26 @@ def sign_payload(data, key, passphrase):
     signature.add_header('Content-Disposition', 'attachment', filename='smime.p7s')
     signature.add_header('Content-Transfer-Encoding', 'base64')
     signature.set_payload('\n'.join(raw_sig[pos:pos+76] for pos in xrange(0, len(raw_sig), 76)))
-    #signature.set_payload(out.read().replace('-----BEGIN PKCS7-----\n','').replace('-----END PKCS7-----\n', ''))
     del signature['MIME-Version']
     return signature
 
-def verify_payload(msg, raw_sig, key):
+def verify_payload(msg, raw_sig, key, ca_cert):
     signer = SMIME.SMIME()
     signerKey = X509.X509_Stack()
     signerKey.push(X509.load_cert(key))
     signer.set_x509_stack(signerKey)
     signerStore = X509.X509_Store()
-    signerStore.load_info(key)
+    signerStore.load_info(ca_cert)
     signer.set_x509_store(signerStore)
     if raw_sig:
-	raw_sig.strip()
+        raw_sig.strip()
         sig = "-----BEGIN PKCS7-----\n%s\n-----END PKCS7-----\n"%raw_sig.replace('\r\n','\n')
         p7 = SMIME.load_pkcs7_bio(BIO.MemoryBuffer(sig))
         data_bio = BIO.MemoryBuffer(msg)
-        signer.verify(p7, data_bio,SMIME.PKCS7_NOVERIFY)
+        signer.verify(p7, data_bio)
     else:
-	p7, data_bio = SMIME.smime_load_pkcs7_bio(BIO.MemoryBuffer(msg))
-	signer.verify(p7, data_bio,SMIME.PKCS7_NOVERIFY)
+        p7, data_bio = SMIME.smime_load_pkcs7_bio(BIO.MemoryBuffer(msg))
+        signer.verify(p7, data_bio)
 
 def getKeyPassphrase(self):
     return key_pass

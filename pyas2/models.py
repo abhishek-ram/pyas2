@@ -4,6 +4,7 @@ from pyas2 import init
 from pyas2 import as2utils
 import os
 import sys
+
 # Create your models here.
 
 DEFAULT_ENTRY = ('',"---------")
@@ -87,14 +88,14 @@ class Partner(models.Model):
         verbose_name='Command on Message Send', 
         null=True, 
         blank=True , 
-        help_text='Command exectued after successful message send, replacements are ${filename}, ${subject}, ${sender}, ${recevier}, ${messageid}'
+        help_text='Command exectued after successful message send, replacements are $filename, $sender, $recevier, $messageid and any messsage header such as $subject'
     )
     cmd_receive = models.CharField(
         max_length=255, 
         verbose_name='Command on Message Receipt', 
         null=True, 
         blank=True, 
-        help_text='Command exectued after successful message receipt, replacements are ${filename}, ${fullfilename}, ${subject}, ${sender}, ${recevier}, ${messageid}'
+        help_text='Command exectued after successful message receipt, replacements are $filename, $fullfilename, $sender, $recevier, $messageid and any messsage header such as $subject'
     )
     def __str__(self):
         return self.name

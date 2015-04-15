@@ -17,21 +17,25 @@ def initialize():
     if hasattr(settings, 'PYAS2'):
         pyas2_settings = settings.PYAS2
     if not gsettings:
+        gsettings['environment'] = pyas2_settings.get('ENVIRONMENT','production')
+        gsettings['port'] = pyas2_settings.get('PORT', 16388)
+        gsettings['ssl_certificate'] = pyas2_settings.get('SSLCERTIFICATE',None)
+        gsettings['ssl_private_key'] = pyas2_settings.get('SSLPRIVATEKEY',None)
         gsettings['environment_text'] = pyas2_settings.get('ENVIRONMENTTEXT',' ')
         gsettings['environment_text_color'] = pyas2_settings.get('ENVIRONMENTTEXTCOLOR','Black')
-    gsettings['root_dir'] = os.path.dirname(os.path.dirname(__file__))
-    gsettings['python_path'] = pyas2_settings.get('PYTHONPATH', sys.executable)
-    gsettings['managepy_path'] = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
-    gsettings['daemon_port'] = pyas2_settings.get('DAEMONPORT', 16388)
-    if pyas2_settings.get('ROOTDIR') and os.path.isdir(pyas2_settings.get('ROOTDIR')): 
-        gsettings['root_dir'] = pyas2_settings.get('ROOTDIR')
-    gsettings['payload_receive_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'payload', 'received')
-    gsettings['payload_send_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'payload', 'sent')
-    gsettings['mdn_receive_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'mdn', 'received')
-    gsettings['mdn_send_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'mdn', 'sent')
-    gsettings['log_dir'] = as2utils.join(gsettings['root_dir'], 'logging')
-    for sett in ['payload_receive_store', 'payload_send_store', 'mdn_receive_store', 'mdn_send_store', 'log_dir']:
-        as2utils.dirshouldbethere(gsettings[sett])
+        gsettings['root_dir'] = settings.BASE_DIR
+        gsettings['python_path'] = pyas2_settings.get('PYTHONPATH', sys.executable)
+        gsettings['managepy_path'] = as2utils.join(settings.BASE_DIR, 'manage.py')
+        gsettings['daemon_port'] = pyas2_settings.get('DAEMONPORT', 16388)
+        if pyas2_settings.get('ROOTDIR') and os.path.isdir(pyas2_settings.get('ROOTDIR')): 
+            gsettings['root_dir'] = pyas2_settings.get('ROOTDIR')
+        gsettings['payload_receive_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'payload', 'received')
+        gsettings['payload_send_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'payload', 'sent')
+        gsettings['mdn_receive_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'mdn', 'received')
+        gsettings['mdn_send_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'mdn', 'sent')
+        gsettings['log_dir'] = as2utils.join(gsettings['root_dir'], 'logging')
+        for sett in ['payload_receive_store', 'payload_send_store', 'mdn_receive_store', 'mdn_send_store', 'log_dir']:
+            as2utils.dirshouldbethere(gsettings[sett])
         gsettings['log_level'] = pyas2_settings.get('LOGLEVEL','INFO')
         gsettings['log_console'] = pyas2_settings.get('LOGCONSOLE',False)
         gsettings['log_console_level'] = pyas2_settings.get('LOGCONSOLELEVEL','STARTINFO')
@@ -39,10 +43,6 @@ def initialize():
         gsettings['mdn_url'] = pyas2_settings.get('MDNURL','http://localhost:8080/pyas2/as2receive')
         gsettings['async_mdn_wait'] = pyas2_settings.get('ASYNCMDNWAIT',30)
         gsettings['max_arch_days'] = pyas2_settings.get('MAXARCHDAYS',30)
-	
-
-def get_settings():
-    return gsettings
 
 def initserverlogging(logname):
     # initialise file logging

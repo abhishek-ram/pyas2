@@ -23,13 +23,16 @@ import os
 import traceback, email, shutil
 # Create your views here.
 
-
-def index(request,*kw,**kwargs):
-    ''' when using eg http://localhost:8080
-        index can be reached without being logged in.
-        most of the time user is redirected to '/home'
+def server_error(request, template_name='500.html'):
+    ''' the 500 error handler.
+        Templates: `500.html`
+        Context: None
+        str().decode(): bytes->unicode
     '''
-    return render(request,'admin/base.html')
+    exc_info = traceback.format_exc(None).decode('utf-8','ignore')
+    init.logger.info(_(u'Ran into server error: "%(error)s"'),{'error':str(exc_info)})
+    temp = django.template.loader.get_template(template_name)  #You need to create a 500.html template.
+    return django.http.HttpResponseServerError(temp.render(django.template.Context({'exc_info':exc_info})))
 
 def home(request,*kw,**kwargs):
     return render(request,'pyas2/about.html',{'pyas2info':init.gsettings})
@@ -69,45 +72,44 @@ class MessageSearch(View):
     template_name = 'pyas2/message_search.html'
    
     def get(self, request, *args, **kwargs):
-	form = self.form_class()
+        form = self.form_class()
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
-	form = self.form_class(request.POST, request.FILES)
-	if form.is_valid():
-	    return HttpResponseRedirect(viewlib.url_with_querystring(reverse('messages'), **form.cleaned_data))
+        form = self.form_class(request.POST, request.FILES)
+        if form.is_valid():
+            return HttpResponseRedirect(viewlib.url_with_querystring(reverse('messages'), **form.cleaned_data))
         else:
             return render(request, self.template_name, {'form': form, 'confirm' : False})	
 
 class PayloadView(View):
     template_name = 'pyas2/file_view.html'
     def get(self, request, pk, *args, **kwargs):
-	try:
-	    message = models.Message.objects.get(message_id=pk)
+        try:
+            message = models.Message.objects.get(message_id=pk)
             payload = message.payload
             if request.GET['action'] == 'downl':
-	        response = HttpResponse(content_type=payload.content_type)
-	        dispositiontype = 'attachment'
-	        response['Content-Disposition'] = dispositiontype + '; filename=' + payload.name
-	        response.write(as2utils.readdata(payload.file))
-	        return response
-	    elif request.GET['action'] == 'this':
-   		file_obj = dict()
-		file_obj['name'] = payload.name
-		file_obj['id'] = pk
-		file_obj['content'] = as2utils.readdata(payload.file,charset='utf-8',errors='ignore')
-		if payload.content_type == 'application/EDI-X12':
-		    file_obj['content'] = viewlib.indent_x12(file_obj['content'])
-		elif payload.content_type == 'application/EDIFACT':
-		    file_obj['content'] = viewlib.indent_edifact(file_obj['content'])
-		elif payload.content_type == 'application/XML':
-		    file_obj['content'] = viewlib.indent_xml(file_obj['content'])
-		file_obj['direction'] = message.get_direction_display()
-		file_obj['type'] = 'AS2 MESSAGE'
-		file_obj['headers'] = dict(HeaderParser().parsestr(message.headers or '').items())
- 		return render(request,self.template_name,{'file_obj': file_obj}) 
-	except Exception,e:
-	    print e
+                response = HttpResponse(content_type=payload.content_type)
+                dispositiontype = 'attachment'
+                response['Content-Disposition'] = dispositiontype + '; filename=' + payload.name
+                response.write(as2utils.readdata(payload.file))
+                return response
+            elif request.GET['action'] == 'this':
+                file_obj = dict()
+                file_obj['name'] = payload.name
+                file_obj['id'] = pk
+                file_obj['content'] = as2utils.readdata(payload.file,charset='utf-8',errors='ignore')
+                if payload.content_type == 'application/EDI-X12':
+                    file_obj['content'] = viewlib.indent_x12(file_obj['content'])
+                elif payload.content_type == 'application/EDIFACT':
+                    file_obj['content'] = viewlib.indent_edifact(file_obj['content'])
+                elif payload.content_type == 'application/XML':
+                    file_obj['content'] = viewlib.indent_xml(file_obj['content'])
+                file_obj['direction'] = message.get_direction_display()
+                file_obj['type'] = 'AS2 MESSAGE'
+                file_obj['headers'] = dict(HeaderParser().parsestr(message.headers or '').items())
+                return render(request,self.template_name,{'file_obj': file_obj}) 
+        except Exception,e:
             return render(request,self.template_name,{'error_content': _(u'No such file.')})
 
 class MDNList(ListView):
@@ -175,7 +177,7 @@ class MDNView(View):
         except Exception,e:
             return render(request,self.template_name,{'error_content': _(u'No such file.')})
 
-class SendMessage(View):
+class sendmessage(View):
     form_class = forms.SendMessageForm
     template_name = 'pyas2/sendmessage.html'
 
@@ -191,7 +193,7 @@ class SendMessage(View):
             temp = tempfile.NamedTemporaryFile(prefix=request.FILES['file'].name,delete=False)
             for chunk in request.FILES['file'].chunks():
                 temp.write(chunk)
-            lijst = [python_executable_path,managepy_path,'sendmessage',form.cleaned_data['organization'],form.cleaned_data['partner'], temp.name]
+            lijst = [python_executable_path,managepy_path,'sendas2message',form.cleaned_data['organization'],form.cleaned_data['partner'], temp.name]
             init.logger.info(_(u'Send message started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
             try:
                 terug = subprocess.Popen(lijst).pid
@@ -212,7 +214,7 @@ def resendmessage(request,pk,*args,**kwargs):
     temp = tempfile.NamedTemporaryFile(prefix=orig_message.payload.name,delete=False)
     with open(orig_message.payload.file, 'rb+') as source:
         temp.write(source.read())
-    lijst = [python_executable_path,managepy_path,'sendmessage',orig_message.organization.as2_name,orig_message.partner.as2_name,temp.name]
+    lijst = [python_executable_path,managepy_path,'sendas2message',orig_message.organization.as2_name,orig_message.partner.as2_name,temp.name]
     init.logger.info(_(u'Re-send message started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
     try:
         terug = subprocess.Popen(lijst).pid
@@ -241,7 +243,7 @@ def sendasyncmdn(request,*args,**kwargs):
 def retryfailedcomms(request,*args,**kwargs):
     python_executable_path = init.gsettings['python_path']
     managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
-    lijst = [python_executable_path,managepy_path,'retryfailedcomms']
+    lijst = [python_executable_path,managepy_path,'retryfailedas2comms']
     init.logger.info(_(u'Retry Failed communications started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
     try:
         terug = subprocess.Popen(lijst).pid
@@ -255,7 +257,7 @@ def retryfailedcomms(request,*args,**kwargs):
 def cancelretries(request,pk,*args,**kwargs):
     message = models.Message.objects.get(message_id=pk)
     message.status = 'E'
-    message.adv_status = _(u'User cancelled furthur retires for this message')
+    models.Log.objects.create(message=message, status='S', text=_(u'User cancelled furthur retires for this message'))
     message.save()
     messages.add_message(request, messages.INFO, _(u'Cancelled retries for message %s'%pk))
     return HttpResponseRedirect(reverse('messages'))
@@ -265,17 +267,21 @@ def sendtestmailmanagers(request,*args,**kwargs):
     try:
         mail_managers(_(u'testsubject'), _(u'test content of report'))
     except Exception,e:
-        #txt = botslib.txtexc()
+        txt = as2utils.txtexc()
         messages.add_message(request, messages.INFO, _(u'Sending test mail failed.'))
-        #botsglobal.logger.info(_(u'Sending test mail failed, error:\n%(txt)s'), {'txt':txt})
+        init.logger.info(_(u'Sending test mail failed, error:\n%(txt)s'), {'txt':txt})
         return redirect(reverse('home'))
     notification = _(u'Sending test mail succeeded.')
     messages.add_message(request, messages.INFO, notification)
-    #botsglobal.logger.info(notification)
+    init.logger.info(notification)
     return redirect(reverse('home'))
 
 @csrf_exempt
 def as2receive(request,*args,**kwargs):
+    ''' 
+       Function receives requests from partners.  
+       Checks whether its an AS2 message or an MDN and acts accordingly.
+    '''
     if request.method == 'POST':
         as2payload = ''
         for key in request.META:
@@ -297,50 +303,51 @@ def as2receive(request,*args,**kwargs):
                     if (part.get_content_type() == 'message/disposition-notification'):
                         msg_id = part.get_payload().pop().get('Original-Message-ID')
                 message = models.Message.objects.get(message_id=msg_id.strip('<>'))
-                models.Log.objects.create(message=message, status='S', text='Processing asynchronous mdn received from partner')
+                models.Log.objects.create(message=message, status='S', text=_(u'Processing asynchronous mdn received from partner'))
                 try:	
                     as2lib.save_mdn(message, as2payload)
                 except Exception,e:
                     message.status = 'E'
-                    message.adv_status = 'Failed to send message, error is %s' %e
-                    models.Log.objects.create(message=message, status='E', text = message.adv_status)		
+                    models.Log.objects.create(message=message, status='E', text=_(u'Failed to send message, error is %s' %e))		
                 finally:
                     message.save()    
-                    return HttpResponse("AS2 ASYNC MDN has been received")
+                    return HttpResponse(_(u'AS2 ASYNC MDN has been received'))
             else:
                 try:
                     if  models.Message.objects.filter(message_id=payload.get('message-id').strip('<>')).exists():
                         message = models.Message.objects.create(message_id='%s_%s'%(payload.get('message-id').strip('<>'),payload.get('date')),direction='IN', status='IP', headers=as2headers)
-                        raise as2lib.as2duplicatedocument("An identical message has already been sent to our server")
+                        raise as2lib.as2duplicatedocument(_(u'An identical message has already been sent to our server'))
                     message = models.Message.objects.create(message_id=payload.get('message-id').strip('<>'),direction='IN', status='IP', headers=as2headers)	
                     payload = as2lib.save_message(message, as2payload)
                     outputdir = as2utils.join(init.gsettings['root_dir'], 'messages', message.organization.as2_name, 'inbox', message.partner.as2_name)
                     storedir = init.gsettings['payload_receive_store'] 
-                    filename = payload.get_filename() or message.message_id.strip('<>')
-                    fullfilename = as2utils.join(outputdir, filename)
-                    storefilename = as2utils.join(storedir, filename)
-                    file = open(fullfilename , 'wb')
-                    file.write(payload.get_payload(decode=True))
-                    file.close()
-                    shutil.copyfile(fullfilename, storefilename) 
-                    models.Log.objects.create(message=message, status='S', text='Message has been saved successfully to %s'%fullfilename)
+                    if message.partner.keep_filename and payload.get_filename():
+                        filename = payload.get_filename()
+                    else:
+                        filename = '%s.msg' %message.message_id
+                    content = payload.get_payload(decode=True)
+                    fullfilename = as2utils.storefile(outputdir,filename,content,False)
+                    storefilename = as2utils.storefile(init.gsettings['payload_receive_store'],message.message_id,content,True)
+                    models.Log.objects.create(message=message, status='S', text=_(u'Message has been saved successfully to %s'%fullfilename))
                     message.payload = models.Payload.objects.create(name=filename, file=storefilename, content_type=payload.get_content_type())
                     status, adv_status, status_message = 'success', '', ''
+                    as2lib.run_postreceive(message,fullfilename)
                     message.save()
-                except as2lib.as2duplicatedocument,e:
-                    status, adv_status, status_message = 'warning', 'duplicate-document', 'An error occured during the AS2 message processing: %s'%e
-                except as2lib.as2partnernotfound,e:
-                    status, adv_status, status_message = 'error', 'unknown-trading-partner', 'An error occured during the AS2 message processing: %s'%e
-                except as2lib.as2insufficientsecurity,e:
-                    status, adv_status, status_message = 'error', 'insufficient-message-security', 'An error occured during the AS2 message processing: %s'%e 
-                except as2lib.as2decryptionfailed,e:
-                    status, adv_status, status_message = 'error', 'decryption-failed', 'An error occured during the AS2 message processing: %s'%e
-                except as2lib.as2decompressionfailed,e:
-                    status, adv_status, status_message = 'error', 'decompression-failed', 'An error occured during the AS2 message processing: %s'%e
-                except as2lib.as2invalidsignature,e:
-                    #print traceback.format_exc(None).decode('utf-8','ignore')
-                    status, adv_status, status_message = 'error', 'integrity-check-failed', 'An error occured during the AS2 message processing: %s'%e
+                except as2utils.as2duplicatedocument,e:
+                    status, adv_status, status_message = 'warning', 'duplicate-document', _(u'An error occured during the AS2 message processing: %s'%e)
+                except as2utils.as2partnernotfound,e:
+                    status, adv_status, status_message = 'error', 'unknown-trading-partner', _(u'An error occured during the AS2 message processing: %s'%e)
+                except as2utils.as2insufficientsecurity,e:
+                    status, adv_status, status_message = 'error', 'insufficient-message-security', _(u'An error occured during the AS2 message processing: %s'%e) 
+                except as2utils.as2decryptionfailed,e:
+                    status, adv_status, status_message = 'error', 'decryption-failed', _(u'An error occured during the AS2 message processing: %s'%e)
+                except as2utils.as2decompressionfailed,e:
+                    status, adv_status, status_message = 'error', 'decompression-failed', _(u'An error occured during the AS2 message processing: %s'%e)
+                except as2utils.as2invalidsignature,e:
+                    status, adv_status, status_message = 'error', 'integrity-check-failed', _(u'An error occured during the AS2 message processing: %s'%e)
                 except Exception,e:
+                    txt = as2utils.txtexc()
+                    init.logger.error(_(u'Unexpected error while processing message %(msg)s, error:\n%(txt)s'), {'txt':txt,'msg':message.message_id})
                     status, adv_status, status_message = 'error', 'unexpected-processing-error', 'An error occured during the AS2 message processing: %s'%e
                 finally:
                     mdnbody, mdnmessage = as2lib.build_mdn(message, status, adv_status=adv_status, status_message=status_message)
@@ -350,11 +357,12 @@ def as2receive(request,*args,**kwargs):
                             mdnresponse[key] = value
                         return mdnresponse
                     else:
-                        return HttpResponse("AS2 message has been received")
+                        return HttpResponse(_(u'AS2 message has been received'))
         except Exception,e:
-            init.logger.error(traceback.format_exc(None).decode('utf-8','ignore'))
+            txt = as2utils.txtexc()
+            init.logger.error(_(u'Fatal error while processing message %(msg)s, error:\n%(txt)s'), {'txt':txt,'msg':request.META.get('MESSAGE-ID')})
     elif request.method == 'GET':
-        return HttpResponse("To submit an AS2 message, you must POST the message to this URL ")
+        return HttpResponse(_('To submit an AS2 message, you must POST the message to this URL '))
     elif request.method == 'OPTIONS':
         response = HttpResponse()
         response['allow'] = ','.join(['POST', 'GET'])

@@ -19,7 +19,7 @@ urlpatterns = patterns('',
     url(r'^mdnsearch/$', login_required(views.MDNSearch.as_view(), login_url='login'), name='mdnsearch'),
     url(r'^mdn/$', login_required(views.MDNList.as_view(), login_url='login'), name='mdns'),
     url(r'^mdn/(?P<pk>.+)/$', login_required(views.MDNView.as_view(), login_url='login'), name='mdn_view'),
-    url(r'^sendmessage/$', login_required(views.SendMessage.as_view(), login_url='login'), name='sendmessage'),
+    url(r'^sendmessage/$', login_required(views.sendmessage.as_view(), login_url='login'), name='sendmessage'),
     url(r'^resendmessage/(?P<pk>.+)/$', login_required(views.resendmessage, login_url='login'), name='resendmessage'),
     url(r'^sendasyncmdn/$', login_required(views.sendasyncmdn, login_url='login'), name='sendasyncmdn'),
     url(r'^retryfailedcomms/$', login_required(views.retryfailedcomms, login_url='login'), name='retryfailedcomms'),
@@ -32,3 +32,5 @@ urlpatterns = patterns('',
     url(r'^.*', login_required(views.home, login_url='login'), name='home'),
 )
 
+
+handler500 = 'pyas2.views.server_error'

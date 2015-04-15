@@ -41,4 +41,3 @@ class Command(BaseCommand):
             models.Log.objects.create(message=pending_msg, status='E', text=sts)
             pending_msg.save()
         init.logger.info(_(u'Successfully processed all pending mdns'))
-        self.stdout.write(_(u'Successfully processed all pending mdns'))

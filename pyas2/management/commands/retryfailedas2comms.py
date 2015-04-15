@@ -23,7 +23,7 @@ class Command(BaseCommand):
                 failed_msg.retries = failed_msg.retries + 1
             if failed_msg.retries > init.gsettings['max_retries']:
                 failed_msg.status = 'E'
-                failed_msg.adv_status = _(u'Message exceeded maximum retries, marked as error')
+                models.Log.objects.create(message=failed_msg, status='E', text = _(u'Message exceeded maximum retries, marked as error'))
                 failed_msg.save()
                 continue
             init.logger.info(_(u'Retrying send of message with ID %s'%failed_msg))

@@ -94,10 +94,15 @@ EMAIL_HOST_PASSWORD = ''    #Default: ''. PASSWORD to use for the SMTP server de
 
 ## PYAS2 app settings
 PYAS2 = {
+    ## as2 server in development or production. default is production
+    'ENVIRONMENT' : 'production',
+    ## port the as2 server listens. default is 8080
+    'PORT' : 8888,
+    ### Specift in order to enable ssl/https for the as2 server:
     ## Full path to the base directory for storing files, logs ...
     'ROOTDIR' : os.path.dirname(os.path.dirname(__file__)),
     ## Path to the python executable, neccessary with virtual environments
-    #'PYTHONPATH' : '/Users/abhishekram/Documents/work/Research/pythondev/bin/python',
+    'PYTHONPATH' : '/opt/pyenv/python26/dj_latest/bin/python',
     ## environment_text: text displayed on right of the logo. Useful to indicate different environments.
     'ENVIRONMENTTEXT' : 'BETA',   
     ## environment_text_color: Use HTML valid "color name" or #RGB values. Default: Black (#000000)
