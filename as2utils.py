@@ -5,6 +5,7 @@ import codecs
 import collections
 import zlib
 import time
+import traceback
 from pyasn1.type import univ, namedtype, tag, namedval, constraint
 from pyasn1.codec.ber import encoder, decoder
 from M2Crypto import BIO, Rand, SMIME, X509

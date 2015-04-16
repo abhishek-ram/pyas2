@@ -185,7 +185,7 @@ def build_mdn(message, status, **kwargs):
         mdnmessage.add_header('Message-ID', email.utils.make_msgid())
         mdnmessage.add_header('user-agent', 'PYAS2, A pythonic AS2 server')
         filename = mdnmessage.get('message-id').strip('<>') + '.mdn'
-        fullfilename = as2utils.storefile(filename,init.gsettings['mdn_send_store'],mdnbody,True)
+        fullfilename = as2utils.storefile(init.gsettings['mdn_send_store'],filename,mdnbody,True)
         mdn_headers = ''
         for key in mdnmessage.keys():
             mdn_headers = mdn_headers + '%s: %s\n'%(key, mdnmessage[key])
@@ -356,7 +356,7 @@ def save_mdn(message, mdnContent):
                     except Exception, e:
                         raise as2utils.as2exception(_(u'MDN Signature Verification Error, exception message is %s' %e))
         filename = messageId.strip('<>') + '.mdn'
-        fullfilename = as2utils.storfile(filename,init.gsettings['mdn_receive_store'],as2utils.extractpayload(mdnMessage),True)
+        fullfilename = as2utils.storefile(init.gsettings['mdn_receive_store'],filename,as2utils.extractpayload(mdnMessage),True)
         message.mdn = models.MDN.objects.create(message_id=messageId.strip('<>'),file=fullfilename, status='R', headers=mdnHeaders, signed=mdnsigned)
         if mdnMessage.get_content_type() == 'multipart/report':
             for part in mdnMessage.walk():

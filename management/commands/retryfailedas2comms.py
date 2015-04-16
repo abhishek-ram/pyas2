@@ -32,7 +32,6 @@ class Command(BaseCommand):
                 as2lib.send_message(failed_msg,payload)
             except Exception,e:
                 failed_msg.status = 'E'
-                message.failed_msg = 'Failed to send message, error is %s' %e
-                models.Log.objects.create(message=failed_msg, status='E', text = failed_msg.adv_status)
+                models.Log.objects.create(message=failed_msg, status='E', text = _(u'Failed to send message, error is %s' %e))
                 failed_msg.save()
         init.logger.info(_(u'Successfully processed all failed outbound messages'))

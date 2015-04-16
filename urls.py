@@ -34,3 +34,4 @@ urlpatterns = patterns('',
 
 
 handler500 = 'pyas2.views.server_error'
+handler400 = 'pyas2.views.client_error'

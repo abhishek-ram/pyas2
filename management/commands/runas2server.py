@@ -16,7 +16,7 @@ class Command(BaseCommand):
             from cherrypy import wsgiserver
         except Exception as msg:
             raise ImportError(_(u'Dependency failure: cherrypy library is needed to start the as2 server'))
-        cherrypy.config.update({'global': {'log.screen': False, 'server.environment':init.gsettings['environment']}})
+        cherrypy.config.update({'global': {'log.screen': False, 'log.error_file':os.path.join(init.gsettings['log_dir'],'cherrypy_error.log'),'server.environment':init.gsettings['environment']}})
         #cherrypy handling of static files
         conf = {'/': {'tools.staticdir.on' : True,'tools.staticdir.dir' : 'static' ,'tools.staticdir.root':as2utils.join(settings.BASE_DIR,'pyas2')}}
         servestaticfiles = cherrypy.tree.mount(None, '/static', conf)

@@ -30,7 +30,18 @@ def server_error(request, template_name='500.html'):
         str().decode(): bytes->unicode
     '''
     exc_info = traceback.format_exc(None).decode('utf-8','ignore')
-    init.logger.info(_(u'Ran into server error: "%(error)s"'),{'error':str(exc_info)})
+    init.logger.error(_(u'Ran into server error: "%(error)s"'),{'error':str(exc_info)})
+    temp = django.template.loader.get_template(template_name)  #You need to create a 500.html template.
+    return django.http.HttpResponseServerError(temp.render(django.template.Context({'exc_info':exc_info})))
+
+def client_error(request, template_name='400.html'):
+    ''' the 400 error handler.
+        Templates: `400.html`
+        Context: None
+        str().decode(): bytes->unicode
+    '''
+    exc_info = traceback.format_exc(None).decode('utf-8','ignore')
+    init.logger.error(_(u'Ran into client error: "%(error)s"'),{'error':str(exc_info)})
     temp = django.template.loader.get_template(template_name)  #You need to create a 500.html template.
     return django.http.HttpResponseServerError(temp.render(django.template.Context({'exc_info':exc_info})))
 
@@ -316,7 +327,7 @@ def as2receive(request,*args,**kwargs):
                 try:
                     if  models.Message.objects.filter(message_id=payload.get('message-id').strip('<>')).exists():
                         message = models.Message.objects.create(message_id='%s_%s'%(payload.get('message-id').strip('<>'),payload.get('date')),direction='IN', status='IP', headers=as2headers)
-                        raise as2lib.as2duplicatedocument(_(u'An identical message has already been sent to our server'))
+                        raise as2utils.as2duplicatedocument(_(u'An identical message has already been sent to our server'))
                     message = models.Message.objects.create(message_id=payload.get('message-id').strip('<>'),direction='IN', status='IP', headers=as2headers)	
                     payload = as2lib.save_message(message, as2payload)
                     outputdir = as2utils.join(init.gsettings['root_dir'], 'messages', message.organization.as2_name, 'inbox', message.partner.as2_name)
@@ -360,7 +371,7 @@ def as2receive(request,*args,**kwargs):
                         return HttpResponse(_(u'AS2 message has been received'))
         except Exception,e:
             txt = as2utils.txtexc()
-            init.logger.error(_(u'Fatal error while processing message %(msg)s, error:\n%(txt)s'), {'txt':txt,'msg':request.META.get('MESSAGE-ID')})
+            init.logger.error(_(u'Fatal error while processing message %(msg)s, error:\n%(txt)s'), {'txt':txt,'msg':request.META.get('HTTP_MESSAGE_ID').strip('<>')})
     elif request.method == 'GET':
         return HttpResponse(_('To submit an AS2 message, you must POST the message to this URL '))
     elif request.method == 'OPTIONS':
