@@ -156,7 +156,7 @@ class Command(BaseCommand):
         for dir_watch in dir_watch_data:
             files =  [f for f in os.listdir(dir_watch['path']) if os.path.isfile(as2utils.join(dir_watch['path'],f))]
             for file in files:
-                lijst = [python_executable_path,managepy_path,'sendmessage','--delete',dir_watch['organization'],dir_watch['partner'],as2utils.join(dir_watch['path'],file)]
+                lijst = [python_executable_path,managepy_path,'sendas2message','--delete',dir_watch['organization'],dir_watch['partner'],as2utils.join(dir_watch['path'],file)]
                 init.logger.info(u'Send as2 message with params "%(task)s".',{'task':lijst})
                 subprocess.Popen(lijst)
         if os.name == 'nt':
@@ -192,7 +192,7 @@ class Command(BaseCommand):
                     if current_time - last_time >= timeout:
                         try:
                             for task in tasks:
-                                lijst = [python_executable_path,managepy_path,'sendmessage','--delete',task[0],task[1],task[2]]
+                                lijst = [python_executable_path,managepy_path,'sendas2message','--delete',task[0],task[1],task[2]]
                                 init.logger.info(u'Send as2 message with params "%(task)s".',{'task':lijst})
                                 subprocess.Popen(lijst) 
                         except Exception as msg:
