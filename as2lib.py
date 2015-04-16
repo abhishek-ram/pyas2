@@ -70,9 +70,9 @@ def save_message(message, raw_payload):
             models.Log.objects.create(message=message, status='S', text=_(u'Message is signed, Verifying it using public key %s'%message.partner.signature_key))
             message.signed = True
             main_boundary = '--' + payload.get_boundary()
-            verify_cert = message.partner.signature_key.certificate.path
+            verify_cert = str(message.partner.signature_key.certificate.path)
             if message.partner.signature_key.ca_cert :
-                ca_cert = message.partner.signature_key.ca_cert.path
+                ca_cert = str(message.partner.signature_key.ca_cert.path)
             else:
                 ca_cert = verify_cert
             ### Extract the base64 encoded signature 
@@ -169,7 +169,7 @@ def build_mdn(message, status, **kwargs):
             algorithm = options[1].split(",")[1].strip()
             signed = MIMEMultipart('signed', protocol="application/pkcs7-signature", micalg='sha1')
             signed.attach(main)
-            signature = as2utils.sign_payload(as2utils.mimetostring(main, 0) + '\n', message.organization.signature_key.certificate.path, str(message.organization.signature_key.certificate_passphrase))
+            signature = as2utils.sign_payload(as2utils.mimetostring(main, 0)+'\n', message.organization.signature_key.certificate.path, str(message.organization.signature_key.certificate_passphrase))
             signed.attach(signature)
             mdnmessage = signed
         else:
@@ -197,7 +197,7 @@ def build_mdn(message, status, **kwargs):
         else:
             message.mdn = models.MDN.objects.create(message_id=filename,file=fullfilename, status='S', signed=mdnsigned, headers=mdn_headers)
             message.mdn_mode = 'SYNC'
-            models.Log.objects.create(message=message, status='S', text=_(u'MDN created successfully, sending it to partner'))
+            models.Log.objects.create(message=message, status='S', text=_(u'MDN created successfully and sent to partner'))
         return mdnbody, mdnmessage
     finally:
         message.save()	
@@ -321,7 +321,7 @@ def save_mdn(message, mdnContent):
             mdnHeaders = mdnHeaders + '%s: %s\n'%(key, mdnMessage[key])
         messageId = mdnMessage.get('message-id')
         if message.partner.mdn_sign and mdnMessage.get_content_type() != 'multipart/signed':
-            raise as2utils.as2exception(_(u'Expected signed MDN but unsigned MDN returned'))
+            models.Log.objects.create(message=message, status='W', text=_(u'Expected signed MDN but unsigned MDN returned'))
         mdnsigned = False
         if mdnMessage.get_content_type() == 'multipart/signed':
             models.Log.objects.create(message=message, status='S', text=_(u'Verifying the signed MDN with partner key %s'%message.partner.signature_key))
@@ -344,15 +344,15 @@ def save_mdn(message, mdnContent):
                 raw_sig = sig.get_payload().encode('base64').strip()
             ### Verify the signature using raw contents
             try:
-                as2utils.verify_payload(mdnContent,None,verify_cert)
+                as2utils.verify_payload(mdnContent,None,verify_cert,ca_cert)
             except Exception, e:
                 ### Verify the signature using extracted signature and message
                 try:
-                    as2utils.verify_payload(mdnContent.split(main_boundary)[1].strip(),raw_sig,verify_cert)
+                    as2utils.verify_payload(mdnContent.split(main_boundary)[1].strip(),raw_sig,verify_cert,ca_cert)
                 except Exception, e:
                     ### Verify the signature using extracted signature and message without extra trailing new line in message
                     try:
-                        as2utils.verify_payload(re.sub('\r\n\r\n$', '\r\n', mdnContent.split(main_boundary)[1].lstrip()),raw_sig,verify_cert)
+                        as2utils.verify_payload(re.sub('\r\n\r\n$', '\r\n', mdnContent.split(main_boundary)[1].lstrip()),raw_sig,verify_cert,ca_cert)
                     except Exception, e:
                         raise as2utils.as2exception(_(u'MDN Signature Verification Error, exception message is %s' %e))
         filename = messageId.strip('<>') + '.mdn'
