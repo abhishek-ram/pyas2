@@ -71,10 +71,9 @@ def save_message(message, raw_payload):
             message.signed = True
             main_boundary = '--' + payload.get_boundary()
             verify_cert = str(message.partner.signature_key.certificate.path)
+            ca_cert = verify_cert
             if message.partner.signature_key.ca_cert :
                 ca_cert = str(message.partner.signature_key.ca_cert.path)
-            else:
-                ca_cert = verify_cert
             ### Extract the base64 encoded signature 
             for part in payload.walk():
                 if part.get_content_type() == "application/pkcs7-signature":
@@ -169,7 +168,7 @@ def build_mdn(message, status, **kwargs):
             algorithm = options[1].split(",")[1].strip()
             signed = MIMEMultipart('signed', protocol="application/pkcs7-signature", micalg='sha1')
             signed.attach(main)
-            signature = as2utils.sign_payload(as2utils.mimetostring(main, 0)+'\n', message.organization.signature_key.certificate.path, str(message.organization.signature_key.certificate_passphrase))
+            signature = as2utils.sign_payload(as2utils.mimetostring(main, 0)+'\n',str(message.organization.signature_key.certificate.path), str(message.organization.signature_key.certificate_passphrase))
             signed.attach(signature)
             mdnmessage = signed
         else:
@@ -326,10 +325,10 @@ def save_mdn(message, mdnContent):
         if mdnMessage.get_content_type() == 'multipart/signed':
             models.Log.objects.create(message=message, status='S', text=_(u'Verifying the signed MDN with partner key %s'%message.partner.signature_key))
             mdnsigned = True
-            verify_cert = message.partner.signature_key.certificate.path
+            verify_cert = str(message.partner.signature_key.certificate.path)
             ca_cert = verify_cert
             if message.partner.signature_key.ca_cert:
-                ca_cert = message.partner.signature_key.ca_cert.path
+                ca_cert = str(message.partner.signature_key.ca_cert.path)
             main_boundary = '--' + mdnMessage.get_boundary()
             ### Extract the mssage and signature
             for part in mdnMessage.get_payload():
