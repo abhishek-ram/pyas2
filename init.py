@@ -43,6 +43,7 @@ def initialize():
         gsettings['mdn_url'] = pyas2_settings.get('MDNURL','http://localhost:8080/pyas2/as2receive')
         gsettings['async_mdn_wait'] = pyas2_settings.get('ASYNCMDNWAIT',30)
         gsettings['max_arch_days'] = pyas2_settings.get('MAXARCHDAYS',30)
+        gsettings['minDate'] = 0 - gsettings['max_arch_days']
 
 def initserverlogging(logname):
     # initialise file logging

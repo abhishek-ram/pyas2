@@ -251,6 +251,8 @@ def build_message(message):
         content = as2utils.extractpayload(multipart).replace('\n','\r\n')
         payload = multipart
     if message.partner.encryption: 
+        if not message.signed and message.compressed:
+            micContent = as2utils.mimetostring(payload, 0).replace('\n','\r\n')
         models.Log.objects.create(message=message, status='S', text=_(u'Encrypting the message using partner key %s'%message.partner.encryption_key))
         message.encrypted = True
         payload = as2utils.encrypt_payload(as2utils.mimetostring(payload, 0), message.partner.encryption_key.certificate.path , message.partner.encryption)
