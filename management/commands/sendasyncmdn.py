@@ -24,8 +24,11 @@ class Command(BaseCommand):
                 auth = None
                 if pending_mdn.omessage.partner and pending_mdn.omessage.partner.http_auth:
                     auth = (pending_mdn.omessage.partner.http_auth_user, pending_mdn.omessage.partner.http_auth_pass)
+                verify = True
+                if pending_mdn.omessage.partner.https_ca_cert:
+                    verify = pending_mdn.omessage.partner.https_ca_cert.path
                 with open(pending_mdn.file,'rb') as payload:
-                    requests.post(pending_mdn.return_url, auth=auth, headers = dict(mdn_headers.items()), data = payload)
+                    requests.post(pending_mdn.return_url, auth=auth, verify=verify, headers = dict(mdn_headers.items()), data = payload)
                 pending_mdn.status = 'S'
                 models.Log.objects.create(message=pending_mdn.omessage, status='S', text=_(u'Successfully sent asynchrous mdn to partner'))	
             except Exception,e:
