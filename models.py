@@ -83,19 +83,17 @@ class Partner(models.Model):
         default=False, 
         help_text='Use Original Filename to to store file on receipt, use this option only if you are sure partner sends unique names'
     ) 
-    cmd_send = models.CharField(
-        max_length=255, 
+    cmd_send = models.TextField(
         verbose_name='Command on Message Send', 
         null=True, 
         blank=True , 
-        help_text='Command exectued after successful message send, replacements are $filename, $sender, $recevier, $messageid and any messsage header such as $subject'
+        help_text='Command exectued after successful message send, replacements are $filename, $sender, $recevier, $messageid and any messsage header such as $Subject'
     )
-    cmd_receive = models.CharField(
-        max_length=255, 
+    cmd_receive = models.TextField(
         verbose_name='Command on Message Receipt', 
         null=True, 
         blank=True, 
-        help_text='Command exectued after successful message receipt, replacements are $filename, $fullfilename, $sender, $recevier, $messageid and any messsage header such as $subject'
+        help_text='Command exectued after successful message receipt, replacements are $filename, $fullfilename, $sender, $recevier, $messageid and any messsage header such as $Subject'
     )
     def __str__(self):
         return self.name

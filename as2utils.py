@@ -6,6 +6,7 @@ import collections
 import zlib
 import time
 import traceback
+from django.utils.translation import ugettext as _
 from pyasn1.type import univ, namedtype, tag, namedval, constraint
 from pyasn1.codec.ber import encoder, decoder
 from M2Crypto import BIO, Rand, SMIME, X509
@@ -17,6 +18,19 @@ key_pass = ''
 #**********************************************************/**
 #*************************Logging, Error handling********************/**
 #**********************************************************/**
+def sendpyas2errorreport(message,errortext):
+    ''' Send an email in case of errors or problems with send/receive.
+        Email parameters are in settings.py (EMAIL_HOST, etc).
+    '''
+    from django.core.mail import mail_managers
+    from pyas2 import init
+    try:
+        subject = _(u'[pyAS2 Error Report] %(time)s')%{'time':str(message.timestamp)[:16]}
+        reporttext = _(u'pyAS2 Report; message: %(mid)s, time: %(time)s, direction: %(dir)s, partner: %(prt)s, organization: %(org)s\n\n')%{'time':str(message.timestamp)[:19],'mid':message.message_id,'dir':message.get_direction_display(),'prt':message.partner,'org':message.organization}
+        reporttext += errortext
+        mail_managers(subject, reporttext)
+    except Exception as msg:
+        init.logger.warning(u'Error in sending error report: %(msg)s',{'msg':msg})
 
 def txtexc(mention_exception_type=True):
     ''' Process last exception, get an errortext.

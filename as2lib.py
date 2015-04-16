@@ -127,7 +127,9 @@ def build_mdn(message, status, **kwargs):
         message_header = hparser.parsestr(message.headers)
         text = _(u'The AS2 message has been processed. Thank you for exchanging AS2 messages with Pyas2.')
         if status != 'success':
-            text = _(u'The AS2 message could not be processed. The disposition-notification message has additional details.')
+            #### Send mail here
+            as2utils.sendpyas2errorreport(message, _(u'Failure in processing message from partner,\n Basic status : %s \n Advanced Status: %s'%(kwargs['adv_status'],kwargs['status_message'])))
+            text = _(u'The AS2 message could not be processed. The disposition-notification report has additional details.')
             models.Log.objects.create(message=message, status='E', text = kwargs['status_message'])
             message.status = 'E'
         else:
@@ -291,6 +293,8 @@ def send_message(message, payload):
             response = requests.post(message.partner.target_url,  auth = auth, verify=verify, headers = dict(message_header.items()), data = payload)
             response.raise_for_status()
         except Exception,e:
+            ### Send mail here
+            as2utils.sendpyas2errorreport(message, _(u'Failure during transmission of message to partner with error "%s".\n\nTo retry transmission run the management command "retryfailedas2comms".'%e))
             message.status = 'R'
             models.Log.objects.create(message=message, status='E', text=_(u'Message send failed with error %s'%e))
             return

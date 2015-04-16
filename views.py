@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from django.contrib import messages
+from django.core.mail import mail_managers
 from email.parser import HeaderParser
 from pyas2 import models
 from pyas2 import forms
@@ -274,7 +275,6 @@ def cancelretries(request,pk,*args,**kwargs):
     return HttpResponseRedirect(reverse('messages'))
 
 def sendtestmailmanagers(request,*args,**kwargs):
-    from django.core.mail import mail_managers
     try:
         mail_managers(_(u'testsubject'), _(u'test content of report'))
     except Exception,e:
@@ -320,6 +320,8 @@ def as2receive(request,*args,**kwargs):
                 except Exception,e:
                     message.status = 'E'
                     models.Log.objects.create(message=message, status='E', text=_(u'Failed to send message, error is %s' %e))		
+                    #### Send mail here
+                    as2utils.sendpyas2errorreport(message,_(u'Failed to send message, error is %s' %e))
                 finally:
                     message.save()    
                     return HttpResponse(_(u'AS2 ASYNC MDN has been received'))
@@ -371,7 +373,10 @@ def as2receive(request,*args,**kwargs):
                         return HttpResponse(_(u'AS2 message has been received'))
         except Exception,e:
             txt = as2utils.txtexc()
-            init.logger.error(_(u'Fatal error while processing message %(msg)s, error:\n%(txt)s'), {'txt':txt,'msg':request.META.get('HTTP_MESSAGE_ID').strip('<>')})
+            reporttxt = _(u'Fatal error while processing message %(msg)s, error:\n%(txt)s')%{'txt':txt,'msg':request.META.get('HTTP_MESSAGE_ID').strip('<>')}
+            init.logger.error(reporttxt)
+            #### Send mail here
+            mail_managers(_(u'[pyAS2 Error Report] Fatal error%(time)s')%{'time':request.META.get('HTTP_DATE')}, reporttxt)
     elif request.method == 'GET':
         return HttpResponse(_('To submit an AS2 message, you must POST the message to this URL '))
     elif request.method == 'OPTIONS':

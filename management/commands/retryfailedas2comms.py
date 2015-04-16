@@ -3,6 +3,7 @@ from django.utils.translation import ugettext as _
 from pyas2 import models
 from pyas2 import init
 from pyas2 import as2lib
+from pyas2 import as2utils
 from email.parser import HeaderParser
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -34,4 +35,6 @@ class Command(BaseCommand):
                 failed_msg.status = 'E'
                 models.Log.objects.create(message=failed_msg, status='E', text = _(u'Failed to send message, error is %s' %e))
                 failed_msg.save()
+                ### Send mail here 
+                as2utils.sendpyas2errorreport(failed_msg,_(u'Failed to send message, error is %s' %e))
         init.logger.info(_(u'Successfully processed all failed outbound messages'))

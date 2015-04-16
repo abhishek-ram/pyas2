@@ -35,8 +35,8 @@ class Command(BaseCommand):
             raise CommandError(_(u'Partner "%s" does not exist' % args[1]))
         if not os.path.isfile(args[2]):
             raise CommandError(_(u'Payload at location "%s" does not exist' % args[2]))
-        #if not os.access(args[2],os.W_OK):
-            #raise CommandError('Insufficient file permission for payload %s' % args[2])
+        if options['delete'] and not os.access(args[2],os.W_OK):
+            raise CommandError('Insufficient file permission for payload %s' % args[2])
         outdir = as2utils.join(init.gsettings['payload_send_store'],time.strftime('%Y%m%d'))    
         as2utils.dirshouldbethere(outdir)
         outfile = as2utils.join(outdir, os.path.basename(args[2]))
@@ -52,5 +52,7 @@ class Command(BaseCommand):
             message.status = 'E'
             models.Log.objects.create(message=message, status='E', text = _(u'Failed to send message, error is %s' %e))
             message.save()
+            ### Send mail here 
+            as2utils.sendpyas2errorreport(message,_(u'Failed to send message, error is %s' %e))
             sys.exit(2)
         sys.exit(0)
