@@ -3,16 +3,12 @@ import email.Message
 import email.utils
 import hashlib
 import as2utils
-import traceback
 import os 
-import re
-import sys
 import base64
 from django.utils.translation import ugettext as _
 from email.mime.multipart import MIMEMultipart
 from email.parser import HeaderParser
 from M2Crypto import BIO, Rand, SMIME, X509
-from django.conf import settings
 from pyas2 import models
 from pyas2 import init
 from string import Template
@@ -51,9 +47,9 @@ def save_message(message, raw_payload):
                     str(message.organization.encryption_key.certificate.path),
                     str(message.organization.encryption_key.certificate_passphrase)
                 )
-                micContent,raw_payload = decrypted_content,decrypted_content
-                ### Check if decrypted content is the actual content
+                micContent,raw_payload = as2utils.canonicalize(decrypted_content),decrypted_content
                 payload = email.message_from_string(decrypted_content)
+                ### Check if decrypted content is the actual content
                 if payload.get_content_type() == 'text/plain':
                     payload = email.Message.Message()
                     payload.set_payload(decrypted_content)
@@ -83,21 +79,20 @@ def save_message(message, raw_payload):
                         raw_sig = part.get_payload().encode('base64').strip()
                 else:
                     payload = part
-                    ##micContent = raw_payload.split(main_boundary)[1].strip() 
-                    micContent = as2utils.canonicalize(part)
             ### Verify message using complete raw payload received from partner
             try:
                 as2utils.verify_payload(raw_payload,None,verify_cert, ca_cert)
             except Exception, e:
                 ### Verify message using extracted signature and stripped message
                 try:
-                    as2utils.verify_payload(raw_payload.split(main_boundary)[1].strip(),raw_sig,verify_cert,ca_cert)
+                    as2utils.verify_payload(as2utils.extractpayload_fromstring1(raw_payload,main_boundary),raw_sig,verify_cert,ca_cert)
                 except Exception, e:
-                    ### Verify message using extracted signature and canonicalized message
+                    ### Verify message using extracted signature and message without extra trailing new line
                     try:
-                        as2utils.verify_payload(micContent, raw_sig,verify_cert, ca_cert)
+                        as2utils.verify_payload(as2utils.extractpayload_fromstring2(raw_payload,main_boundary),raw_sig,verify_cert, ca_cert)
                     except Exception, e:
                         raise as2utils.as2invalidsignature('Signature Verification Failed, exception message is %s'%str(e))
+            micContent = as2utils.extractpayload_fromstring2(raw_payload,main_boundary) 
         if payload.get_content_type() == 'application/pkcs7-mime' and payload.get_param('smime-type') == 'compressed-data':
             models.Log.objects.create(message=message, status='S', text=_(u'Decompressing the payload'))
             message.compressed = True
@@ -110,11 +105,12 @@ def save_message(message, raw_payload):
             try:
                 dcontent = as2utils.decompress_payload(cdata)
                 if not message.signed :
-                    micContent = dcontent
+                    micContent = as2utils.canonicalize(dcontent)
                 payload = email.message_from_string(dcontent)
             except Exception, e:
                 raise as2utils.as2decompressionfailed('Failed to decompress message,exception message is %s' %e) 
         ### Saving the message mic for sending it in the MDN
+        init.logger.info(micContent)
         calcMIC = getattr(hashlib, message.partner.signature or 'sha1')
         message.mic = calcMIC(micContent).digest().encode('base64').strip()
         return payload
@@ -178,7 +174,7 @@ def build_mdn(message, status, **kwargs):
             mdnmessage = main
         mdnbody = as2utils.extractpayload(mdnmessage)
         mainboundary = '--' + main.get_boundary() + '--'
-        mdnbody = mdnbody.replace(mainboundary, mainboundary + '\n').replace('\n','\r\n')
+        mdnbody = as2utils.canonicalize(mdnbody.replace(mainboundary, mainboundary + '\n'))
         mdnmessage.add_header('ediint-features', 'CEM')
         mdnmessage.add_header('as2-from', message_header.get('as2-to'))
         mdnmessage.add_header('as2-to', message_header.get('as2-from')) 
@@ -232,7 +228,7 @@ def build_message(message):
     if message.partner.compress:
         models.Log.objects.create(message=message, status='S', text=_(u'Compressing the payload.'))
         message.compressed = True
-        micContent = as2utils.mimetostring(payload, 0).replace('\n','\r\n')
+        micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
         cmessage = email.Message.Message()
         cmessage.set_type('application/pkcs7-mime')
         cmessage.set_param('name', 'smime.p7z')
@@ -246,19 +242,19 @@ def build_message(message):
         message.signed = True
         multipart = MIMEMultipart('signed',protocol="application/pkcs7-signature",micalg=message.partner.signature)
         del multipart['MIME-Version']
-        micContent = as2utils.mimetostring(payload, 0).replace('\n','\r\n') 
+        micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
         multipart.attach(payload)
         signature = as2utils.sign_payload(micContent, str(message.organization.signature_key.certificate.path), str(message.organization.signature_key.certificate_passphrase))
         multipart.attach(signature)
         multipart.as_string()
-        content = as2utils.extractpayload(multipart).replace('\n','\r\n')
+        content = as2utils.canonicalize(as2utils.extractpayload(multipart))
         payload = multipart
     if message.partner.encryption: 
         if not message.compressed and not message.signed:
-            micContent = as2utils.mimetostring(payload, 0).replace('\n','\r\n')
+            micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
         models.Log.objects.create(message=message, status='S', text=_(u'Encrypting the message using partner key %s'%message.partner.encryption_key))
         message.encrypted = True
-        payload = as2utils.encrypt_payload(as2utils.mimetostring(payload, 0).replace('\n','\r\n'), message.partner.encryption_key.certificate.path , message.partner.encryption)
+        payload = as2utils.encrypt_payload(as2utils.canonicalize(as2utils.mimetostring(payload, 0)), message.partner.encryption_key.certificate.path , message.partner.encryption)
         payload.set_type('application/pkcs7-mime')
         content = payload.get_payload()
     if message.partner.mdn:
@@ -269,6 +265,7 @@ def build_message(message):
         if message.partner.mdn_mode == 'ASYNC':
             as2Header['receipt-delivery-option'] = init.gsettings['mdn_url']
             message.mdn_mode = 'ASYNC'
+    init.logger.debug("Sender Mic content \n%s"%micContent)
     calcMIC = getattr(hashlib, message.partner.signature or 'sha1')
     message.mic = calcMIC(micContent).digest().encode('base64').strip()
     as2Header.update(payload.items())
@@ -354,11 +351,11 @@ def save_mdn(message, mdnContent):
             except Exception, e:
                 ### Verify the signature using extracted signature and message
                 try:
-                    as2utils.verify_payload(mdnContent.split(main_boundary)[1].strip(),raw_sig,verify_cert,ca_cert)
+                    as2utils.verify_payload(as2utils.extractpayload_fromstring1(mdnContent,main_boundary),raw_sig,verify_cert,ca_cert)
                 except Exception, e:
                     ### Verify the signature using extracted signature and message without extra trailing new line in message
                     try:
-                        as2utils.verify_payload(re.sub('\r\n\r\n$', '\r\n', mdnContent.split(main_boundary)[1].lstrip()),raw_sig,verify_cert,ca_cert)
+                        as2utils.verify_payload(re.sub(as2utils.extractpayload_fromstring2(mdnContent,main_boundary),raw_sig,verify_cert,ca_cert)
                     except Exception, e:
                         raise as2utils.as2exception(_(u'MDN Signature Verification Error, exception message is %s' %e))
         filename = messageId.strip('<>') + '.mdn'

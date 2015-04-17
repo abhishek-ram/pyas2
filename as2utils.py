@@ -1,4 +1,4 @@
-import re, os, sys
+import re, os
 import email.utils
 import email.message
 import codecs
@@ -190,20 +190,30 @@ def extractpayload(message, **kwargs):
          return boundary + boundary.join(temp)
     else:
          return message.get_payload()
-  
+
 def mimetostring(msg, headerlen):
     fp = StringIO()
     g = Generator(fp, mangle_from_=False, maxheaderlen=headerlen)
     g.flatten(msg)
     return fp.getvalue()
 
+def extractpayload_fromstring1(msg, boundary):
+    return canonicalize(msg.split(boundary)[1].strip())
+
+def extractpayload_fromstring2(msg, boundary):
+    return canonicalize(re.sub('\r\n\r\n$', '\r\n', msg.split(boundary)[1].lstrip()))
+
 def canonicalize(msg):
+    '''
     result = ''
+    mimetostring(msg,)
     header = list()
     for key,value in msg.items():
         header.append("%s: %s"%(key,value))
     result = "%s\r\n\r\n%s"%("\r\n".join(header),extractpayload(msg))
     return result
+    '''
+    return msg.replace('\r\n','\n').replace('\r','\n').replace('\n','\r\n')
 
 #**********************************************************/**
 #*************************Smime Functions such as compress, encrypt..***********************/**
