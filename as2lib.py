@@ -253,7 +253,7 @@ def build_message(message):
         content = as2utils.extractpayload(multipart).replace('\n','\r\n')
         payload = multipart
     if message.partner.encryption: 
-        if not message.compressed:
+        if not message.compressed and not message.signed:
             micContent = as2utils.mimetostring(payload, 0).replace('\n','\r\n')
         models.Log.objects.create(message=message, status='S', text=_(u'Encrypting the message using partner key %s'%message.partner.encryption_key))
         message.encrypted = True
@@ -380,7 +380,7 @@ def save_mdn(message, mdnContent):
                             else:
                                 message.status = 'S'
                                 models.Log.objects.create(message=message, status='S', text=_(u'File Transferred successfully to the partner'))
-                                run_postsend(message)
+                            run_postsend(message)
                     else:
                         raise as2utils.as2exception(_(u'Partner failed to process file. MDN status is %s'%mdn.get('Disposition')))        
         else:

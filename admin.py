@@ -32,9 +32,13 @@ class PartnerAdmin(admin.ModelAdmin):
             'fields': ('keep_filename', 'cmd_send', 'cmd_receive')
         }),
     )
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ['name', 'as2_name']
+    list_filter = ('name','as2_name')
+
 admin.site.register(models.PrivateCertificate, PrivateCertificateAdmin)
 admin.site.register(models.PublicCertificate)
-admin.site.register(models.Organization)
+admin.site.register(models.Organization, OrganizationAdmin)
 admin.site.register(models.Partner, PartnerAdmin)
 admin.site.register(models.Message)
 admin.site.register(models.MDN)
