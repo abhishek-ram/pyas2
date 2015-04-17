@@ -264,7 +264,7 @@ def encrypt_payload(payload, key, cipher):
     certificate.push(X509.load_cert(key))
     encrypter.set_x509_stack(certificate)
     encrypter.set_cipher(SMIME.Cipher(cipher))
-    encryptedContent = encrypter.encrypt(BIO.MemoryBuffer(payload))
+    encryptedContent = encrypter.encrypt(BIO.MemoryBuffer(payload),SMIME.PKCS7_BINARY)
     out = BIO.MemoryBuffer()
     encrypter.write(out, encryptedContent)
     return email.message_from_string(out.read())

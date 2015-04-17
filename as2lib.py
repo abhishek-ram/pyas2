@@ -83,6 +83,7 @@ def save_message(message, raw_payload):
                         raw_sig = part.get_payload().encode('base64').strip()
                 else:
                     payload = part
+                    ##micContent = raw_payload.split(main_boundary)[1].strip() 
                     micContent = as2utils.canonicalize(part)
             ### Verify message using complete raw payload received from partner
             try:
@@ -257,7 +258,7 @@ def build_message(message):
             micContent = as2utils.mimetostring(payload, 0).replace('\n','\r\n')
         models.Log.objects.create(message=message, status='S', text=_(u'Encrypting the message using partner key %s'%message.partner.encryption_key))
         message.encrypted = True
-        payload = as2utils.encrypt_payload(as2utils.mimetostring(payload, 0), message.partner.encryption_key.certificate.path , message.partner.encryption)
+        payload = as2utils.encrypt_payload(as2utils.mimetostring(payload, 0).replace('\n','\r\n'), message.partner.encryption_key.certificate.path , message.partner.encryption)
         payload.set_type('application/pkcs7-mime')
         content = payload.get_payload()
     if message.partner.mdn:
