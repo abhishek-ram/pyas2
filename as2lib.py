@@ -110,7 +110,7 @@ def save_message(message, raw_payload):
             except Exception, e:
                 raise as2utils.as2decompressionfailed('Failed to decompress message,exception message is %s' %e) 
         ### Saving the message mic for sending it in the MDN
-        init.logger.info(micContent)
+        init.logger.info("Receive mic content \n%s"%micContent)
         calcMIC = getattr(hashlib, message.partner.signature or 'sha1')
         message.mic = calcMIC(micContent).digest().encode('base64').strip()
         return payload
@@ -355,7 +355,7 @@ def save_mdn(message, mdnContent):
                 except Exception, e:
                     ### Verify the signature using extracted signature and message without extra trailing new line in message
                     try:
-                        as2utils.verify_payload(re.sub(as2utils.extractpayload_fromstring2(mdnContent,main_boundary),raw_sig,verify_cert,ca_cert)
+                        as2utils.verify_payload(as2utils.extractpayload_fromstring2(mdnContent,main_boundary),raw_sig,verify_cert,ca_cert)
                     except Exception, e:
                         raise as2utils.as2exception(_(u'MDN Signature Verification Error, exception message is %s' %e))
         filename = messageId.strip('<>') + '.mdn'
