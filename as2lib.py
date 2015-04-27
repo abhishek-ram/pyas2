@@ -17,6 +17,7 @@ def save_message(message, raw_payload):
     ''' Function decompresses, decrypts and verifies the received message'''
     try:
         payload = email.message_from_string(raw_payload)
+        micContent = None
         models.Log.objects.create(message=message, status='S', text=_(u'Begin Processing of received AS2 message'))
         if not models.Organization.objects.filter(as2_name=as2utils.unescape_as2name(payload.get('as2-to'))).exists():
             raise as2utils.as2partnernotfound('Unknown AS2 organization with id %s'%payload.get('as2-to'))
@@ -29,7 +30,7 @@ def save_message(message, raw_payload):
             status='S', 
             text=_(u'Message is for Organization "%s" from partner "%s"'%(message.organization, message.partner))
         )
-        micContent = payload.get_payload()
+        #micContent = payload.get_payload()
         filename = payload.get_filename()
         if message.partner.encryption and payload.get_content_type() != 'application/pkcs7-mime':
             raise as2utils.as2insufficientsecurity('Incoming messages from AS2 partner %s are defined to be encrypted'%message.partner.as2_name)	
@@ -47,7 +48,8 @@ def save_message(message, raw_payload):
                     str(message.organization.encryption_key.certificate.path),
                     str(message.organization.encryption_key.certificate_passphrase)
                 )
-                micContent,raw_payload = as2utils.canonicalize(decrypted_content),decrypted_content
+                #micContent,raw_payload = as2utils.canonicalize(decrypted_content),decrypted_content
+                raw_payload = decrypted_content
                 payload = email.message_from_string(decrypted_content)
                 ### Check if decrypted content is the actual content
                 if payload.get_content_type() == 'text/plain':
@@ -63,6 +65,7 @@ def save_message(message, raw_payload):
         if payload.get_content_type() == 'multipart/signed':
             if not message.partner.signature_key:
                 raise as2utils.as2insufficientsecurity('Partner has no signature varification key defined')
+            micalg = payload.get_param('micalg') or 'sha1'
             models.Log.objects.create(message=message, status='S', text=_(u'Message is signed, Verifying it using public key %s'%message.partner.signature_key))
             message.signed = True
             main_boundary = '--' + payload.get_boundary()
@@ -80,8 +83,10 @@ def save_message(message, raw_payload):
                 else:
                     payload = part
             ### Verify message using complete raw payload received from partner
+            #init.logger.debug('Received Signed Payload :\n%s'%raw_payload)
             try:
-                as2utils.verify_payload(raw_payload,None,verify_cert, ca_cert)
+                as2utils.verify_payload(as2utils.canonicalize2(payload),raw_sig,verify_cert, ca_cert)
+                #as2utils.verify_payload(raw_payload,None,verify_cert, ca_cert)
             except Exception, e:
                 ### Verify message using extracted signature and stripped message
                 try:
@@ -92,7 +97,8 @@ def save_message(message, raw_payload):
                         as2utils.verify_payload(as2utils.extractpayload_fromstring2(raw_payload,main_boundary),raw_sig,verify_cert, ca_cert)
                     except Exception, e:
                         raise as2utils.as2invalidsignature('Signature Verification Failed, exception message is %s'%str(e))
-            micContent = as2utils.extractpayload_fromstring2(raw_payload,main_boundary) 
+            #micContent = as2utils.canonicalize2(payload)
+            micContent = as2utils.extractpayload_fromstring2(raw_payload,main_boundary)
         if payload.get_content_type() == 'application/pkcs7-mime' and payload.get_param('smime-type') == 'compressed-data':
             models.Log.objects.create(message=message, status='S', text=_(u'Decompressing the payload'))
             message.compressed = True
@@ -104,15 +110,16 @@ def save_message(message, raw_payload):
                 cdata = payload.get_payload()
             try:
                 dcontent = as2utils.decompress_payload(cdata)
-                if not message.signed :
-                    micContent = as2utils.canonicalize(dcontent)
+                #if not message.signed :
+                    #micContent = as2utils.canonicalize(dcontent)
                 payload = email.message_from_string(dcontent)
             except Exception, e:
                 raise as2utils.as2decompressionfailed('Failed to decompress message,exception message is %s' %e) 
         ### Saving the message mic for sending it in the MDN
-        init.logger.info("Receive mic content \n%s"%micContent)
-        calcMIC = getattr(hashlib, message.partner.signature or 'sha1')
-        message.mic = calcMIC(micContent).digest().encode('base64').strip()
+        init.logger.debug("Receive mic content \n%s"%micContent)
+        if micContent:
+            calcMIC = getattr(hashlib, micalg) or 'sha1'
+            message.mic = '%s, %s'%(calcMIC(micContent).digest().encode('base64').strip(),micalg)
         return payload
     finally:
         message.save()	
@@ -154,7 +161,7 @@ def build_mdn(message, status, **kwargs):
         else:
             mdn = mdn + 'Disposition: automatic-action/MDN-sent-automatically; processed\n'
         if message.mic:
-            mdn = mdn + 'Received-content-MIC: %s, sha1\n'%message.mic
+            mdn = mdn + 'Received-content-MIC: %s\n'%message.mic
         mdnbase.set_payload(mdn)
         del mdnbase['MIME-Version']
         main.attach(mdnbase)
@@ -167,11 +174,16 @@ def build_mdn(message, status, **kwargs):
             algorithm = options[1].split(",")[1].strip()
             signed = MIMEMultipart('signed', protocol="application/pkcs7-signature", micalg='sha1')
             signed.attach(main)
-            signature = as2utils.sign_payload(as2utils.mimetostring(main, 0)+'\n',str(message.organization.signature_key.certificate.path), str(message.organization.signature_key.certificate_passphrase))
+            signature = as2utils.sign_payload(
+                    as2utils.canonicalize(as2utils.mimetostring(main, 0)+'\n'),
+                    str(message.organization.signature_key.certificate.path), 
+                    str(message.organization.signature_key.certificate_passphrase)
+            )
             signed.attach(signature)
             mdnmessage = signed
         else:
             mdnmessage = main
+        ### Add new line between the MDN message and the signature
         mdnbody = as2utils.extractpayload(mdnmessage)
         mainboundary = '--' + main.get_boundary() + '--'
         mdnbody = as2utils.canonicalize(mdnbody.replace(mainboundary, mainboundary + '\n'))
@@ -204,6 +216,7 @@ def build_message(message):
     ''' Build the AS2 mime message to be sent to partner'''
     models.Log.objects.create(message=message, status='S', text=_(u'Build the AS2 message and header to send to the partner'))
     reference = '<%s>'%message.message_id
+    micContent = None
     email_datetime = email.Utils.formatdate(localtime=True)
     as2Header = {
         'AS2-Version'         : '1.2',
@@ -224,24 +237,26 @@ def build_message(message):
     payload.set_type(message.partner.content_type)
     payload.add_header('Content-Disposition', 'attachment', filename=message.payload.name)
     del payload['MIME-Version']
-    micContent,cmicContent,content = payload.get_payload(),None,payload.get_payload()
+    #micContent,cmicContent,content = payload.get_payload(),None,payload.get_payload()
+    content = payload.get_payload()
     if message.partner.compress:
         models.Log.objects.create(message=message, status='S', text=_(u'Compressing the payload.'))
         message.compressed = True
-        micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
+        #micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
         cmessage = email.Message.Message()
         cmessage.set_type('application/pkcs7-mime')
         cmessage.set_param('name', 'smime.p7z')
         cmessage.set_param('smime-type', 'compressed-data') 
         cmessage.add_header('Content-Transfer-Encoding', 'base64')
         cmessage.add_header('Content-Disposition', 'attachment', filename='smime.p7z')
-        cmessage.set_payload(as2utils.compress_payload(micContent))
+        cmessage.set_payload(as2utils.compress_payload(as2utils.canonicalize(as2utils.mimetostring(payload, 0))))
         content,payload = cmessage.get_payload(),cmessage
     if message.partner.signature: 
         models.Log.objects.create(message=message, status='S', text=_(u'Signing the message using organzation key %s'%message.organization.signature_key))
         message.signed = True
         multipart = MIMEMultipart('signed',protocol="application/pkcs7-signature",micalg=message.partner.signature)
         del multipart['MIME-Version']
+        #micContent = as2utils.canonicalize2(payload)
         micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
         multipart.attach(payload)
         signature = as2utils.sign_payload(micContent, str(message.organization.signature_key.certificate.path), str(message.organization.signature_key.certificate_passphrase))
@@ -250,8 +265,8 @@ def build_message(message):
         content = as2utils.canonicalize(as2utils.extractpayload(multipart))
         payload = multipart
     if message.partner.encryption: 
-        if not message.compressed and not message.signed:
-            micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
+        #if not message.compressed and not message.signed:
+            #micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
         models.Log.objects.create(message=message, status='S', text=_(u'Encrypting the message using partner key %s'%message.partner.encryption_key))
         message.encrypted = True
         payload = as2utils.encrypt_payload(as2utils.canonicalize(as2utils.mimetostring(payload, 0)), message.partner.encryption_key.certificate.path , message.partner.encryption)
@@ -266,8 +281,9 @@ def build_message(message):
             as2Header['receipt-delivery-option'] = init.gsettings['mdn_url']
             message.mdn_mode = 'ASYNC'
     init.logger.debug("Sender Mic content \n%s"%micContent)
-    calcMIC = getattr(hashlib, message.partner.signature or 'sha1')
-    message.mic = calcMIC(micContent).digest().encode('base64').strip()
+    if micContent:
+        calcMIC = getattr(hashlib, message.partner.signature or 'sha1')
+        message.mic = calcMIC(micContent).digest().encode('base64').strip()
     as2Header.update(payload.items())
     message.headers = ''
     for key in as2Header:
@@ -370,7 +386,7 @@ def save_mdn(message, mdnContent):
                     mdnStatus = mdn.get('Disposition').split(';')
                     if (mdnStatus[1].strip() == 'processed'):
                         models.Log.objects.create(message=message, status='S', text=_(u'Message has been successfully processed, verifying the MIC if present.'))
-                        if mdn.get('Received-Content-MIC'):
+                        if mdn.get('Received-Content-MIC') and message.mic:
                             mdnMIC = mdn.get('Received-Content-MIC').split(',');
                             if (message.mic != mdnMIC[0]):
                                 message.status = 'W'

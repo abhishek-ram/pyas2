@@ -19,7 +19,7 @@ class PartnerAdmin(admin.ModelAdmin):
             'classes': ('collapse','wide'),
             'fields': ('http_auth', 'http_auth_user', 'http_auth_pass', 'https_ca_cert')
         }),
-        ('Message Settings', {
+        ('Security Settings', {
             'classes': ('collapse','wide'),
             'fields': ('compress','encryption','encryption_key','signature','signature_key')
         }),

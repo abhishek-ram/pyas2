@@ -46,12 +46,11 @@ class Partner(models.Model):
     )
     ENCRYPT_ALG_CHOICES = (
         ('des_ede3_cbc', '3DES'),
-        ('des_ede_cbc', 'DES'),
-        ('rc2_40_cbc', 'RC2-40'),
-        ('rc4', 'RC4-40'),
+        ('des_cbc', 'DES'),
         ('aes_128_cbc', 'AES-128'),
         ('aes_192_cbc', 'AES-192'),
         ('aes_256_cbc', 'AES-256'),
+        ('rc2_40_cbc', 'RC2-40'),
     ) 
     SIGN_ALG_CHOICES = (
         ('sha1', 'SHA-1'),

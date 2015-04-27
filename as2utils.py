@@ -26,8 +26,8 @@ def sendpyas2errorreport(message,errortext):
     from pyas2 import init
     try:
         subject = _(u'[pyAS2 Error Report] %(time)s')%{'time':str(message.timestamp)[:16]}
-        reporttext = _(u'pyAS2 Report; message: %(mid)s, time: %(time)s, direction: %(dir)s, partner: %(prt)s, organization: %(org)s\n\n')%{'time':str(message.timestamp)[:19],'mid':message.message_id,'dir':message.get_direction_display(),'prt':message.partner,'org':message.organization}
-        reporttext += errortext
+        reporttext = _(u'pyAS2 Report; \nmessage: %(mid)s, \ntime: %(time)s, \ndirection: %(dir)s, \npartner: %(prt)s, \norganization: %(org)s\n\n')%{'time':str(message.timestamp)[:19],'mid':message.message_id,'dir':message.get_direction_display(),'prt':message.partner,'org':message.organization}
+        reporttext += '\nError Message:%s'%errortext
         mail_managers(subject, reporttext)
     except Exception as msg:
         init.logger.warning(u'Error in sending error report: %(msg)s',{'msg':msg})
@@ -198,21 +198,23 @@ def mimetostring(msg, headerlen):
     return fp.getvalue()
 
 def extractpayload_fromstring1(msg, boundary):
-    return canonicalize(msg.split(boundary)[1].strip())
+    return msg.split(boundary)[1].strip()
 
 def extractpayload_fromstring2(msg, boundary):
-    return canonicalize(re.sub('\r\n\r\n$', '\r\n', msg.split(boundary)[1].lstrip()))
+    crlf_fixed = re.sub('\r\n\r\n$', '\r\n', msg.split(boundary)[1].lstrip())
+    crlf_fixed = re.sub('\n\r\n$', '\n', crlf_fixed)
+    crlf_fixed = re.sub('\r\r\n$', '\r', crlf_fixed)
+    return crlf_fixed
 
-def canonicalize(msg):
-    '''
+def canonicalize2(msg):
     result = ''
-    mimetostring(msg,)
     header = list()
     for key,value in msg.items():
         header.append("%s: %s"%(key,value))
     result = "%s\r\n\r\n%s"%("\r\n".join(header),extractpayload(msg))
     return result
-    '''
+
+def canonicalize(msg):
     return msg.replace('\r\n','\n').replace('\r','\n').replace('\n','\r\n')
 
 #**********************************************************/**
