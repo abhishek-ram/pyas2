@@ -1,6 +1,6 @@
 from django.db import models
 from  django.core.files.storage import FileSystemStorage
-from pyas2 import init
+from pyas2 import pyas2init
 from pyas2 import as2utils
 import os
 import sys
@@ -8,9 +8,9 @@ import sys
 # Create your models here.
 
 DEFAULT_ENTRY = ('',"---------")
-init.initialize()
-init.initserverlogging('pyas2')
-upload_storage = FileSystemStorage(location=init.gsettings['root_dir'], base_url='/pyas2')
+pyas2init.initialize()
+pyas2init.initserverlogging('pyas2')
+upload_storage = FileSystemStorage(location=pyas2init.gsettings['root_dir'], base_url='/pyas2')
 
 class PrivateCertificate(models.Model):
     certificate = models.FileField(upload_to='certificates', storage=upload_storage)
@@ -182,8 +182,8 @@ def update_dirs():
     orgs = Organization.objects.all()
     for partner in partners:
 	for org in orgs:
-	    as2utils.dirshouldbethere(as2utils.join(init.gsettings['root_dir'], 'messages', org.as2_name, 'inbox', partner.as2_name))
+	    as2utils.dirshouldbethere(as2utils.join(pyas2init.gsettings['root_dir'], 'messages', org.as2_name, 'inbox', partner.as2_name))
     for org in orgs:
 	for partner in partners:
-	    as2utils.dirshouldbethere(as2utils.join(init.gsettings['root_dir'], 'messages', partner.as2_name, 'outbox', org.as2_name))
+	    as2utils.dirshouldbethere(as2utils.join(pyas2init.gsettings['root_dir'], 'messages', partner.as2_name, 'outbox', org.as2_name))
 

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import ugettext as _
 from pyas2 import models
-from pyas2 import init
+from pyas2 import pyas2init
 from pyas2 import as2lib
 from email.parser import HeaderParser
 from django.utils import timezone
@@ -14,8 +14,8 @@ class Command(BaseCommand):
     help = _(u'Send all pending asynchronous mdns to your trading partners')
 
     def handle(self, *args, **options):
-        time_threshold = timezone.now() - timedelta(minutes=init.gsettings['async_mdn_wait'])
-        init.logger.info(_(u'Sending all pending asynchronous MDNs'))
+        time_threshold = timezone.now() - timedelta(minutes=pyas2init.gsettings['async_mdn_wait'])
+        pyas2init.logger.info(_(u'Sending all pending asynchronous MDNs'))
         in_pending_mdns = models.MDN.objects.filter(status='P',timestamp__gt=time_threshold)
         for pending_mdn in in_pending_mdns:
             hparser = HeaderParser()
@@ -35,7 +35,7 @@ class Command(BaseCommand):
                 models.Log.objects.create(message=pending_mdn.omessage, status='E', text=_(u'Failed to send asynchrous mdn to partner, error is %s' %e))
             finally:
                 pending_mdn.save()
-        init.logger.info(_(u'Marking messages waiting for MDNs for more than %s minutes'%init.gsettings['async_mdn_wait']))
+        pyas2init.logger.info(_(u'Marking messages waiting for MDNs for more than %s minutes'%pyas2init.gsettings['async_mdn_wait']))
         out_pending_msgs = models.Message.objects.filter(status='P',direction='OUT',timestamp__lt=time_threshold)
         for pending_msg in out_pending_msgs:
             sts = _(u'Failed to receive asynchronous MDN within the threshold limit')
@@ -43,4 +43,4 @@ class Command(BaseCommand):
             pending_msg.adv_status = sts
             models.Log.objects.create(message=pending_msg, status='E', text=sts)
             pending_msg.save()
-        init.logger.info(_(u'Successfully processed all pending mdns'))
+        pyas2init.logger.info(_(u'Successfully processed all pending mdns'))

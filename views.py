@@ -15,7 +15,7 @@ from pyas2 import models
 from pyas2 import forms
 from pyas2 import as2lib
 from pyas2 import as2utils
-from pyas2 import init
+from pyas2 import pyas2init
 from pyas2 import viewlib
 import subprocess
 import sys
@@ -31,7 +31,7 @@ def server_error(request, template_name='500.html'):
         str().decode(): bytes->unicode
     '''
     exc_info = traceback.format_exc(None).decode('utf-8','ignore')
-    init.logger.error(_(u'Ran into server error: "%(error)s"'),{'error':str(exc_info)})
+    pyas2init.logger.error(_(u'Ran into server error: "%(error)s"'),{'error':str(exc_info)})
     temp = django.template.loader.get_template(template_name)  #You need to create a 500.html template.
     return django.http.HttpResponseServerError(temp.render(django.template.Context({'exc_info':exc_info})))
 
@@ -42,12 +42,12 @@ def client_error(request, template_name='400.html'):
         str().decode(): bytes->unicode
     '''
     exc_info = traceback.format_exc(None).decode('utf-8','ignore')
-    init.logger.error(_(u'Ran into client error: "%(error)s"'),{'error':str(exc_info)})
+    pyas2init.logger.error(_(u'Ran into client error: "%(error)s"'),{'error':str(exc_info)})
     temp = django.template.loader.get_template(template_name)  #You need to create a 500.html template.
     return django.http.HttpResponseServerError(temp.render(django.template.Context({'exc_info':exc_info})))
 
 def home(request,*kw,**kwargs):
-    return render(request,'pyas2/about.html',{'pyas2info':init.gsettings})
+    return render(request,'pyas2/about.html',{'pyas2info':pyas2init.gsettings})
 
 class MessageList(ListView):
     model = models.Message
@@ -200,19 +200,19 @@ class sendmessage(View):
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST, request.FILES)
         if form.is_valid():
-            python_executable_path = init.gsettings['python_path']
+            python_executable_path = pyas2init.gsettings['python_path']
             managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
             temp = tempfile.NamedTemporaryFile(prefix=request.FILES['file'].name,delete=False)
             for chunk in request.FILES['file'].chunks():
                 temp.write(chunk)
             lijst = [python_executable_path,managepy_path,'sendas2message',form.cleaned_data['organization'],form.cleaned_data['partner'], temp.name]
-            init.logger.info(_(u'Send message started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
+            pyas2init.logger.info(_(u'Send message started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
             try:
                 terug = subprocess.Popen(lijst).pid
             except Exception as msg:
                 notification = _(u'Errors while trying to run send message: "%s".')%msg
                 messages.add_message(request, messages.INFO, notification)
-                init.logger.info(notification)
+                pyas2init.logger.info(notification)
             else:
                 messages.add_message(request, messages.INFO, _(u'Sending the message to your partner ......'))
             return HttpResponseRedirect(reverse('home'))
@@ -221,28 +221,28 @@ class sendmessage(View):
 
 def resendmessage(request,pk,*args,**kwargs):
     orig_message = models.Message.objects.get(message_id=pk)
-    python_executable_path = init.gsettings['python_path']
+    python_executable_path = pyas2init.gsettings['python_path']
     managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
     temp = tempfile.NamedTemporaryFile(prefix=orig_message.payload.name,delete=False)
     with open(orig_message.payload.file, 'rb+') as source:
         temp.write(source.read())
     lijst = [python_executable_path,managepy_path,'sendas2message',orig_message.organization.as2_name,orig_message.partner.as2_name,temp.name]
-    init.logger.info(_(u'Re-send message started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
+    pyas2init.logger.info(_(u'Re-send message started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
     try:
         terug = subprocess.Popen(lijst).pid
     except Exception as msg:
         notification = _(u'Errors while trying to re-send message: "%s".')%msg
         messages.add_message(request, messages.INFO, notification)
-        init.logger.info(notification)
+        pyas2init.logger.info(notification)
     else:
         messages.add_message(request, messages.INFO, _(u'Re-Sending the message to your partner ......'))
     return HttpResponseRedirect(reverse('home'))
     
 def sendasyncmdn(request,*args,**kwargs):
-    python_executable_path = init.gsettings['python_path']
+    python_executable_path = pyas2init.gsettings['python_path']
     managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
     lijst = [python_executable_path,managepy_path,'sendasyncmdn']
-    init.logger.info(_(u'Send async MDNs started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
+    pyas2init.logger.info(_(u'Send async MDNs started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
     try:
         terug = subprocess.Popen(lijst).pid
     except Exception as msg:
@@ -253,10 +253,10 @@ def sendasyncmdn(request,*args,**kwargs):
     return HttpResponseRedirect(reverse('home'))
 
 def retryfailedcomms(request,*args,**kwargs):
-    python_executable_path = init.gsettings['python_path']
+    python_executable_path = pyas2init.gsettings['python_path']
     managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
     lijst = [python_executable_path,managepy_path,'retryfailedas2comms']
-    init.logger.info(_(u'Retry Failed communications started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
+    pyas2init.logger.info(_(u'Retry Failed communications started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
     try:
         terug = subprocess.Popen(lijst).pid
     except Exception as msg:
@@ -280,11 +280,11 @@ def sendtestmailmanagers(request,*args,**kwargs):
     except Exception,e:
         txt = as2utils.txtexc()
         messages.add_message(request, messages.INFO, _(u'Sending test mail failed.'))
-        init.logger.info(_(u'Sending test mail failed, error:\n%(txt)s'), {'txt':txt})
+        pyas2init.logger.info(_(u'Sending test mail failed, error:\n%(txt)s'), {'txt':txt})
         return redirect(reverse('home'))
     notification = _(u'Sending test mail succeeded.')
     messages.add_message(request, messages.INFO, notification)
-    init.logger.info(notification)
+    pyas2init.logger.info(notification)
     return redirect(reverse('home'))
 
 @csrf_exempt
@@ -332,15 +332,15 @@ def as2receive(request,*args,**kwargs):
                         raise as2utils.as2duplicatedocument(_(u'An identical message has already been sent to our server'))
                     message = models.Message.objects.create(message_id=payload.get('message-id').strip('<>'),direction='IN', status='IP', headers=as2headers)	
                     payload = as2lib.save_message(message, as2payload)
-                    outputdir = as2utils.join(init.gsettings['root_dir'], 'messages', message.organization.as2_name, 'inbox', message.partner.as2_name)
-                    storedir = init.gsettings['payload_receive_store'] 
+                    outputdir = as2utils.join(pyas2init.gsettings['root_dir'], 'messages', message.organization.as2_name, 'inbox', message.partner.as2_name)
+                    storedir = pyas2init.gsettings['payload_receive_store'] 
                     if message.partner.keep_filename and payload.get_filename():
                         filename = payload.get_filename()
                     else:
                         filename = '%s.msg' %message.message_id
                     content = payload.get_payload(decode=True)
                     fullfilename = as2utils.storefile(outputdir,filename,content,False)
-                    storefilename = as2utils.storefile(init.gsettings['payload_receive_store'],message.message_id,content,True)
+                    storefilename = as2utils.storefile(pyas2init.gsettings['payload_receive_store'],message.message_id,content,True)
                     models.Log.objects.create(message=message, status='S', text=_(u'Message has been saved successfully to %s'%fullfilename))
                     message.payload = models.Payload.objects.create(name=filename, file=storefilename, content_type=payload.get_content_type())
                     status, adv_status, status_message = 'success', '', ''
@@ -360,7 +360,7 @@ def as2receive(request,*args,**kwargs):
                     status, adv_status, status_message = 'error', 'integrity-check-failed', _(u'An error occured during the AS2 message processing: %s'%e)
                 except Exception,e:
                     txt = as2utils.txtexc()
-                    init.logger.error(_(u'Unexpected error while processing message %(msg)s, error:\n%(txt)s'), {'txt':txt,'msg':message.message_id})
+                    pyas2init.logger.error(_(u'Unexpected error while processing message %(msg)s, error:\n%(txt)s'), {'txt':txt,'msg':message.message_id})
                     status, adv_status, status_message = 'error', 'unexpected-processing-error', 'An error occured during the AS2 message processing: %s'%e
                 finally:
                     mdnbody, mdnmessage = as2lib.build_mdn(message, status, adv_status=adv_status, status_message=status_message)
@@ -374,7 +374,7 @@ def as2receive(request,*args,**kwargs):
         except Exception,e:
             txt = as2utils.txtexc()
             reporttxt = _(u'Fatal error while processing message %(msg)s, error:\n%(txt)s')%{'txt':txt,'msg':request.META.get('HTTP_MESSAGE_ID').strip('<>')}
-            init.logger.error(reporttxt)
+            pyas2init.logger.error(reporttxt)
             #### Send mail here
             mail_managers(_(u'[pyAS2 Error Report] Fatal error%(time)s')%{'time':request.META.get('HTTP_DATE')}, reporttxt)
     elif request.method == 'GET':

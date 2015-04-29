@@ -23,21 +23,21 @@ def sendpyas2errorreport(message,errortext):
         Email parameters are in settings.py (EMAIL_HOST, etc).
     '''
     from django.core.mail import mail_managers
-    from pyas2 import init
+    from pyas2 import pyas2init
     try:
         subject = _(u'[pyAS2 Error Report] %(time)s')%{'time':str(message.timestamp)[:16]}
         reporttext = _(u'pyAS2 Report; \nmessage: %(mid)s, \ntime: %(time)s, \ndirection: %(dir)s, \npartner: %(prt)s, \norganization: %(org)s\n\n')%{'time':str(message.timestamp)[:19],'mid':message.message_id,'dir':message.get_direction_display(),'prt':message.partner,'org':message.organization}
         reporttext += '\nError Message:%s'%errortext
         mail_managers(subject, reporttext)
     except Exception as msg:
-        init.logger.warning(u'Error in sending error report: %(msg)s',{'msg':msg})
+        pyas2init.logger.warning(u'Error in sending error report: %(msg)s',{'msg':msg})
 
 def txtexc(mention_exception_type=True):
     ''' Process last exception, get an errortext.
         Errortext should be valid unicode.
     '''
-    from pyas2 import init
-    if init.gsettings['log_level'] == 'DEBUG':
+    from pyas2 import pyas2init
+    if pyas2init.gsettings['log_level'] == 'DEBUG':
         return safe_unicode(traceback.format_exc(limit=None))
     else:
         terug = safe_unicode(traceback.format_exc(limit=0))

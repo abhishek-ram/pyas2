@@ -10,7 +10,7 @@ from email.mime.multipart import MIMEMultipart
 from email.parser import HeaderParser
 from M2Crypto import BIO, Rand, SMIME, X509
 from pyas2 import models
-from pyas2 import init
+from pyas2 import pyas2init
 from string import Template
 
 def save_message(message, raw_payload):
@@ -83,7 +83,7 @@ def save_message(message, raw_payload):
                 else:
                     payload = part
             ### Verify message using complete raw payload received from partner
-            #init.logger.debug('Received Signed Payload :\n%s'%raw_payload)
+            #pyas2init.logger.debug('Received Signed Payload :\n%s'%raw_payload)
             try:
                 as2utils.verify_payload(as2utils.canonicalize2(payload),raw_sig,verify_cert, ca_cert)
                 #as2utils.verify_payload(raw_payload,None,verify_cert, ca_cert)
@@ -116,7 +116,7 @@ def save_message(message, raw_payload):
             except Exception, e:
                 raise as2utils.as2decompressionfailed('Failed to decompress message,exception message is %s' %e) 
         ### Saving the message mic for sending it in the MDN
-        init.logger.debug("Receive mic content \n%s"%micContent)
+        pyas2init.logger.debug("Receive mic content \n%s"%micContent)
         if micContent:
             calcMIC = getattr(hashlib, micalg,'sha1')
             message.mic = '%s, %s'%(calcMIC(micContent).digest().encode('base64').strip(),micalg)
@@ -195,7 +195,7 @@ def build_mdn(message, status, **kwargs):
         mdnmessage.add_header('Message-ID', email.utils.make_msgid())
         mdnmessage.add_header('user-agent', 'PYAS2, A pythonic AS2 server')
         filename = mdnmessage.get('message-id').strip('<>') + '.mdn'
-        fullfilename = as2utils.storefile(init.gsettings['mdn_send_store'],filename,mdnbody,True)
+        fullfilename = as2utils.storefile(pyas2init.gsettings['mdn_send_store'],filename,mdnbody,True)
         mdn_headers = ''
         for key in mdnmessage.keys():
             mdn_headers = mdn_headers + '%s: %s\n'%(key, mdnmessage[key])
@@ -278,9 +278,9 @@ def build_message(message):
             as2Header['disposition-notification-options'] = 'signed-receipt-protocol=required, pkcs7-signature; signed-receipt-micalg=optional, %s'%message.partner.mdn_sign
         message.mdn_mode = 'SYNC'
         if message.partner.mdn_mode == 'ASYNC':
-            as2Header['receipt-delivery-option'] = init.gsettings['mdn_url']
+            as2Header['receipt-delivery-option'] = pyas2init.gsettings['mdn_url']
             message.mdn_mode = 'ASYNC'
-    init.logger.debug("Sender Mic content \n%s"%micContent)
+    pyas2init.logger.debug("Sender Mic content \n%s"%micContent)
     if micContent:
         calcMIC = getattr(hashlib, message.partner.signature,'sha1')
         message.mic = calcMIC(micContent).digest().encode('base64').strip()
@@ -375,7 +375,7 @@ def save_mdn(message, mdnContent):
                     except Exception, e:
                         raise as2utils.as2exception(_(u'MDN Signature Verification Error, exception message is %s' %e))
         filename = messageId.strip('<>') + '.mdn'
-        fullfilename = as2utils.storefile(init.gsettings['mdn_receive_store'],filename,as2utils.extractpayload(mdnMessage),True)
+        fullfilename = as2utils.storefile(pyas2init.gsettings['mdn_receive_store'],filename,as2utils.extractpayload(mdnMessage),True)
         message.mdn = models.MDN.objects.create(message_id=messageId.strip('<>'),file=fullfilename, status='R', headers=mdnHeaders, signed=mdnsigned)
         if mdnMessage.get_content_type() == 'multipart/report':
             for part in mdnMessage.walk():

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import ugettext as _
 from pyas2 import models
-from pyas2 import init
+from pyas2 import pyas2init
 from pyas2 import as2utils
 import time
 import atexit
@@ -55,7 +55,7 @@ if os.name == 'nt':
             if results:
                 #for each incoming event: place route to run in a set. Main thread takes action.
                 for action, filename in results:
-                    init.logger.debug(u'Event: %(action)s %(filename)s',{'action':ACTIONS.get(action,"Unknown"),'filename':filename})
+                    pyas2init.logger.debug(u'Event: %(action)s %(filename)s',{'action':ACTIONS.get(action,"Unknown"),'filename':filename})
                 for action, filename in results:
                     if action in [1,3,5]:       ###and fnmatch.fnmatch(filename, dir_watch['filemask']):
                         #~ if dir_watch['rec'] and os.sep in filename:
@@ -86,7 +86,7 @@ else:
             pathname=<path>/<filename> 
             wd=<int>     #the watch
         ''' 
-        def my_init(self, logger,dir_watch_data,cond,tasks):
+        def my_pyas2init(self, logger,dir_watch_data,cond,tasks):
             self.dir_watch_data = dir_watch_data
             self.cond = cond
             self.tasks = tasks
@@ -127,10 +127,10 @@ class Command(BaseCommand):
     help = _(u'Deamon process that watches the outbox of all as2 partners and triggers sendmessage when files become available')
 
     def handle(self, *args, **options):
-        init.logger.info(_(u'Starting PYAS2 send daemon.'))
+        pyas2init.logger.info(_(u'Starting PYAS2 send daemon.'))
         try:
             engine_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            engine_socket.bind(('127.0.0.1', init.gsettings['daemon_port']))
+            engine_socket.bind(('127.0.0.1', pyas2init.gsettings['daemon_port']))
         except socket.error:
             engine_socket.close()
             raise CommandError(_(u'An instance of the send daemon is already running'))
@@ -141,37 +141,37 @@ class Command(BaseCommand):
         dir_watch_data = []
         orgs = models.Organization.objects.all()
         partners = models.Partner.objects.all()
-        python_executable_path = init.gsettings['python_path']
-        managepy_path = init.gsettings['managepy_path'] ##as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
+        python_executable_path = pyas2init.gsettings['python_path']
+        managepy_path = pyas2init.gsettings['managepy_path'] ##as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
         for partner in partners:
             for org in orgs:
                 dir_watch_data.append({})
-                dir_watch_data[-1]['path'] = as2utils.join(init.gsettings['root_dir'], 'messages', partner.as2_name, 'outbox', org.as2_name)
+                dir_watch_data[-1]['path'] = as2utils.join(pyas2init.gsettings['root_dir'], 'messages', partner.as2_name, 'outbox', org.as2_name)
                 dir_watch_data[-1]['organization'] = org.as2_name
                 dir_watch_data[-1]['partner'] = partner.as2_name
         if not dir_watch_data:
-            init.logger.error(_(u'No partners have been configured!'))
+            pyas2init.logger.error(_(u'No partners have been configured!'))
             sys.exit(0)
-        init.logger.info(_(u'Process exisitng files in the directory.'))
+        pyas2init.logger.info(_(u'Process exisitng files in the directory.'))
         for dir_watch in dir_watch_data:
             files =  [f for f in os.listdir(dir_watch['path']) if os.path.isfile(as2utils.join(dir_watch['path'],f))]
             for file in files:
                 lijst = [python_executable_path,managepy_path,'sendas2message','--delete',dir_watch['organization'],dir_watch['partner'],as2utils.join(dir_watch['path'],file)]
-                init.logger.info(u'Send as2 message with params "%(task)s".',{'task':lijst})
+                pyas2init.logger.info(u'Send as2 message with params "%(task)s".',{'task':lijst})
                 subprocess.Popen(lijst)
         if os.name == 'nt':
             #for windows: start a thread per directory watcher
             for dir_watch in dir_watch_data:
-                dir_watch_thread = threading.Thread(target=windows_event_handler, args=(init.logger,dir_watch,cond,tasks))
+                dir_watch_thread = threading.Thread(target=windows_event_handler, args=(pyas2init.logger,dir_watch,cond,tasks))
                 dir_watch_thread.daemon = True  #do not wait for thread when exiting
                 dir_watch_thread.start()
         else:
             #for linux: one watch-thread, but multiple watches. 
-            dir_watch_thread = threading.Thread(target=linux_event_handler, args=(init.logger,dir_watch_data,cond,tasks))
+            dir_watch_thread = threading.Thread(target=linux_event_handler, args=(pyas2init.logger,dir_watch_data,cond,tasks))
             dir_watch_thread.daemon = True  #do not wait for thread when exiting
             dir_watch_thread.start()
         # this main thread get the results from the watch-thread(s).
-        init.logger.info(_(u'PYAS2 send daemon started started.'))
+        pyas2init.logger.info(_(u'PYAS2 send daemon started started.'))
         active_receiving = False
         timeout = 2.0
         cond.acquire()
@@ -193,14 +193,14 @@ class Command(BaseCommand):
                         try:
                             for task in tasks:
                                 lijst = [python_executable_path,managepy_path,'sendas2message','--delete',task[0],task[1],task[2]]
-                                init.logger.info(u'Send as2 message with params "%(task)s".',{'task':lijst})
+                                pyas2init.logger.info(u'Send as2 message with params "%(task)s".',{'task':lijst})
                                 subprocess.Popen(lijst) 
                         except Exception as msg:
-                            init.logger.info(u'Error in running task: "%(msg)s".',{'msg':msg})
+                            pyas2init.logger.info(u'Error in running task: "%(msg)s".',{'msg':msg})
                         tasks.clear()
                         active_receiving = False
                     else:
-                        init.logger.debug(u'time difference to small.')
+                        pyas2init.logger.debug(u'time difference to small.')
                         last_time = current_time
         cond.release()
         sys.exit(0)

@@ -18,7 +18,7 @@ def initialize():
         pyas2_settings = settings.PYAS2
     if not gsettings:
         gsettings['environment'] = pyas2_settings.get('ENVIRONMENT','production')
-        gsettings['port'] = pyas2_settings.get('PORT', 16388)
+        gsettings['port'] = pyas2_settings.get('PORT', 8080)
         gsettings['ssl_certificate'] = pyas2_settings.get('SSLCERTIFICATE',None)
         gsettings['ssl_private_key'] = pyas2_settings.get('SSLPRIVATEKEY',None)
         gsettings['environment_text'] = pyas2_settings.get('ENVIRONMENTTEXT',' ')
@@ -37,7 +37,7 @@ def initialize():
         for sett in ['payload_receive_store', 'payload_send_store', 'mdn_receive_store', 'mdn_send_store', 'log_dir']:
             as2utils.dirshouldbethere(gsettings[sett])
         gsettings['log_level'] = pyas2_settings.get('LOGLEVEL','INFO')
-        gsettings['log_console'] = pyas2_settings.get('LOGCONSOLE',False)
+        gsettings['log_console'] = pyas2_settings.get('LOGCONSOLE',True)
         gsettings['log_console_level'] = pyas2_settings.get('LOGCONSOLELEVEL','STARTINFO')
         gsettings['max_retries'] = pyas2_settings.get('MAXRETRIES',30)
         gsettings['mdn_url'] = pyas2_settings.get('MDNURL','http://localhost:8080/pyas2/as2receive')
