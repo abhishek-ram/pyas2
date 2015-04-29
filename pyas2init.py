@@ -21,7 +21,7 @@ def initialize():
         gsettings['port'] = pyas2_settings.get('PORT', 8080)
         gsettings['ssl_certificate'] = pyas2_settings.get('SSLCERTIFICATE',None)
         gsettings['ssl_private_key'] = pyas2_settings.get('SSLPRIVATEKEY',None)
-        gsettings['environment_text'] = pyas2_settings.get('ENVIRONMENTTEXT',' ')
+        gsettings['environment_text'] = pyas2_settings.get('ENVIRONMENTTEXT','Production')
         gsettings['environment_text_color'] = pyas2_settings.get('ENVIRONMENTTEXTCOLOR','Black')
         gsettings['root_dir'] = settings.BASE_DIR
         gsettings['python_path'] = pyas2_settings.get('PYTHONPATH', sys.executable)
