@@ -4,6 +4,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from pyas2 import as2utils
 from pyas2 import pyas2init
+import pyas2
 import os 
 import traceback
 import sys
@@ -18,7 +19,7 @@ class Command(BaseCommand):
             raise ImportError(_(u'Dependency failure: cherrypy library is needed to start the as2 server'))
         cherrypy.config.update({'global': {'log.screen': False, 'log.error_file':os.path.join(pyas2init.gsettings['log_dir'],'cherrypy_error.log'),'server.environment':pyas2init.gsettings['environment']}})
         #cherrypy handling of static files
-        conf = {'/': {'tools.staticdir.on' : True,'tools.staticdir.dir' : 'static' ,'tools.staticdir.root':as2utils.join(settings.BASE_DIR,'pyas2')}}
+        conf = {'/': {'tools.staticdir.on' : True,'tools.staticdir.dir' : 'static' ,'tools.staticdir.root':os.path.dirname(pyas2.__file__)}}
         servestaticfiles = cherrypy.tree.mount(None, '/static', conf)
         #cherrypy handling of django
         servedjango = WSGIHandler()     #was: servedjango = AdminMediaHandler(WSGIHandler())  but django does not need the AdminMediaHandler in this setup. is much faster.
