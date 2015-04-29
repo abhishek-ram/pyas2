@@ -3,7 +3,7 @@ from django.utils.translation import ugettext as _
 from pyas2 import models
 from pyas2 import as2lib
 from pyas2 import as2utils
-from pyas2 import init 
+from pyas2 import pyas2init 
 from optparse import make_option
 import email.utils
 import shutil
@@ -37,7 +37,7 @@ class Command(BaseCommand):
             raise CommandError(_(u'Payload at location "%s" does not exist' % args[2]))
         if options['delete'] and not os.access(args[2],os.W_OK):
             raise CommandError('Insufficient file permission for payload %s' % args[2])
-        outdir = as2utils.join(init.gsettings['payload_send_store'],time.strftime('%Y%m%d'))    
+        outdir = as2utils.join(pyas2init.gsettings['payload_send_store'],time.strftime('%Y%m%d'))    
         as2utils.dirshouldbethere(outdir)
         outfile = as2utils.join(outdir, os.path.basename(args[2]))
         shutil.copy2(args[2], outfile)
