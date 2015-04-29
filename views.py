@@ -201,7 +201,7 @@ class sendmessage(View):
         form = self.form_class(request.POST, request.FILES)
         if form.is_valid():
             python_executable_path = pyas2init.gsettings['python_path']
-            managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
+            managepy_path = pyas2init.gsettings['managepy_path'] 
             temp = tempfile.NamedTemporaryFile(prefix=request.FILES['file'].name,delete=False)
             for chunk in request.FILES['file'].chunks():
                 temp.write(chunk)
@@ -222,7 +222,7 @@ class sendmessage(View):
 def resendmessage(request,pk,*args,**kwargs):
     orig_message = models.Message.objects.get(message_id=pk)
     python_executable_path = pyas2init.gsettings['python_path']
-    managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
+    managepy_path = pyas2init.gsettings['managepy_path'] 
     temp = tempfile.NamedTemporaryFile(prefix=orig_message.payload.name,delete=False)
     with open(orig_message.payload.file, 'rb+') as source:
         temp.write(source.read())
@@ -240,7 +240,7 @@ def resendmessage(request,pk,*args,**kwargs):
     
 def sendasyncmdn(request,*args,**kwargs):
     python_executable_path = pyas2init.gsettings['python_path']
-    managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
+    managepy_path = pyas2init.gsettings['managepy_path'] 
     lijst = [python_executable_path,managepy_path,'sendasyncmdn']
     pyas2init.logger.info(_(u'Send async MDNs started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
     try:
@@ -254,7 +254,7 @@ def sendasyncmdn(request,*args,**kwargs):
 
 def retryfailedcomms(request,*args,**kwargs):
     python_executable_path = pyas2init.gsettings['python_path']
-    managepy_path = as2utils.join(os.path.dirname(os.path.dirname(__file__)), 'manage.py')
+    managepy_path = pyas2init.gsettings['managepy_path'] 
     lijst = [python_executable_path,managepy_path,'retryfailedas2comms']
     pyas2init.logger.info(_(u'Retry Failed communications started with parameters: "%(parameters)s"'),{'parameters':str(lijst)})
     try:
