@@ -65,7 +65,7 @@ def save_message(message, raw_payload):
         if payload.get_content_type() == 'multipart/signed':
             if not message.partner.signature_key:
                 raise as2utils.as2insufficientsecurity('Partner has no signature varification key defined')
-            micalg = payload.get_param('micalg') or 'sha1'
+            micalg = payload.get_param('micalg').lower() or 'sha1'
             models.Log.objects.create(message=message, status='S', text=_(u'Message is signed, Verifying it using public key %s'%message.partner.signature_key))
             message.signed = True
             main_boundary = '--' + payload.get_boundary()
@@ -97,8 +97,8 @@ def save_message(message, raw_payload):
                         as2utils.verify_payload(as2utils.extractpayload_fromstring2(raw_payload,main_boundary),raw_sig,verify_cert, ca_cert)
                     except Exception, e:
                         raise as2utils.as2invalidsignature('Signature Verification Failed, exception message is %s'%str(e))
-            #micContent = as2utils.canonicalize2(payload)
-            micContent = as2utils.extractpayload_fromstring2(raw_payload,main_boundary)
+            micContent = as2utils.canonicalize2(payload)
+            #micContent = as2utils.extractpayload_fromstring2(raw_payload,main_boundary)
         if payload.get_content_type() == 'application/pkcs7-mime' and payload.get_param('smime-type') == 'compressed-data':
             models.Log.objects.create(message=message, status='S', text=_(u'Decompressing the payload'))
             message.compressed = True
@@ -118,7 +118,7 @@ def save_message(message, raw_payload):
         ### Saving the message mic for sending it in the MDN
         init.logger.debug("Receive mic content \n%s"%micContent)
         if micContent:
-            calcMIC = getattr(hashlib, micalg) or 'sha1'
+            calcMIC = getattr(hashlib, micalg,'sha1')
             message.mic = '%s, %s'%(calcMIC(micContent).digest().encode('base64').strip(),micalg)
         return payload
     finally:
@@ -282,7 +282,7 @@ def build_message(message):
             message.mdn_mode = 'ASYNC'
     init.logger.debug("Sender Mic content \n%s"%micContent)
     if micContent:
-        calcMIC = getattr(hashlib, message.partner.signature or 'sha1')
+        calcMIC = getattr(hashlib, message.partner.signature,'sha1')
         message.mic = calcMIC(micContent).digest().encode('base64').strip()
     as2Header.update(payload.items())
     message.headers = ''
@@ -394,7 +394,10 @@ def save_mdn(message, mdnContent):
                             else:
                                 message.status = 'S'
                                 models.Log.objects.create(message=message, status='S', text=_(u'File Transferred successfully to the partner'))
-                            run_postsend(message)
+                        else:
+                            message.status = 'S'
+                            models.Log.objects.create(message=message, status='S', text=_(u'File Transferred successfully to the partner'))
+                        run_postsend(message)
                     else:
                         raise as2utils.as2exception(_(u'Partner failed to process file. MDN status is %s'%mdn.get('Disposition')))        
         else:

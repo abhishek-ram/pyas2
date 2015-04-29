@@ -323,6 +323,7 @@ def verify_payload(msg, raw_sig, key, ca_cert):
         p7 = SMIME.load_pkcs7_bio(BIO.MemoryBuffer(sig))
         data_bio = BIO.MemoryBuffer(msg)
         signer.verify(p7, data_bio)
+        #signer.verify(p7, data_bio,SMIME.PKCS7_NOVERIFY)
     else:
         p7, data_bio = SMIME.smime_load_pkcs7_bio(BIO.MemoryBuffer(msg))
         signer.verify(p7, data_bio)

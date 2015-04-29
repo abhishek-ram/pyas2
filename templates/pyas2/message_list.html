@@ -14,8 +14,8 @@ Messages
                 <th></th>
                 <th><button class="pyas2header" type="submit" name="order" value="timestamp" >{% trans 'Timestamp' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="direction" >{% trans 'Direction' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="messageid" >{% trans 'Message ID' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="status" >{% trans 'Status' %}</button></th>
+                <th><button class="pyas2header" type="submit" name="order" value="messageid" >{% trans 'Message ID' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="organization" >{% trans 'Organization' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="partner" >{% trans 'Partner' %}</button></th>
                 <th><button class="pyas2header" type="submit" name="order" value="payload" >{% trans 'Payload' %}</button></th>
@@ -47,7 +47,6 @@ Messages
                     </div>
                 <td class="nowrap">{{row.timestamp|date:"Y-m-d H:i:s" }}</td>
                 <td class="nowrap">{{row.get_direction_display}}</td>
-                <td class="nowrap"><a href="{% url "message_detail" row.message_id %}" class="pyas2link">{{row.message_id}}</a></td>
                 <td class="nowrap">
                     {% if row.status == "S" %}
                         <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
@@ -61,6 +60,7 @@ Messages
                         <img src="{% static "images/icon-pass.gif" %}" style="width: 1em;"/>
                     {% endif %}
                 </td>
+                <td class="nowrap"><a href="{% url "message_detail" row.message_id %}" class="pyas2link">{{row.message_id}}</a></td>
                 <td class="nowrap">{{row.organization}}</td>
                 <td class="nowrap">{{row.partner}}</td>
                 <td class="nowrap">{% if row.payload %} <a target="_blank" href="{% url 'payload_view' row.message_id %}?action=this">{{row.payload}}</a>{% endif %}</td>
