@@ -18,6 +18,10 @@ Install using `pip`...
 
     pip install pyas2
 
+Create a new `django` project
+
+    django-admin.py startproject django_pyas2
+
 Add `'pyas2'` to your `INSTALLED_APPS` setting.
 
     INSTALLED_APPS = (
