@@ -6,9 +6,10 @@ Pyas2 is an AS2 server/client written in python and built on the django framewor
 
 * Python (2.6.5+, 2.7)
 * Django (1.7, 1.8)
-* m2crypto
+* m2crypto (This is dependent on openssl, which will need to be insatalled seperately in case it is absent.)
 * requests
 * pyasn1
+* cherrypy (Optional if you want to run server using management command runas2server)
 * pyinotify on *nix (Optional for using the send daemon)
 * Python for Windows extensions (pywin) for windows (Optional for using the send daemon)
 
@@ -65,7 +66,9 @@ Now that we have completed installation and configuration of pyAS2 we are ready 
 pyAS2 provides a set of management commands:
 
 To start the AS2 server, run the command `python manage.py runas2server`.
-The server will now be accessible at http://127.0.0.1:8080/pyas2/
+The server frontend will now be accessible at http://127.0.0.1:8080/pyas2/ and can be used to monitor messages and create partners, organizations ...
+
+Messages from your partners can be receieved at http://127.0.0.1:8080/pyas2/as2receive, so this is the link they need to post to for sending messages to you.
 
 To start the AS2 send daemon, run the command `python manage.py runas2daemon`.
 This daemon process monitors the outbox folder for each partner and when file is available then it triggers a file transfer to the partner.
