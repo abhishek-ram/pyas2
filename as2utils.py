@@ -299,7 +299,7 @@ def sign_payload(data, key, passphrase):
     sign = signer.sign(BIO.MemoryBuffer(data),SMIME.PKCS7_DETACHED)
     out = BIO.MemoryBuffer()
     buf = BIO.MemoryBuffer(data)
-    sign.write(out, p7, buf)
+    signer.write(out, sign, buf)
     signed_message = email.message_from_string(out.read)
     micalg = signed_message.get_param('micalg')
     for part in signed_message.get_payload():
