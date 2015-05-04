@@ -300,7 +300,7 @@ def sign_payload(data, key, passphrase):
     out = BIO.MemoryBuffer()
     buf = BIO.MemoryBuffer(data)
     signer.write(out, sign, buf)
-    signed_message = email.message_from_string(out.read)
+    signed_message = email.message_from_string(out.read())
     micalg = signed_message.get_param('micalg')
     for part in signed_message.get_payload():
         if part.get_content_type() == 'application/x-pkcs7-signature':
