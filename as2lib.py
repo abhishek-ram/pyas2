@@ -172,13 +172,14 @@ def build_mdn(message, status, **kwargs):
             mdnsigned = True
             options = message_header.get('disposition-notification-options').split(";")
             algorithm = options[1].split(",")[1].strip()
-            signed = MIMEMultipart('signed', protocol="application/pkcs7-signature", micalg='sha1')
+            signed = MIMEMultipart('signed', protocol="application/pkcs7-signature")
             signed.attach(main)
-            signature = as2utils.sign_payload(
+            micalg, signature = as2utils.sign_payload(
                     as2utils.canonicalize(as2utils.mimetostring(main, 0)+'\n'),
                     str(message.organization.signature_key.certificate.path), 
                     str(message.organization.signature_key.certificate_passphrase)
             )
+            signed.set_param('micalg',micalg)
             signed.attach(signature)
             mdnmessage = signed
         else:
@@ -254,12 +255,13 @@ def build_message(message):
     if message.partner.signature: 
         models.Log.objects.create(message=message, status='S', text=_(u'Signing the message using organzation key %s'%message.organization.signature_key))
         message.signed = True
-        multipart = MIMEMultipart('signed',protocol="application/pkcs7-signature",micalg=message.partner.signature)
+        multipart = MIMEMultipart('signed',protocol="application/pkcs7-signature")
         del multipart['MIME-Version']
         #micContent = as2utils.canonicalize2(payload)
         micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
         multipart.attach(payload)
-        signature = as2utils.sign_payload(micContent, str(message.organization.signature_key.certificate.path), str(message.organization.signature_key.certificate_passphrase))
+        micalg, signature = as2utils.sign_payload(micContent, str(message.organization.signature_key.certificate.path), str(message.organization.signature_key.certificate_passphrase))
+        multipart.set_param('micalg',micalg)
         multipart.attach(signature)
         multipart.as_string()
         content = as2utils.canonicalize(as2utils.extractpayload(multipart))
@@ -282,7 +284,7 @@ def build_message(message):
             message.mdn_mode = 'ASYNC'
     pyas2init.logger.debug("Sender Mic content \n%s"%micContent)
     if micContent:
-        calcMIC = getattr(hashlib, message.partner.signature,'sha1')
+        calcMIC = getattr(hashlib, micalg,'sha1')
         message.mic = calcMIC(micContent).digest().encode('base64').strip()
     as2Header.update(payload.items())
     message.headers = ''

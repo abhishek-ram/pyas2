@@ -293,11 +293,21 @@ def decrypt_payload(payload, key, passphrase):
 def sign_payload(data, key, passphrase):
     global key_pass
     key_pass = passphrase
-    signature = email.Message.Message()
+    #signature = email.Message.Message()
     signer = SMIME.SMIME()
     signer.load_key(key, callback=getKeyPassphrase)
     sign = signer.sign(BIO.MemoryBuffer(data),SMIME.PKCS7_DETACHED)
     out = BIO.MemoryBuffer()
+    buf = BIO.MemoryBuffer(data)
+    sign.write(out, p7, buf)
+    signed_message = email.message_from_string(out.read)
+    micalg = signed_message.get_param('micalg')
+    for part in signed_message.get_payload():
+        if part.get_content_type() == 'application/x-pkcs7-signature':
+            part.set_type('application/pkcs7-signature')
+            signature = part
+    return micalg,signature
+    '''
     sign.write(out)	
     raw_sig = out.read().replace('-----BEGIN PKCS7-----\n','').replace('-----END PKCS7-----\n', '').replace('\n', '')
     signature.set_type('application/pkcs7-signature')
@@ -308,6 +318,7 @@ def sign_payload(data, key, passphrase):
     signature.set_payload('\n'.join(raw_sig[pos:pos+76] for pos in xrange(0, len(raw_sig), 76)))
     del signature['MIME-Version']
     return signature
+    '''
 
 def verify_payload(msg, raw_sig, key, ca_cert):
     signer = SMIME.SMIME()
