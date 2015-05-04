@@ -118,8 +118,8 @@ def save_message(message, raw_payload):
         ### Saving the message mic for sending it in the MDN
         pyas2init.logger.debug("Receive mic content \n%s"%micContent)
         if micContent:
-            calcMIC = getattr(hashlib, micalg,'sha1')
-            message.mic = '%s, %s'%(calcMIC(micContent).digest().encode('base64').strip(),micalg)
+            calcMIC = getattr(hashlib, micalg.replace('-',''), hashlib.sha1)
+            message.mic = '%s, %s'%(calcMIC(micContent).digest().encode('base64').strip(), micalg)
         return payload
     finally:
         message.save()	
@@ -284,7 +284,7 @@ def build_message(message):
             message.mdn_mode = 'ASYNC'
     pyas2init.logger.debug("Sender Mic content \n%s"%micContent)
     if micContent:
-        calcMIC = getattr(hashlib, micalg,'sha1')
+        calcMIC = getattr(hashlib, micalg.replace('-',''), hashlib.sha1)
         message.mic = calcMIC(micContent).digest().encode('base64').strip()
     as2Header.update(payload.items())
     message.headers = ''
