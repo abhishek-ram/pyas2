@@ -303,7 +303,7 @@ def sign_payload(data, key, passphrase):
     signed_message = email.message_from_string(out.read())
     micalg = signed_message.get_param('micalg')
     for part in signed_message.get_payload():
-        if part.get_content_type() == 'application/x-pkcs7-signature':
+        if part.get_content_type() in ['application/pkcs7-signature','application/x-pkcs7-signature']:
             part.set_type('application/pkcs7-signature')
             signature = part
     return micalg,signature
