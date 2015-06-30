@@ -131,7 +131,7 @@ class Message(models.Model):
     signed= models.BooleanField(default=False)
     mdn = models.OneToOneField('MDN', null=True, related_name='omessage')
     mic = models.CharField(max_length=100, null=True)
-    mdn_mode = models.CharField(max_length=2, choices=MODE_CHOICES, null=True)
+    mdn_mode = models.CharField(max_length=5, choices=MODE_CHOICES, null=True)
     retries = models.IntegerField(null=True)
     def __str__(self):
         return self.message_id
