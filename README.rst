@@ -1,7 +1,7 @@
 PyAS2
 ============
 
-.. image:: https://readthedocs.org/projects/cryptography/pyas2/?version=latest
+.. image:: https://readthedocs.org/projects/pyas2/?version=latest
     :target: http://pyas2.readthedocs.org/en/latest/
     :alt: Latest Docs
 
