@@ -1,7 +1,7 @@
 PyAS2
 ============
 
-.. image:: https://readthedocs.org/projects/pyas2/?version=latest
+.. image:: https://readthedocs.org/projects/pyas2/badge/?version=latest 
     :target: http://pyas2.readthedocs.org/en/latest/
     :alt: Latest Docs
 
@@ -12,6 +12,45 @@ python library for implementing the AS2 protocol. It supports Python 2.6-2.7.
 ``PyAS2`` includes a set of django-admin commands that can be used to start the server, send files as 
 a client, send asynchronous MDNs and so on. It also has a web based front end interface for
 configuring partners and organizations, monitoring message transfers and also initiating new transfers.
+
+Features
+~~~~~~~~
+
+* Technical
+
+    * Asyncronous and syncronous MDN
+    * Partner and Organization management
+    * Digital signatures
+    * Message encryption
+    * Secure transport (SSL)
+    * Support for SSL client authentication
+    * System task to auto clear old log entries
+    * Data compression (AS2 1.1)
+    * Multinational support: Uses Django's internationalization feature
+
+* Integration
+
+    * Easy integration to existing systems, using a partner based file system interface
+    * Daemon Process picks up data from directories when it becomes available
+    * Message post processing (scripting on receipt)
+
+* Monitoring
+
+    * Web interface for transaction monitoring
+    * Email event notification
+
+* The following encryption algorithms are supported:
+
+    * Triple DES
+    * DES
+    * RC2-40
+    * AES-128
+    * AES-192
+    * AES-256
+    
+* The following hash algorithms are supported:
+
+    * SHA-1
 
 Documentation
 ~~~~~~~~~~~~~
@@ -33,6 +72,16 @@ Contribute
 #. Push to the branch: `git push origin my-new-feature`
 #. Send a pull request and bug the maintainer until it gets merged and published. :) Make sure to add yourself to AUTHORS_. 
 
+License
+~~~~~~~
+
+GNU GENERAL PUBLIC LICENSE
+                       Version 2, June 1991
+
+ Copyright (C) 1989, 1991 Free Software Foundation, Inc., <http://fsf.org/>
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
 .. _`RFC 4130`: https://www.ietf.org/rfc/rfc4130.txt
 .. _`documentation`: http://pyas2.readthedocs.org/en/latest/
 .. _`the repository`: http://github.com/abhishek-ram/pyas2
