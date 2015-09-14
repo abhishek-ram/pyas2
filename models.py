@@ -1,5 +1,7 @@
 from django.db import models
 from  django.core.files.storage import FileSystemStorage
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from pyas2 import pyas2init
 from pyas2 import as2utils
 import os
@@ -33,9 +35,6 @@ class Organization(models.Model):
     signature_key = models.ForeignKey(PrivateCertificate,related_name='sign_org',null=True, blank=True) 
     def __str__(self):
         return self.name
-    def save(self, *args, **kwargs):
-	update_dirs()
-        super(Organization,self).save(*args,**kwargs)
 
 class Partner(models.Model):
     CONTENT_TYPE_CHOICES = (
@@ -96,9 +95,6 @@ class Partner(models.Model):
     )
     def __str__(self):
         return self.name
-    def save(self, *args, **kwargs):
-        update_dirs()
-        super(Partner,self).save(*args,**kwargs)
 
 class Message(models.Model):
     DIRECTION_CHOICES = (
@@ -176,6 +172,20 @@ def getorganizations():
 
 def getpartners():
     return [DEFAULT_ENTRY]+[(l,'%s (%s)'%(l,n)) for (l,n) in Partner.objects.values_list('as2_name','name')]
+
+@receiver(post_save, sender=Organization)
+def check_odirs(sender, instance, created, **kwargs):
+    partners = Partner.objects.all()
+    for partner in partners:
+        as2utils.dirshouldbethere(as2utils.join(pyas2init.gsettings['root_dir'], 'messages', instance.as2_name, 'inbox', partner.as2_name))
+        as2utils.dirshouldbethere(as2utils.join(pyas2init.gsettings['root_dir'], 'messages', partner.as2_name, 'outbox', instance.as2_name))
+
+@receiver(post_save, sender=Partner)
+def check_pdirs(sender, instance, created, **kwargs):
+    orgs = Organization.objects.all()
+    for org in orgs:
+        as2utils.dirshouldbethere(as2utils.join(pyas2init.gsettings['root_dir'], 'messages', org.as2_name, 'inbox', instance.as2_name))
+        as2utils.dirshouldbethere(as2utils.join(pyas2init.gsettings['root_dir'], 'messages', instance.as2_name, 'outbox', org.as2_name))
 
 def update_dirs():
     partners = Partner.objects.all()

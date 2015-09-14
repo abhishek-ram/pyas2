@@ -9,7 +9,8 @@ Release History
 0.1.2 - 2014-09-07
 ~~~~~~~~~~~~~~~~~~
 
-* Added read the docs documentation
+* Created readthedocs documentation.
+* Fixed bug where inbox and outbox folders were not created on saving partners and orgs.
 
 0.1.1 - 2015-09-04
 ~~~~~~~~~~~~~~~~~~
