@@ -1,3 +1,3 @@
-Monitoring Messages & MDNs
-==========================
+Monitoring
+==========
 

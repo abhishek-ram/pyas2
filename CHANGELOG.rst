@@ -1,5 +1,5 @@
-Changelog
-=========
+Release History
+===============
 
 0.2 - `master`_
 ~~~~~~~~~~~~~~~

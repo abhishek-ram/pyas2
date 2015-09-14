@@ -39,8 +39,8 @@ The available settings along with their usage is described below:
 | ROOTDIR                | ``Django Project Path``    | Full path to the base directory for storing    | 
 |                        |                            | messages, MDNs, certificates and logs          |
 +------------------------+----------------------------+------------------------------------------------+
-| PYTHONPATH             | ``System Python Path``     | Path to the python executable, neccessary      |
-|                        |                            | with virtual environments                      |
+| PYTHONPATH             | ``System Python Path``     | Path to the python executable, required with   |
+|                        |                            | virtual environments                           |
 +------------------------+----------------------------+------------------------------------------------+
 | ENVIRONMENTTEXT        | ``None``                   | Text displayed on right of the logo. Useful    |
 |                        |                            | to indicate different environments.            |
@@ -59,11 +59,11 @@ The available settings along with their usage is described below:
 | MAXRETRIES             | 10                         | Maximum number of retries for failed outgoing  |
 |                        |                            | messages                                       |
 +------------------------+----------------------------+------------------------------------------------+
-| MDNURL                 | ``None``                   | Return url for receiving async MDNs from       |
-|                        |                            | partners, mandatory for enabling async MDNs.   |
+| MDNURL                 | ``None``                   | Return URL for receiving asynchronous MDNs from|
+|                        |                            | partners.                                      |
 +------------------------+----------------------------+------------------------------------------------+
-| ASYNCMDNWAIT           | 30                         | Maximum wait time in minutes for asyn MDNs,    | 
-|                        |                            | post which message will be marked as failed.   |
+| ASYNCMDNWAIT           | 30                         | Number of minutes to wait for asynchronous MDNs| 
+|                        |                            | after which message will be marked as failed.  |
 +------------------------+----------------------------+------------------------------------------------+
 | MAXARCHDAYS            | 30                         | Number of days files and messages are kept in  |
 |                        |                            | storage.                                       |

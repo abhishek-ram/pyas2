@@ -1,9 +1,9 @@
-Organziations
+Organizations
 =============
-Organizations in ``pyAS2`` mean the host of the pyAS2 server, i.e. it is the sender when sending messages and the 
+Organizations in ``pyAS2`` mean the host of the AS2 server, i.e. it is the sender when sending messages and the 
 receiver when receiving the messages. Organizations can be managed from the web UI at ``Configuration->Organizations``.
 The following screen lists the existing organizations and also you gives the option to create new ones. Each
-organization is characterised by the following fields:
+organization is characterized by the following fields:
 
 ==================  ==========================================  =========
 Field Name          Description                                 Mandatory

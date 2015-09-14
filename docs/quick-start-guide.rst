@@ -1,19 +1,19 @@
-Quickstart Guide
-================
+Quick-start Guide
+=================
 
-Now that we have completed installation and configuration of pyAS2, we are ready to start tranferring files.
+Now that we have completed installation and configuration of pyAS2, we are ready to start transferring files.
 
 Let's get started by sending a signed and encrypted file from one pyAS2 server ``P1`` 
-to another pyAS2 server ``P2``. Do note that these two are seperate installations of pyAS2.
+to another pyAS2 server ``P2``. Do note that these two are separate installations of pyAS2.
 
 Installing the Servers
 ----------------------
-Create a django project called ``P1`` and follow the :doc:`installation guide <installation>` 
+Create a Django project called ``P1`` and follow the :doc:`installation guide <installation>` 
 and run ``python manage.py runas2server`` to start ``P1`` at http://localhost:8080/pyas2/
 
 .. image:: images/P1_Home.png
 
-Create one more django project called ``P2`` and follow the same installations instructions, 
+Create one more Django project called ``P2`` and follow the same installations instructions, 
 however now we will need to change the pyAS2 port as ``P1`` is using the default port. 
 To do this update the port to 8081 in the :doc:`global settings <configuration>` 
 and run ``python manage.py runas2server`` to start ``P2`` at http://localhost:8081/pyas2/
@@ -23,16 +23,59 @@ and run ``python manage.py runas2server`` to start ``P2`` at http://localhost:80
 Creating the certificates
 -------------------------
 We need to generate a Public and Private key pair each for the two servers. ``P1`` uses its private key 
-to sign the message which is verified by ``P2`` using ``P1's`` publuc key. ``P1`` uses the ``P2's`` public key 
+to sign the message which is verified by ``P2`` using ``P1's`` public key. ``P1`` uses the ``P2's`` public key 
 to encrypt the message which is decrypted by ``P2`` using its private key.
 
-To generate the public and private keypair use the below commands
+To generate the public and private key pair use the below commands
 
 .. code-block:: console
 
     $ openssl req -x509 -newkey rsa:2048 -keyout P1_private.pem -out P1_public.pem -days 365 
+    Generating a 2048 bit RSA private key
+    .....+++
+    ................................................................................................+++
+    writing new private key to 'P1_private.pem'
+    Enter PEM pass phrase:
+    Verifying - Enter PEM pass phrase:
+    -----
+    You are about to be asked to enter information that will be incorporated
+    into your certificate request.
+    What you are about to enter is what is called a Distinguished Name or a DN.
+    There are quite a few fields but you can leave some blank
+    For some fields there will be a default value,
+    If you enter '.', the field will be left blank.
+    -----
+    Country Name (2 letter code) [AU]:IN
+    State or Province Name (full name) [Some-State]:Karnataka
+    Locality Name (eg, city) []:Bangalore
+    Organization Name (eg, company) [Internet Widgits Pty Ltd]:P1
+    Organizational Unit Name (eg, section) []:AS2
+    Common Name (e.g. server FQDN or YOUR name) []:p1as2
+    Email Address []:
     $ cat P1_public.pem >> P1_private.pem
+
     $ openssl req -x509 -newkey rsa:2048 -keyout P2_private.pem -out P2_public.pem -days 365
+    Generating a 2048 bit RSA private key
+    ..............................+++
+    ............................................................................................................+++
+    writing new private key to 'P2_private.pem'
+    Enter PEM pass phrase:
+    Verifying - Enter PEM pass phrase:
+    -----
+    You are about to be asked to enter information that will be incorporated
+    into your certificate request.
+    What you are about to enter is what is called a Distinguished Name or a DN.
+    There are quite a few fields but you can leave some blank
+    For some fields there will be a default value,
+    If you enter '.', the field will be left blank.
+    -----
+    Country Name (2 letter code) [AU]:IN
+    State or Province Name (full name) [Some-State]:Karnataka
+    Locality Name (eg, city) []:Bangalore
+    Organization Name (eg, company) [Internet Widgits Pty Ltd]:P2
+    Organizational Unit Name (eg, section) []:AS2
+    Common Name (e.g. server FQDN or YOUR name) []:p2as2
+    Email Address []:
     $ cat P2_public.pem >> P2_private.pem
 
 Configure P1
@@ -84,9 +127,9 @@ We are now read to send a file from ``P1`` to ``P2``, to do so follow these step
 .. image:: images/P2_SendFile.png
 
 * We can see basic information on this screen such as Partner, Organization, Message ID and MDN.
-* We can als view the MDN/Payload by clicking on the respective links.
+* We can also view the MDN and Payload by clicking on the respective links.
 
 Conclusion
 ----------
 We have successfully demonstrated the core functionality of ``pyAS2`` i.e. sending files from one system to another using
-the AS2 protocol. For a more detailed overview of all its functionlity do go through the :doc:`detailed documentation <configuration>`. 
+the AS2 protocol. For a more detailed overview of all its functionality do go through the :doc:`detailed docs<detailed-guide/index>`. 

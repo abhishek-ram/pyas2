@@ -6,12 +6,12 @@
 Welcome to ``pyAS2's`` documentation!
 =====================================
 
-``pyAS2`` is an AS2 server/client written in python and built on the django framework.
+``pyAS2`` is an AS2 server/client written in python and built on the `Django framework`_.
 The application supports AS2 version 1.2 as defined in the `RFC 4130`_. Our goal is to 
 provide a native python library for implementing the AS2 protocol. It supports Python 2.6-2.7.
 
 The application includes a server for receiving files from partners,  a front-end web interface for 
-configuraton and monitoring, a set of ``django-admin`` commands that serves as a client 
+configuration and monitoring, a set of ``django-admin`` commands that serves as a client 
 for sending messages, asynchronous MDNs and a daemon process that monitors directories 
 and sends files to partners when they are placed in the partner's watched directory.
 
@@ -20,7 +20,7 @@ Features
 
 * Technical
 
-    * Asyncronous and syncronous MDN
+    * Asynchronous and synchronous MDN
     * Partner and Organization management
     * Digital signatures
     * Message encryption
@@ -58,12 +58,12 @@ Dependencies
 ------------
 * Python (2.6.5+, 2.7+)
 * Django (1.7+)
-* m2crypto (This is dependent on openssl, which will need to be insatalled seperately in case it is absent.)
+* M2Crypto (This is dependent on `openssl`_.)
 * requests
 * pyasn1
-* cherrypy (Optional if you want to run server using management command runas2server)
-* pyinotify on \*nix (Optional for using the send daemon)
-* Python for Windows extensions (pywin) for windows (Optional for using the send daemon)
+* cherrypy 
+* pyinotify on \*nix (Optional for using the ``send daemon``)
+* Python for Windows extensions (pywin) for windows (Optional for using the ``send daemon``)
 
 
 Installation
@@ -88,3 +88,5 @@ Table of Contents:
    changelog
 
 .. _`RFC 4130`: https://www.ietf.org/rfc/rfc4130.txt
+.. _`Django framework`: https://www.djangoproject.com/
+.. _`openssl`: https://wiki.openssl.org/index.php/Compilation_and_Installation

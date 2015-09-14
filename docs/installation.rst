@@ -21,7 +21,7 @@ Add ``pyas2`` to your ``INSTALLED_APPS`` setting, ensure that ``pyas2`` is place
         'pyas2',
     )
 
-Include the pyAS2 URLconf in your project urls.py.
+Include the pyAS2 URL configuration in your project's ``urls.py``.
 
 .. code-block:: python
 
