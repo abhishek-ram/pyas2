@@ -18,7 +18,7 @@ for testing the AS2 connection with your trading partner. The steps are as follo
 
 Send Messages From the Command-Line
 -----------------------------------
-The next method for sending messages uses the ``pyAS2`` admin command ``sendas2message``. The command is invoked 
+The next method for sending messages involves the ``pyAS2`` admin command ``sendas2message``. The command is invoked 
 from the shell prompt and can be used by other applications to invoke an AS2 file transfer. The command usage is
 as follows:
 
@@ -43,9 +43,26 @@ The command also lets you set the ``--delete`` option to delete the file once it
 
 Send Messages Using the Send-Daemon
 -----------------------------------
-The last method for sending messages uses the ``pyAS2`` daemon process ``runas2daemon``. The daemon process once started in the background
-monitors the data directory and when a file is available in a partner's `outbox <data-dir.html#outbox>`__ folder then the transfer is initiated for that file. 
+The last method for sending messages involves the ``pyAS2`` admin command ``runas2daemon``. The command once started in the background
+monitors the data directory and when a file is available in a partner's `outbox <data-dir.html#outbox>`__ folder 
+then the transfer is initiated for that file. 
 
+.. code-block:: console
+
+    $ python manage.py runas2daemon
+    20150915 04:23:37 INFO     : Starting PYAS2 send daemon.
+    20150915 04:23:37 INFO     : Process exisitng files in the directory.
+    20150915 04:23:37 INFO     : PYAS2 send daemon started started.
+    20150915 04:23:37 INFO     : Watching directory /opt/pyapp/djproject/messages/MTSAS2Tst/outbox/pyas2test
+    20150915 04:23:37 INFO     : Watching directory /opt/pyapp/djproject/messages/likemindsas2/outbox/pyas2test
+
+The above example runs the admin command in the foreground, however in a production environment it should be started in the background 
+and also OS specific configuration should be added to start this process on system startup.
 
 Receive Messages
 ----------------
+In order to receive files from your trading partners they need to post the AS2 message to the URL 
+``http://{hostname}:{port}/pyas2/as2receive``. The configuration of the :doc:`Organization <organizations>`, 
+:doc:`Partner <partners>` and :doc:`Certificates <certificates>` need to be completed for successfully receiving
+messages from your trading partner. Once the message has been received it will be placed in the organizations
+`inbox <data-dir.html#inbox>`__ folder.

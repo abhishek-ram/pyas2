@@ -61,7 +61,7 @@ The payloads and MDNs in the sent or received folders are further saved under su
 
 inbox
 -----
-The inbox directory stores files receied from your partners. The path of this directory is ``{DATA DIRECTORY}/{ORG AS2 ID}/inbox/{PARTNER AS2 ID}``.
+The inbox directory stores files received from your partners. The path of this directory is ``{DATA DIRECTORY}/{ORG AS2 ID}/inbox/{PARTNER AS2 ID}``.
 We need to take this location into account when integrating ``pyAS2`` with other applications. 
 
 outbox

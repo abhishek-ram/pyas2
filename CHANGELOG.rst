@@ -11,6 +11,7 @@ Release History
 
 * Created readthedocs documentation.
 * Fixed bug where inbox and outbox folders were not created on saving partners and orgs.
+* Fixed bug where MDN search was failing for orphaned MDNs.
 
 0.1.1 - 2015-09-04
 ~~~~~~~~~~~~~~~~~~

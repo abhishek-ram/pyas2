@@ -83,15 +83,15 @@ Configure P1
 ``P1`` needs to be configured before it can start sending files, open the web UI and follow these instructions:
 
 * Navigate to ``Configuration->Private Certificates->Add private certifcate``.
-* Choose the file ``P1_private.pem`` in the **certificate** field, enter the passphrase and save the Private Certificate. 
+* Choose the file ``P1_private.pem`` in the certificate field, enter the passphrase and save the Private Certificate. 
 * Next navigate to ``Configuration->Public Certificates->Add public certifcate``.
-* Choose the file ``P2_public.pem`` in the **certificate** field and save the Public Certificate.
+* Choose the file ``P2_public.pem`` in the certificate field and save the Public Certificate.
 * Now navigate to ``Configuration->Organization->Add organization``.
-* Set **Name** to ``P1``, **As2 Name** to ``p1as2`` and set the **Signature** and **Encryption** keys to ``P1_private.pem`` and save the Organization.
+* Set Name to ``P1``, As2 Name to ``p1as2`` and set the Signature and Encryption keys to ``P1_private.pem`` and save the Organization.
 * Next navigate to ``Configuration->Partner->Add partner``.
-* Set **Name** to ``P2``, **As2 Name** to ``p2as2`` and **Target url** to ``http://localhost:8081/pyas2/as2receive``
-* Under security settings set **Encrypt Message** to ``3des``, **Sign Message** to ``SHA-1``, **Signature** and **Encryption** keys to ``P2_public.pem``.
-* Under MDN settings set **MDN mode** to ``Synchronous`` and **Request Signed MDN** to ``SHA-1``.
+* Set Name to ``P2``, As2 Name to ``p2as2`` and Target url to ``http://localhost:8081/pyas2/as2receive``
+* Under security settings set Encrypt Message to ``3des``, Sign Message to ``SHA-1``, Signature and Encryption keys to ``P2_public.pem``.
+* Under MDN settings set MDN mode to ``Synchronous`` and Request Signed MDN to ``SHA-1``.
 * Save the partner to complete the configuration.
 
 Configure P2
@@ -99,15 +99,15 @@ Configure P2
 ``P2`` needs to be configured before it can start receiving files, open the web UI and follow these instructions:
 
 * Navigate to ``Configuration->Private Certificates->Add private certifcate``.
-* Choose the file ``P2_private.pem`` in the **certificate** field, enter the passphrase and save the Private Certificate.
+* Choose the file ``P2_private.pem`` in the certificate field, enter the passphrase and save the Private Certificate.
 * Next navigate to ``Configuration->Public Certificates->Add public certifcate``.
-* Choose the file ``P1_public.pem`` in the **certificate** field and save the Public Certificate.
+* Choose the file ``P1_public.pem`` in the certificate field and save the Public Certificate.
 * Now navigate to ``Configuration->Organization->Add organization``.
-* Set **Name** to ``P2``, **As2 Name** to ``p2as2`` and set the **Signature** and **Encryption** keys to ``P2_private.pem`` and save the Organization.
+* Set Name to ``P2``, As2 Name to ``p2as2`` and set the Signature and Encryption keys to ``P2_private.pem`` and save the Organization.
 * Next navigate to ``Configuration->Partner->Add partner``.
-* Set **Name** to ``P1``, **As2 Name** to ``p1as2`` and **Target url** to ``http://localhost:8080/pyas2/as2receive``
-* Under security settings set **Encrypt Message** to ``3des``, **Sign Message** to ``SHA-1``, **Signature** and **Encryption** keys to ``P1_public.pem``.
-* Under MDN settings set **MDN mode** to ``Synchronous`` and **Request Signed MDN** to ``SHA-1``.
+* Set Name to ``P1``, As2 Name to ``p1as2`` and Target url to ``http://localhost:8080/pyas2/as2receive``
+* Under security settings set Encrypt Message to ``3des``, Sign Message to ``SHA-1``, Signature and Encryption keys to ``P1_public.pem``.
+* Under MDN settings set MDN mode to ``Synchronous`` and Request Signed MDN to ``SHA-1``.
 * Save the partner to complete the configuration.
 
 Send a File
