@@ -27,8 +27,8 @@ def initialize():
         gsettings['python_path'] = pyas2_settings.get('PYTHONPATH', sys.executable)
         gsettings['managepy_path'] = as2utils.join(settings.BASE_DIR, 'manage.py')
         gsettings['daemon_port'] = pyas2_settings.get('DAEMONPORT', 16388)
-        if pyas2_settings.get('ROOTDIR') and os.path.isdir(pyas2_settings.get('ROOTDIR')): 
-            gsettings['root_dir'] = pyas2_settings.get('ROOTDIR')
+        if pyas2_settings.get('DATADIR') and os.path.isdir(pyas2_settings.get('DATADIR')): 
+            gsettings['root_dir'] = pyas2_settings.get('DATADIR')
         gsettings['payload_receive_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'payload', 'received')
         gsettings['payload_send_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'payload', 'sent')
         gsettings['mdn_receive_store'] = as2utils.join(gsettings['root_dir'], 'messages', '__store', 'mdn', 'received')
