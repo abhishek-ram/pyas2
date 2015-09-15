@@ -1,8 +1,8 @@
 The Data Directory
 ==================
-The ``Data Directory`` is a file system directory that stores certficates, logs, archives, sent and received files. 
+The ``Data Directory`` is a file system directory that stores certificates, logs, archives, sent and received files. 
 The location of this directory is set to the ``Django`` project folder by default. We can also change this directory 
-by updating the ``ROOTDIR`` setting in the ``pyAS2`` :doc:`global settings <../configuration>`. The structure of the 
+by updating the ``DATADIR`` setting in the ``pyAS2`` :doc:`global settings <../configuration>`. The structure of the 
 directory is below:
 
 .. code-block:: console
@@ -61,6 +61,10 @@ The payloads and MDNs in the sent or received folders are further saved under su
 
 inbox
 -----
+The inbox directory stores files receied from your partners. The path of this directory is ``{DATA DIRECTORY}/{ORG AS2 ID}/inbox/{PARTNER AS2 ID}``.
+We need to take this location into account when integrating ``pyAS2`` with other applications. 
 
 outbox
 ------
+The outbox folder works in conjecture with the ``send-daemon`` process. The daemon process monitors all the outbox 
+folder and will trigger a transfer when a file becomes available. The path of this  directory is ``{DATA DIRECTORY}/{PARTNER AS2 ID}/outbox/{ORG AS2 ID}``. 

@@ -10,7 +10,7 @@ Below is a sample configuration:
         'PORT' : 8888, 
         'SSLCERTIFICATE' : '/path_to_cert/server_cert.pem', 
         'SSLPRIVATEKEY' : '/path_to_cert/server_privkey.pem',
-        'ROOTDIR' : '/path_to_datadir/data', 
+        'DATADIR' : '/path_to_datadir/data', 
         'PYTHONPATH' : '/path_to_python/python', 
         'ENVIRONMENTTEXT' : 'BETA',  
         'ENVIRONMENTTEXTCOLOR' : 'Yellow', 
@@ -36,7 +36,7 @@ The available settings along with their usage is described below:
 +------------------------+----------------------------+------------------------------------------------+
 | SSLPRIVATEKEY          | ``None``                   | Path to the SSL Private Key                    |
 +------------------------+----------------------------+------------------------------------------------+
-| ROOTDIR                | ``Django Project Path``    | Full path to the base directory for storing    | 
+| DATADIR                | ``Django Project Path``    | Full path to the base directory for storing    | 
 |                        |                            | messages, MDNs, certificates and logs          |
 +------------------------+----------------------------+------------------------------------------------+
 | PYTHONPATH             | ``System Python Path``     | Path to the python executable, required with   |

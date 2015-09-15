@@ -43,8 +43,8 @@ The command also lets you set the ``--delete`` option to delete the file once it
 
 Send Messages Using the Send-Daemon
 -----------------------------------
-The last method for sending messagess used the ``pyAS2`` daemon process ``runas2daemon``. The daemon process once started in the background
-monitors the data directory and when a file is avaialble in a partner's outbox folder then the tranfer is inititated for that file. 
+The last method for sending messages uses the ``pyAS2`` daemon process ``runas2daemon``. The daemon process once started in the background
+monitors the data directory and when a file is available in a partner's `outbox <data-dir.html#outbox>`__ folder then the transfer is initiated for that file. 
 
 
 Receive Messages
