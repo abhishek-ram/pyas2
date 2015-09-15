@@ -22,24 +22,26 @@ MDNs
             </tr>
         </thead>
         <tbody>
-        {% for row in mdn_list %}
-            <tr class="{% cycle 'row1' 'row2' %}">
-                <td class="nowrap">{{row.timestamp|date:"Y-m-d H:i:s" }}</td>
-                <td class="nowrap">{{row.get_status_display}}</td>
-                <td class="nowrap"><a href="{% url "mdn_view" row.message_id %}?action=this" target="_blank" class="pyas2link">{{row.message_id}}</a></td>
-		        <td class="nowrap"><a href="{% url "message_detail" row.omessage.message_id %}" target="_blank" class="pyas2link">{{row.omessage.message_id}}</a></td>
-                <td class="nowrap">{{row.omessage.organization}}</td>
-                <td class="nowrap">{{row.omessage.partner}}</td>
-                <td class="nowrap">{{row.omessage.get_mdn_mode_display}}</td>
-                <td class="nowrap">
-                    {% if row.signed %}
-                        <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
-                    {% else %}
-                        <img src="{% static "admin/img/icon_error.gif" %}" style="width: 1em;"/>
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
+            {% for row in mdn_list %}
+                {% if row.omessage %}
+                <tr class="{% cycle 'row1' 'row2' %}">
+                    <td class="nowrap">{{row.timestamp|date:"Y-m-d H:i:s" }}</td>
+                    <td class="nowrap">{{row.get_status_display}}</td>
+                    <td class="nowrap"><a href="{% url "mdn_view" row.message_id %}?action=this" target="_blank" class="pyas2link">{{row.message_id}}</a></td>
+                    <td class="nowrap"><a href="{% url "message_detail" row.omessage.message_id %}" target="_blank" class="pyas2link">{{row.omessage.message_id}}</a></td>
+                    <td class="nowrap">{{row.omessage.organization}}</td>
+                    <td class="nowrap">{{row.omessage.partner}}</td>
+                    <td class="nowrap">{{row.omessage.get_mdn_mode_display}}</td>
+                    <td class="nowrap">
+                        {% if row.signed %}
+                            <img src="{% static "admin/img/icon_success.gif" %}" style="width: 1em;"/>
+                        {% else %}
+                            <img src="{% static "admin/img/icon_error.gif" %}" style="width: 1em;"/>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
         </tbody>
     </table>
 </form>
