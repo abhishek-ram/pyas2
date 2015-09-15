@@ -21,7 +21,7 @@ that ``pyAS2`` sends any pending asynchronous MDN requests received from your tr
 
 Receive MDNs
 ------------
-The choice of whether or not to receive MDN and its transfer mode is with us. The `MDN Settings<partners.html#mdn-settings>`` 
+The choice of whether or not to receive MDN and its transfer mode is with us. The `MDN Settings <partners.html#mdn-settings>`__ 
 for the partner should be used to specify your preference. In case of synchronous mode ``pyAS2`` processes the received MDN 
 without any action from you. 
 
