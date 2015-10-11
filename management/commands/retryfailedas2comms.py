@@ -36,5 +36,5 @@ class Command(BaseCommand):
                 models.Log.objects.create(message=failed_msg, status='E', text = _(u'Failed to send message, error is %s' %e))
                 failed_msg.save()
                 ### Send mail here 
-                as2utils.sendpyas2errorreport(failed_msg,_(u'Failed to send message, error is %s' %e))
+                as2utils.senderrorreport(failed_msg,_(u'Failed to send message, error is %s' %e))
         pyas2init.logger.info(_(u'Successfully processed all failed outbound messages'))

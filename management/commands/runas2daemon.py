@@ -86,7 +86,7 @@ else:
             pathname=<path>/<filename> 
             wd=<int>     #the watch
         ''' 
-        def my_pyas2init(self, logger,dir_watch_data,cond,tasks):
+        def my_init(self, logger,dir_watch_data,cond,tasks):
             self.dir_watch_data = dir_watch_data
             self.cond = cond
             self.tasks = tasks

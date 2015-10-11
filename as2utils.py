@@ -18,7 +18,7 @@ key_pass = ''
 #**********************************************************/**
 #*************************Logging, Error handling********************/**
 #**********************************************************/**
-def sendpyas2errorreport(message,errortext):
+def senderrorreport(message,errortext):
     ''' Send an email in case of errors or problems with send/receive.
         Email parameters are in settings.py (EMAIL_HOST, etc).
     '''
@@ -320,10 +320,10 @@ def sign_payload(data, key, passphrase):
     return signature
     '''
 
-def verify_payload(msg, raw_sig, key, ca_cert):
+def verify_payload(msg, raw_sig, cert, ca_cert, verify_cert):
     signer = SMIME.SMIME()
     signerKey = X509.X509_Stack()
-    signerKey.push(X509.load_cert(key))
+    signerKey.push(X509.load_cert(cert))
     signer.set_x509_stack(signerKey)
     signerStore = X509.X509_Store()
     signerStore.load_info(ca_cert)
@@ -333,8 +333,10 @@ def verify_payload(msg, raw_sig, key, ca_cert):
         sig = "-----BEGIN PKCS7-----\n%s\n-----END PKCS7-----\n"%raw_sig.replace('\r\n','\n')
         p7 = SMIME.load_pkcs7_bio(BIO.MemoryBuffer(sig))
         data_bio = BIO.MemoryBuffer(msg)
-        signer.verify(p7, data_bio)
-        #signer.verify(p7, data_bio,SMIME.PKCS7_NOVERIFY)
+        if verify_cert:
+            signer.verify(p7, data_bio)
+        else:
+            signer.verify(p7, data_bio,SMIME.PKCS7_NOVERIFY)
     else:
         p7, data_bio = SMIME.smime_load_pkcs7_bio(BIO.MemoryBuffer(msg))
         signer.verify(p7, data_bio)

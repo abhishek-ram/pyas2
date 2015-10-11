@@ -42,6 +42,7 @@ def save_message(message, raw_payload):
                 payload.get_payload().encode('ascii')
             except Exception,e:			
                 payload.set_payload(payload.get_payload().encode('base64'))
+            pyas2init.logger.debug('Decrypting the payload :\n%s'%payload.get_payload())
             try:
                 decrypted_content = as2utils.decrypt_payload(
                     as2utils.mimetostring(payload,78),
@@ -64,15 +65,17 @@ def save_message(message, raw_payload):
             raise as2utils.as2insufficientsecurity('Incoming messages from AS2 partner %s are defined to be signed'%message.partner.as2_name)
         if payload.get_content_type() == 'multipart/signed':
             if not message.partner.signature_key:
-                raise as2utils.as2insufficientsecurity('Partner has no signature varification key defined')
+                raise as2utils.as2insufficientsecurity('Partner has no signature verification key defined')
             micalg = payload.get_param('micalg').lower() or 'sha1'
             models.Log.objects.create(message=message, status='S', text=_(u'Message is signed, Verifying it using public key %s'%message.partner.signature_key))
+            pyas2init.logger.debug('Verifying the signed payload:\n%s'%payload.as_string())
             message.signed = True
             main_boundary = '--' + payload.get_boundary()
-            verify_cert = str(message.partner.signature_key.certificate.path)
-            ca_cert = verify_cert
-            if message.partner.signature_key.ca_cert :
+            cert = str(message.partner.signature_key.certificate.path)
+            ca_cert = cert
+            if message.partner.signature_key.ca_cert:
                 ca_cert = str(message.partner.signature_key.ca_cert.path)
+            verify_cert = message.partner.signature_key.verify_cert    
             ### Extract the base64 encoded signature 
             for part in payload.walk():
                 if part.get_content_type() == "application/pkcs7-signature":
@@ -83,18 +86,16 @@ def save_message(message, raw_payload):
                 else:
                     payload = part
             ### Verify message using complete raw payload received from partner
-            #pyas2init.logger.debug('Received Signed Payload :\n%s'%raw_payload)
             try:
-                as2utils.verify_payload(as2utils.canonicalize2(payload),raw_sig,verify_cert, ca_cert)
-                #as2utils.verify_payload(raw_payload,None,verify_cert, ca_cert)
+                as2utils.verify_payload(as2utils.canonicalize2(payload),raw_sig,cert,ca_cert,verify_cert)
             except Exception, e:
                 ### Verify message using extracted signature and stripped message
                 try:
-                    as2utils.verify_payload(as2utils.extractpayload_fromstring1(raw_payload,main_boundary),raw_sig,verify_cert,ca_cert)
+                    as2utils.verify_payload(as2utils.extractpayload_fromstring1(raw_payload,main_boundary),raw_sig,cert,ca_cert,verify_cert)
                 except Exception, e:
                     ### Verify message using extracted signature and message without extra trailing new line
                     try:
-                        as2utils.verify_payload(as2utils.extractpayload_fromstring2(raw_payload,main_boundary),raw_sig,verify_cert, ca_cert)
+                        as2utils.verify_payload(as2utils.extractpayload_fromstring2(raw_payload,main_boundary),raw_sig,cert,ca_cert,verify_cert)
                     except Exception, e:
                         raise as2utils.as2invalidsignature('Signature Verification Failed, exception message is %s'%str(e))
             micContent = as2utils.canonicalize2(payload)
@@ -108,6 +109,7 @@ def save_message(message, raw_payload):
                 cdata = base64.b64decode(payload.get_payload())
             except Exception,e:
                 cdata = payload.get_payload()
+            pyas2init.logger.debug('Decompressing the payload:\n%s'%cdata)
             try:
                 dcontent = as2utils.decompress_payload(cdata)
                 #if not message.signed :
@@ -116,8 +118,8 @@ def save_message(message, raw_payload):
             except Exception, e:
                 raise as2utils.as2decompressionfailed('Failed to decompress message,exception message is %s' %e) 
         ### Saving the message mic for sending it in the MDN
-        pyas2init.logger.debug("Receive mic content \n%s"%micContent)
         if micContent:
+            pyas2init.logger.debug("Calcualting MIC with alg %s for content:\n%s"%(micalg,micContent))
             calcMIC = getattr(hashlib, micalg.replace('-',''), hashlib.sha1)
             message.mic = '%s, %s'%(calcMIC(micContent).digest().encode('base64').strip(), micalg)
         return payload
@@ -132,7 +134,7 @@ def build_mdn(message, status, **kwargs):
         text = _(u'The AS2 message has been processed. Thank you for exchanging AS2 messages with Pyas2.')
         if status != 'success':
             #### Send mail here
-            as2utils.sendpyas2errorreport(message, _(u'Failure in processing message from partner,\n Basic status : %s \n Advanced Status: %s'%(kwargs['adv_status'],kwargs['status_message'])))
+            as2utils.senderrorreport(message, _(u'Failure in processing message from partner,\n Basic status : %s \n Advanced Status: %s'%(kwargs['adv_status'],kwargs['status_message'])))
             text = _(u'The AS2 message could not be processed. The disposition-notification report has additional details.')
             models.Log.objects.create(message=message, status='E', text = kwargs['status_message'])
             message.status = 'E'
@@ -166,6 +168,7 @@ def build_mdn(message, status, **kwargs):
         del mdnbase['MIME-Version']
         main.attach(mdnbase)
         del main['MIME-Version']
+        pyas2init.logger.debug('MDN for message %s created:\n%s'%(message.message_id,main.as_string()))
         mdnsigned = False
         if message_header.get('disposition-notification-options') and message.organization and message.organization.signature_key: 
             models.Log.objects.create(message=message, status='S', text=_(u'Signing the MDN using private key %s'%message.organization.signature_key))
@@ -179,6 +182,7 @@ def build_mdn(message, status, **kwargs):
                     str(message.organization.signature_key.certificate.path), 
                     str(message.organization.signature_key.certificate_passphrase)
             )
+            pyas2init.logger.debug('Signature for MDN created:\n%s'%signature.as_string())
             signed.set_param('micalg',micalg)
             signed.attach(signature)
             mdnmessage = signed
@@ -252,6 +256,7 @@ def build_message(message):
         cmessage.add_header('Content-Disposition', 'attachment', filename='smime.p7z')
         cmessage.set_payload(as2utils.compress_payload(as2utils.canonicalize(as2utils.mimetostring(payload, 0))))
         content,payload = cmessage.get_payload(),cmessage
+        pyas2init.logger.debug('Compressed message %s payload as:\n%s'%(message.message_id,payload.as_string()))
     if message.partner.signature: 
         models.Log.objects.create(message=message, status='S', text=_(u'Signing the message using organzation key %s'%message.organization.signature_key))
         message.signed = True
@@ -266,6 +271,7 @@ def build_message(message):
         multipart.as_string()
         content = as2utils.canonicalize(as2utils.extractpayload(multipart))
         payload = multipart
+        pyas2init.logger.debug('Signed message %s payload as:\n%s'%(message.message_id,payload.as_string()))
     if message.partner.encryption: 
         #if not message.compressed and not message.signed:
             #micContent = as2utils.canonicalize(as2utils.mimetostring(payload, 0))
@@ -274,6 +280,7 @@ def build_message(message):
         payload = as2utils.encrypt_payload(as2utils.canonicalize(as2utils.mimetostring(payload, 0)), message.partner.encryption_key.certificate.path , message.partner.encryption)
         payload.set_type('application/pkcs7-mime')
         content = payload.get_payload()
+        pyas2init.logger.debug('Encrypted message %s payload as:\n%s'%(message.message_id,payload.as_string()))
     if message.partner.mdn:
         as2Header['disposition-notification-to'] = 'no-reply@pyas2.com' 
         if message.partner.mdn_sign:			
@@ -282,8 +289,8 @@ def build_message(message):
         if message.partner.mdn_mode == 'ASYNC':
             as2Header['receipt-delivery-option'] = pyas2init.gsettings['mdn_url']
             message.mdn_mode = 'ASYNC'
-    pyas2init.logger.debug("Sender Mic content \n%s"%micContent)
     if micContent:
+        pyas2init.logger.debug("Calcualting MIC with alg %s for content:\n%s"%(micalg,micContent))
         calcMIC = getattr(hashlib, micalg.replace('-',''), hashlib.sha1)
         message.mic = calcMIC(micContent).digest().encode('base64').strip()
     as2Header.update(payload.items())
@@ -310,7 +317,7 @@ def send_message(message, payload):
             response.raise_for_status()
         except Exception,e:
             ### Send mail here
-            as2utils.sendpyas2errorreport(message, _(u'Failure during transmission of message to partner with error "%s".\n\nTo retry transmission run the management command "retryfailedas2comms".'%e))
+            as2utils.senderrorreport(message, _(u'Failure during transmission of message to partner with error "%s".\n\nTo retry transmission run the management command "retryfailedas2comms".'%e))
             message.status = 'R'
             models.Log.objects.create(message=message, status='E', text=_(u'Message send failed with error %s'%e))
             return
@@ -325,6 +332,7 @@ def send_message(message, payload):
                 mdnContent = mdnContent + '%s: %s\n'%(key, response.headers[key])
             mdnContent = mdnContent + '\n' + response.content
             models.Log.objects.create(message=message, status='S', text=_(u'Synchronous mdn received from partner'))
+            pyas2init.logger.debug('Synchronus MDN from message %s received:\n%s'%(message.message_id,mdnContent))
             save_mdn(message, mdnContent)
         else:
             message.status = 'S'
@@ -347,10 +355,11 @@ def save_mdn(message, mdnContent):
         if mdnMessage.get_content_type() == 'multipart/signed':
             models.Log.objects.create(message=message, status='S', text=_(u'Verifying the signed MDN with partner key %s'%message.partner.signature_key))
             mdnsigned = True
-            verify_cert = str(message.partner.signature_key.certificate.path)
-            ca_cert = verify_cert
+            cert = str(message.partner.signature_key.certificate.path)
+            ca_cert = cert
             if message.partner.signature_key.ca_cert:
                 ca_cert = str(message.partner.signature_key.ca_cert.path)
+            verify_cert = message.partner.signature_key.verify_cert
             main_boundary = '--' + mdnMessage.get_boundary()
             ### Extract the mssage and signature
             for part in mdnMessage.get_payload():
@@ -365,15 +374,15 @@ def save_mdn(message, mdnContent):
                 raw_sig = sig.get_payload().encode('base64').strip()
             ### Verify the signature using raw contents
             try:
-                as2utils.verify_payload(mdnContent,None,verify_cert,ca_cert)
+                as2utils.verify_payload(mdnContent,None,cert,ca_cert,verify_cert)
             except Exception, e:
                 ### Verify the signature using extracted signature and message
                 try:
-                    as2utils.verify_payload(as2utils.extractpayload_fromstring1(mdnContent,main_boundary),raw_sig,verify_cert,ca_cert)
+                    as2utils.verify_payload(as2utils.extractpayload_fromstring1(mdnContent,main_boundary),raw_sig,cert,ca_cert,verify_cert)
                 except Exception, e:
                     ### Verify the signature using extracted signature and message without extra trailing new line in message
                     try:
-                        as2utils.verify_payload(as2utils.extractpayload_fromstring2(mdnContent,main_boundary),raw_sig,verify_cert,ca_cert)
+                        as2utils.verify_payload(as2utils.extractpayload_fromstring2(mdnContent,main_boundary),raw_sig,cert,ca_cert,verify_cert)
                     except Exception, e:
                         raise as2utils.as2exception(_(u'MDN Signature Verification Error, exception message is %s' %e))
         filename = messageId.strip('<>') + '.mdn'
@@ -382,6 +391,7 @@ def save_mdn(message, mdnContent):
         if mdnMessage.get_content_type() == 'multipart/report':
             for part in mdnMessage.walk():
                 if (part.get_content_type() == 'message/disposition-notification'):
+                    pyas2init.logger.debug('Found MDN report for message %s:\n%s'%(message.message_id,part.as_string()))
                     models.Log.objects.create(message=message, status='S', text=_(u'Checking the MDN for status of the message'))
                     mdn =  part.get_payload().pop()
                     mdnOMessageId = mdn.get('Original-Message-ID')

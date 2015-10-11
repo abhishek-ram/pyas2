@@ -1,5 +1,6 @@
 from django.db import models
-from  django.core.files.storage import FileSystemStorage
+from django.core.files.storage import FileSystemStorage
+from django.utils.translation import ugettext as _
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from pyas2 import pyas2init
@@ -16,20 +17,21 @@ upload_storage = FileSystemStorage(location=pyas2init.gsettings['root_dir'], bas
 
 class PrivateCertificate(models.Model):
     certificate = models.FileField(upload_to='certificates', storage=upload_storage)
-    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage,  verbose_name='Local CA Store', null=True, blank=True)
+    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage,  verbose_name=_('Local CA Store'), null=True, blank=True)
     certificate_passphrase = models.CharField(max_length=100)
     def __str__(self):
         return os.path.basename(self.certificate.name)
   
 class PublicCertificate(models.Model):
     certificate = models.FileField(upload_to='certificates', storage=upload_storage)
-    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage, verbose_name='Local CA Store', null=True, blank=True) 
+    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage, verbose_name=_('Local CA Store'), null=True, blank=True)
+    verify_cert = models.BooleanField(verbose_name=_('Verify Certificate'), default=True,help_text=_('Uncheck this option to disable certificate verification.'))
     def __str__(self):
         return os.path.basename(self.certificate.name)
 
 class Organization(models.Model):
-    name = models.CharField(max_length=100)
-    as2_name = models.CharField(max_length=100, primary_key=True)
+    name = models.CharField(verbose_name=_('Organization Name'),max_length=100)
+    as2_name = models.CharField(verbose_name=_('AS2 Identifier'),max_length=100, primary_key=True)
     email_address = models.EmailField(null=True, blank=True)
     encryption_key = models.ForeignKey(PrivateCertificate, related_name='enc_org', null=True, blank=True) 
     signature_key = models.ForeignKey(PrivateCertificate,related_name='sign_org',null=True, blank=True) 
@@ -58,60 +60,60 @@ class Partner(models.Model):
         ('SYNC', 'Synchronous'),
         ('ASYNC', 'Asynchronous'),
     )
-    name = models.CharField(max_length=100)
-    as2_name = models.CharField(max_length=100, primary_key=True)
+    name = models.CharField(verbose_name=_('Partner Name'),max_length=100)
+    as2_name = models.CharField(verbose_name=_('AS2 Identifier'),max_length=100, primary_key=True)
     email_address = models.EmailField(null=True, blank=True)
-    http_auth = models.BooleanField(verbose_name='Enable Authentication', default=False)
+    http_auth = models.BooleanField(verbose_name=_('Enable Authentication'), default=False)
     http_auth_user = models.CharField(max_length=100, null=True, blank=True)
     http_auth_pass = models.CharField(max_length=100, null=True, blank=True)
-    https_ca_cert = models.FileField(upload_to='certificates', verbose_name='HTTPS Local CA Store', storage=upload_storage, null=True, blank=True)
+    https_ca_cert = models.FileField(upload_to='certificates', verbose_name=_('HTTPS Local CA Store'), storage=upload_storage, null=True, blank=True)
     target_url = models.URLField()
-    subject = models.CharField(max_length=255, default='EDI Message sent using pyas2')
+    subject = models.CharField(max_length=255, default=_('EDI Message sent using pyas2'))
     content_type = models.CharField(max_length=100, choices=CONTENT_TYPE_CHOICES, default='application/edi-consent')  
-    compress = models.BooleanField(verbose_name='Compress Message', default=True)  
-    encryption = models.CharField(max_length=20, verbose_name='Encrypt Message', choices=ENCRYPT_ALG_CHOICES, null=True, blank=True)
+    compress = models.BooleanField(verbose_name=_('Compress Message'), default=True)  
+    encryption = models.CharField(max_length=20, verbose_name=_('Encrypt Message'), choices=ENCRYPT_ALG_CHOICES, null=True, blank=True)
     encryption_key = models.ForeignKey(PublicCertificate,related_name='enc_partner',null=True, blank=True)
-    signature = models.CharField(max_length=20, verbose_name='Sign Message', choices=SIGN_ALG_CHOICES, null=True, blank=True)
+    signature = models.CharField(max_length=20, verbose_name=_('Sign Message'), choices=SIGN_ALG_CHOICES, null=True, blank=True)
     signature_key = models.ForeignKey(PublicCertificate, related_name='sign_partner', null=True, blank=True)
-    mdn = models.BooleanField(verbose_name='Request MDN', default=True) 
+    mdn = models.BooleanField(verbose_name=_('Request MDN'), default=True) 
     mdn_mode = models.CharField(max_length=20, choices=MDN_TYPE_CHOICES, null=True, blank=True)
-    mdn_sign = models.CharField(max_length=20, verbose_name='Request Signed MDN', choices=SIGN_ALG_CHOICES, null=True, blank=True)
+    mdn_sign = models.CharField(max_length=20, verbose_name=_('Request Signed MDN'), choices=SIGN_ALG_CHOICES, null=True, blank=True)
     keep_filename = models.BooleanField(
-        verbose_name='Keep Original Filename', 
-        default=False, 
-        help_text='Use Original Filename to to store file on receipt, use this option only if you are sure partner sends unique names'
+        verbose_name=_('Keep Original Filename'), 
+        default=False,
+        help_text=_('Use Original Filename to to store file on receipt, use this option only if you are sure partner sends unique names')
     ) 
     cmd_send = models.TextField(
-        verbose_name='Command on Message Send', 
-        null=True, 
-        blank=True , 
-        help_text='Command executed after successful message send, replacements are $filename, $sender, $recevier, $messageid and any message header such as $Subject'
+        verbose_name=_('Command on Message Send'),
+        null=True,
+        blank=True,
+        help_text=_('Command executed after successful message send, replacements are $filename, $sender, $recevier, $messageid and any message header such as $Subject')
     )
     cmd_receive = models.TextField(
-        verbose_name='Command on Message Receipt', 
-        null=True, 
-        blank=True, 
-        help_text='Command executed after successful message receipt, replacements are $filename, $fullfilename, $sender, $recevier, $messageid and any message header such as $Subject'
+        verbose_name=_('Command on Message Receipt'),
+        null=True,
+        blank=True,
+        help_text=_('Command executed after successful message receipt, replacements are $filename, $fullfilename, $sender, $recevier, $messageid and any message header such as $Subject')
     )
     def __str__(self):
         return self.name
 
 class Message(models.Model):
     DIRECTION_CHOICES = (
-        ('IN', 'Inbound'),
-        ('OUT', 'Outbound'),
+        ('IN', _('Inbound')),
+        ('OUT', _('Outbound')),
     )
     STATUS_CHOICES = (
-        ('S', 'Success'),
-        ('E', 'Error'),
-        ('W', 'Warning'),
-        ('P', 'Pending'),
-        ('R', 'Retry'),
-        ('IP', 'In Process'),
+        ('S', _('Success')),
+        ('E', _('Error')),
+        ('W', _('Warning')),
+        ('P', _('Pending')),
+        ('R', _('Retry')),
+        ('IP', _('In Process')),
     )
     MODE_CHOICES = (
-        ('SYNC', 'Synchronous'),
-        ('ASYNC', 'Asynchronous'),
+        ('SYNC', _('Synchronous')),
+        ('ASYNC', _('Asynchronous')),
     )
     message_id = models.CharField(max_length=100, primary_key=True)
     headers = models.TextField(null=True)
@@ -141,9 +143,9 @@ class Payload(models.Model):
 
 class Log(models.Model):
     STATUS_CHOICES = (
-        ('S', 'Success'),
-        ('E', 'Error'),
-        ('W', 'Warning'),
+        ('S', _('Success')),
+        ('E', _('Error')),
+        ('W', _('Warning')),
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES)
@@ -152,9 +154,9 @@ class Log(models.Model):
 
 class MDN(models.Model):
     STATUS_CHOICES = (
-        ('S', 'Sent'),
-        ('R', 'Received'),
-        ('P', 'Pending'),
+        ('S', _('Sent')),
+        ('R', _('Received')),
+        ('P', _('Pending')),
     )
     message_id = models.CharField(max_length=100, primary_key=True)
     timestamp = models.DateTimeField(auto_now_add=True) 

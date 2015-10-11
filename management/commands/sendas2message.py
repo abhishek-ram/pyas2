@@ -49,10 +49,13 @@ class Command(BaseCommand):
             payload = as2lib.build_message(message)
             as2lib.send_message(message, payload)	
         except Exception,e:
+            txt = as2utils.txtexc()
+            reporttxt = _(u'Failed to send message, error:\n%(txt)s')%{'txt':txt}
+            pyas2init.logger.error(reporttxt)
             message.status = 'E'
             models.Log.objects.create(message=message, status='E', text = _(u'Failed to send message, error is %s' %e))
             message.save()
             ### Send mail here 
-            as2utils.sendpyas2errorreport(message,_(u'Failed to send message, error is %s' %e))
+            as2utils.senderrorreport(message,_(u'Failed to send message, error is %s' %e))
             sys.exit(2)
         sys.exit(0)

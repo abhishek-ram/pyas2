@@ -202,7 +202,7 @@ class sendmessage(View):
         if form.is_valid():
             python_executable_path = pyas2init.gsettings['python_path']
             managepy_path = pyas2init.gsettings['managepy_path'] 
-            temp = tempfile.NamedTemporaryFile(prefix=request.FILES['file'].name,delete=False)
+            temp = tempfile.NamedTemporaryFile(suffix='_%s'%request.FILES['file'].name,delete=False)
             for chunk in request.FILES['file'].chunks():
                 temp.write(chunk)
             lijst = [python_executable_path,managepy_path,'sendas2message',form.cleaned_data['organization'],form.cleaned_data['partner'], temp.name]
@@ -223,7 +223,7 @@ def resendmessage(request,pk,*args,**kwargs):
     orig_message = models.Message.objects.get(message_id=pk)
     python_executable_path = pyas2init.gsettings['python_path']
     managepy_path = pyas2init.gsettings['managepy_path'] 
-    temp = tempfile.NamedTemporaryFile(prefix=orig_message.payload.name,delete=False)
+    temp = tempfile.NamedTemporaryFile(suffix='_%s'%orig_message.payload.name,delete=False)
     with open(orig_message.payload.file, 'rb+') as source:
         temp.write(source.read())
     lijst = [python_executable_path,managepy_path,'sendas2message',orig_message.organization.as2_name,orig_message.partner.as2_name,temp.name]
@@ -300,7 +300,9 @@ def as2receive(request,*args,**kwargs):
                 as2payload = as2payload + '%s: %s\n'%(key.replace("HTTP_","").replace("_","-").lower(), request.META[key])
         as2headers = as2payload
         as2payload = as2payload + '\n' + request.read()
+        pyas2init.logger.debug('Recevied an HTTP POST from %s with payload :\n%s'%(request.META['REMOTE_ADDR'],as2payload))
         try:
+            pyas2init.logger.debug('Check payload to see if its an AS2 Message or ASYNC MDN.')
             payload = email.message_from_string(as2payload)
             mdn_message = None 
             if payload.get_content_type() == 'multipart/report':
@@ -313,20 +315,22 @@ def as2receive(request,*args,**kwargs):
                 for part in mdn_message.walk():
                     if (part.get_content_type() == 'message/disposition-notification'):
                         msg_id = part.get_payload().pop().get('Original-Message-ID')
+                pyas2init.logger.debug('Received MDN for AS2 message %s'%msg_id)
                 message = models.Message.objects.get(message_id=msg_id.strip('<>'))
                 models.Log.objects.create(message=message, status='S', text=_(u'Processing asynchronous mdn received from partner'))
-                try:	
+                try:
                     as2lib.save_mdn(message, as2payload)
                 except Exception,e:
                     message.status = 'E'
                     models.Log.objects.create(message=message, status='E', text=_(u'Failed to send message, error is %s' %e))		
                     #### Send mail here
-                    as2utils.sendpyas2errorreport(message,_(u'Failed to send message, error is %s' %e))
+                    as2utils.senderrorreport(message,_(u'Failed to send message, error is %s' %e))
                 finally:
                     message.save()    
                     return HttpResponse(_(u'AS2 ASYNC MDN has been received'))
             else:
                 try:
+                    pyas2init.logger.debug('Received an AS2 message with id %s'%payload.get('message-id'))
                     if  models.Message.objects.filter(message_id=payload.get('message-id').strip('<>')).exists():
                         message = models.Message.objects.create(message_id='%s_%s'%(payload.get('message-id').strip('<>'),payload.get('date')),direction='IN', status='IP', headers=as2headers)
                         raise as2utils.as2duplicatedocument(_(u'An identical message has already been sent to our server'))
