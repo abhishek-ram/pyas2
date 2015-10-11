@@ -68,15 +68,18 @@ your partners. The public key file will be shared by your partner. We can manage
 ``Configuration->Public Certificates``. The following screen lists all your public certificates and lets you add 
 new ones. Each ``Public Certificates`` is characterized by the following fields:
 
-==========================  ==========================================  =========
-Field Name                  Description                                 Mandatory
-==========================  ==========================================  =========
-``Certificate``             Select the **PEM** encoded [#f1]_ public    Yes
-                            key file.
-``Local CA Store``          In case the certificate has been signed by  No
-                            an unknown CA then select the CA
-                            certificate here.
-==========================  ==========================================  =========
+==================================================  ==========================================  =========
+Field Name                                          Description                                 Mandatory
+==================================================  ==========================================  =========
+``Certificate``                                     Select the **PEM** encoded [#f1]_ public    Yes
+                                                    key file.
+``Local CA Store``                                  In case the certificate has been signed by  No
+                                                    an unknown CA then select the CA
+                                                    certificate here.
+``Verify Certificate`` :sup:`New in version 0.2`    Uncheck this option to disable certificate  No
+                                                    verification at the time of signature  
+                                                    verification.            
+==================================================  ==========================================  =========
 
 .. rubric:: Footnotes
 

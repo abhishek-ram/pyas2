@@ -16,3 +16,4 @@ certificates; sending messages and MDNs; monitoring messages and MDNs; and usage
     sendreceive-mdns
     monitoring
     admin-commands
+    email-notifications
