@@ -1,7 +1,7 @@
 Configuration
 =======================
-The global settings for ``pyAS2`` are kept in a single configuration dictionary named ``PYAS2`` in the ``settings.py`` module.
-Below is a sample configuration:
+The global settings for ``pyAS2`` are kept in a single configuration dictionary named ``PYAS2`` in 
+your `project's settings.py <https://docs.djangoproject.com/en/1.8/ref/settings/>`_ module. Below is a sample configuration:
 
 .. code-block:: python
 

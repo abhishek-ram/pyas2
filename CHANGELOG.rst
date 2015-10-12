@@ -1,12 +1,20 @@
 Release History
 ===============
 
-0.2 - `master`_
+0.3 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
 
-0.1.2 - 2014-09-07
+0.2 - 2015-10-11
+~~~~~~~~~~~~~~~~
+
+* Added option to disable verification of public certificates at the time of signature verification.
+* Fixed bug in the send daemon.
+* Added debug log statements.
+* Added some internationlization to model fields.
+
+0.1.2 - 2015-09-07
 ~~~~~~~~~~~~~~~~~~
 
 * Created readthedocs documentation.

@@ -65,3 +65,35 @@ Run the following commands to complete the installation and start the server.
 The ``pyAS2`` server is now up and running, the web UI for configuration and monitoring can be accessed at 
 ``http://{hostname}:8080/pyas2/`` and the endpoint for receiving AS2 messages from your partners will be at
 ``http://{hostname}:8080/pyas2/as2receive`` 
+
+Upgrading ``pyAS2``
+-------------------
+Upgrading to the latest version of ``pyAS2`` is a straight forward procedure. We will use ``pip`` to update the 
+package to the latest version and `django's migrations <https://docs.djangoproject.com/en/1.8/topics/migrations/>`_ 
+framework to migrate the database to reflect any changes made to the models. Run the following commands to upgrade to the latest version
+
+.. code-block:: console
+
+    $ pip install -U pyas2
+    $ python manage.py makemigrations
+    Migrations for 'pyas2':
+      0012_auto_20151011_1612.py:
+        - Add field verify_cert to publiccertificate
+        - Alter field mdn_mode on message
+        - Alter field as2_name on organization
+        - Alter field name on organization
+        - Alter field as2_name on partner
+        - Alter field cmd_receive on partner
+        - Alter field cmd_send on partner
+        - Alter field https_ca_cert on partner
+        - Alter field name on partner
+        - Alter field ca_cert on privatecertificate
+        - Alter field certificate on privatecertificate
+        - Alter field ca_cert on publiccertificate
+        - Alter field certificate on publiccertificate
+    $ python manage.py migrate
+    Operations to perform:
+      Apply all migrations: admin, pyas2, contenttypes, auth, sessions
+    Running migrations:
+      Applying pyas2.0012_auto_20151011_1612... OK
+
