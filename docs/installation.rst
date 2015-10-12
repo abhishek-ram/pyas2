@@ -31,27 +31,34 @@ Run the following commands to complete the installation and start the server.
 
 .. code-block:: console
 
+    $ python manage.py makemigrations pyas2
+    Migrations for 'pyas2':
+      0001_initial.py:
+        - Create model Log
+        - Create model MDN
+        - Create model Message
+        - Create model Organization
+        - Create model Partner
+        - Create model Payload
+        - Create model PrivateCertificate
+        - Create model PublicCertificate
+        - Add field encryption_key to partner
+        - Add field signature_key to partner
+        - Add field encryption_key to organization
+        - Add field signature_key to organization
+        - Add field organization to message
+        - Add field partner to message
+        - Add field payload to message
+        - Add field message to log
     $ python manage.py migrate
     Operations to perform:
-      Synchronize unmigrated apps: pyas2
-      Apply all migrations: admin, contenttypes, auth, sessions
-    Synchronizing apps without migrations:
-      Creating tables...
-        Creating table pyas2_privatecertificate
-        Creating table pyas2_publiccertificate
-        Creating table pyas2_organization
-        Creating table pyas2_partner
-        Creating table pyas2_message
-        Creating table pyas2_payload
-        Creating table pyas2_log
-        Creating table pyas2_mdn
-      Installing custom SQL...
-      Installing indexes...
+      Apply all migrations: pyas2, admin, contenttypes, auth, sessions
     Running migrations:
       Applying contenttypes.0001_initial... OK
       Applying auth.0001_initial... OK
       Applying admin.0001_initial... OK
       Applying sessions.0001_initial... OK
+      Applying pyas2.0001_initial... DONE
     $ python manage.py createsuperuser
     Username (leave blank to use 'abhishekram'): admin
     Email address: admin@domain.com  
@@ -70,7 +77,9 @@ Upgrading ``pyAS2``
 -------------------
 Upgrading to the latest version of ``pyAS2`` is a straight forward procedure. We will use ``pip`` to update the 
 package to the latest version and `django's migrations <https://docs.djangoproject.com/en/1.8/topics/migrations/>`_ 
-framework to migrate the database to reflect any changes made to the models. Run the following commands to upgrade to the latest version
+framework to migrate the database to reflect any changes made to the models.
+
+Run the following commands to upgrade to the latest version:
 
 .. code-block:: console
 
@@ -97,3 +106,33 @@ framework to migrate the database to reflect any changes made to the models. Run
     Running migrations:
       Applying pyas2.0012_auto_20151011_1612... OK
 
+.. warning::
+    If you did not run makemigrations when you intially installed ``pyAS2`` then follow these steps to initialize migrations:
+
+    .. code-block:: console
+
+        $ python manage.py makemigrations pyas2
+        Migrations for 'pyas2':
+          0001_initial.py:
+            - Create model Log
+            - Create model MDN
+            - Create model Message
+            - Create model Organization
+            - Create model Partner
+            - Create model Payload
+            - Create model PrivateCertificate
+            - Create model PublicCertificate
+            - Add field encryption_key to partner
+            - Add field signature_key to partner
+            - Add field encryption_key to organization
+            - Add field signature_key to organization
+            - Add field organization to message
+            - Add field partner to message
+            - Add field payload to message
+            - Add field message to log
+        $ python manage.py migrate --fake-initial pyas2
+        Operations to perform:
+          Apply all migrations: pyas2
+        Running migrations:
+          Rendering model states... DONE
+          Applying pyas2.0001_initial... FAKED

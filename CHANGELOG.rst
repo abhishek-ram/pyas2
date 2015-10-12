@@ -6,6 +6,11 @@ Release History
 
 .. note:: This version is not yet released and is under active development.
 
+0.2.1 - 2015-10-12
+~~~~~~~~~~~~~~~~~~
+
+* Updated installation and upgrade documentation.
+
 0.2 - 2015-10-11
 ~~~~~~~~~~~~~~~~
 
