@@ -9,8 +9,12 @@ pyAS2
         :target: https://pypi.python.org/pypi/pyAS2
 
 .. image:: https://readthedocs.org/projects/pyas2/badge/?version=latest 
-    :target: http://pyas2.readthedocs.org/en/latest/
+    :target: http://pyas2.readthedocs.org
     :alt: Latest Docs
+
+.. image:: http://api.flattr.com/button/flattr-badge-large.png
+    :target: https://flattr.com/submit/auto?user_id=abhishekram&url=github.com/abhishek-ram&title=pyas2&language=python&tags=github&category=software
+    :alt: Flattr this git repo
 
 ``pyAS2`` is an AS2 server/client written in python and built on the django framework.
 The application supports AS2 version 1.2 as defined in the `RFC 4130`_. Our goal is to provide a native
@@ -91,7 +95,7 @@ GNU GENERAL PUBLIC LICENSE
  of this license document, but changing it is not allowed.
 
 .. _`RFC 4130`: https://www.ietf.org/rfc/rfc4130.txt
-.. _`documentation`: http://pyas2.readthedocs.org/en/latest/
+.. _`documentation`: http://pyas2.readthedocs.org
 .. _`the repository`: http://github.com/abhishek-ram/pyas2
 .. _AUTHORS: https://github.com/abhishek-ram/pyas2/blob/master/AUTHORS.rst
 .. _`issue tracker`: https://github.com/abhishek-ram/pyas2/issues
