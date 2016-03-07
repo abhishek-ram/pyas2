@@ -1,4 +1,4 @@
-{% load admin_static %}{% load url from future %}
+{% load admin_static %}
 {% load pyas2_extras %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
@@ -27,15 +27,15 @@
     </div>
     {% include "pyas2/menu.html" %}
 {% endif %}
-
 <div id="container">
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+    {% block messages %}
+        {% if messages %}
+        <ul class="messagelist">{% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+        {% endfor %}</ul>
+        {% endif %}
+    {% endblock messages %}
+    <!-- Content -->
     <div id="content" class="{% block coltype %}colM{% endblock %}">
         {% block pretitle %}{% endblock %}
         {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
@@ -46,6 +46,9 @@
         {% block sidebar %}{% endblock %}
         <br class="clear" />
     </div>
+    <!-- END Content -->
+
+    {% block footer %}<div id="footer"></div>{% endblock %}    
 </div>
 </body>
 </html>

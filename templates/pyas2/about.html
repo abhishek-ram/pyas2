@@ -8,6 +8,8 @@ Home
     <tr>
         <td>
         <h1>{% trans 'pyAS2 Global Settings' %}</h1>
+        <a target="_blank" href="http://pyas2.readthedocs.org/">{% trans 'pyAS2 documentation' %}</a><br/>
+        <a target="_blank" href="https://github.com/abhishek-ram/pyas2/issues">{% trans 'pyAS2 Issue Tracker' %}</a><br/>
         <br/>
         </td>
         <td></td>
@@ -19,7 +21,10 @@ Home
         <td>{% trans 'Last login' %}</td><td>{{ user.last_login|date:"Y-m-d G:i" }}</td>
     </tr>
     <tr>
-        <td>Environment</td><td>{{ pyas2info.environment_text }}</td>
+        <td>Environment</td><td>{{ pyas2info.environment }}</td>
+    </tr>
+    <tr>
+        <td>Port</td><td>{{ pyas2info.port }}</td>
     </tr>
     <tr>
         <td>Python Path</td><td>{{ pyas2info.python_path }}</td>
