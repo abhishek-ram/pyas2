@@ -3,12 +3,24 @@
 {% block title %}
 MDNs
 {% endblock %}
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="{% static "css/dataTables.jqueryui.min.css" %}" />
+<script src="{% static "admin/js/jquery.min.js" %}"></script>
+<script src="{% static "js/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "js/dataTables.jqueryui.min.js" %}"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#mdns').DataTable({
+            "columnDefs": [
+                { "searchable": false, "targets": [1,7] }
+            ],
+        });
+    } );
+</script>
+{% endblock %}
 {% block content %}
     <h1>MDN List</h1>
-<form action="{{ form.action }}" method="post">{% csrf_token %}
-    <input onClick="history.back()" type="button" value="{% trans 'Back' %}" />
-    {% include "pyas2/paginator.html" %}
-    <table id="pyas2table">
+    <table id="mdns">
         <thead>
             <tr>
                 <th>{% trans 'Timestamp' %}</th>
@@ -44,7 +56,6 @@ MDNs
             {% endfor %}
         </tbody>
     </table>
-</form>
 {% endblock %}
 
     

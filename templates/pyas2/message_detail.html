@@ -4,10 +4,9 @@
 Message
 {% endblock %}
 {% block content %}
-    <input onClick="history.back()" type="button" value="{% trans 'Back' %}" />
+    <h1>Details of message {{message.message_id}}</h1>
     <table>
         <tr><td>{% trans 'Timestamp' %}</td><td class="nowrap">{{message.timestamp|date:"Y-m-d H:i:s"}}</td></tr>
-        <tr><td>{% trans 'Message ID' %}</td><td class="nowrap">{{message.message_id}}</td></tr>
         <tr><td>{% trans 'Status' %}</td><td>{{message.get_status_display}}</td></tr>
         <tr><td>{% trans 'Direction' %}</td><td>{{message.get_direction_display}}</td></tr>
         <tr><td>{% trans 'Organization' %}</td><td>{{message.organization}}</td></tr>

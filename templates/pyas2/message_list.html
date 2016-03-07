@@ -3,11 +3,24 @@
 {% block title %}
 Messages
 {% endblock %}
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="{% static "css/dataTables.jqueryui.min.css" %}" />
+<script src="{% static "admin/js/jquery.min.js" %}"></script>
+<script src="{% static "js/jquery.dataTables.min.js" %}"></script>
+<script src="{% static "js/dataTables.jqueryui.min.js" %}"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#messages').DataTable({
+            "columnDefs": [
+                { "searchable": false, "targets": [0,3,7,9] }
+            ],
+        });
+    } );
+</script>
+{% endblock %}
 {% block content %}
-<form action="{{ form.action }}" method="post">{% csrf_token %}
-    <input onClick="history.back()" type="button" value="{% trans 'Back' %}" />
-    {% include "pyas2/paginator.html" %}
-    <table id="pyas2table">
+<h1>Message List</h1>
+    <table id="messages" class="display" cellspacing="0" width="100%">
         <thead>
             <tr>
                 <th></th>
@@ -62,14 +75,13 @@ Messages
                 <td class="nowrap"><a href="{% url "message_detail" row.message_id %}" class="pyas2link">{{row.message_id}}</a></td>
                 <td class="nowrap">{{row.organization}}</td>
                 <td class="nowrap">{{row.partner}}</td>
-                <td class="nowrap">{% if row.payload %} <a target="_blank" href="{% url 'payload_view' row.message_id %}?action=this">{{row.payload}}</a>{% endif %}</td>
+                <td class="nowrap">{% if row.payload %} <a target="_blank" href="{% url 'payload_view' row.message_id %}?action=this">View Payload</a>{% endif %}</td>
                 <td class="nowrap">{{row.get_mdn_mode_display}}</td>
-                <td class="nowrap">{% if row.mdn %}<a target="_blank" href="{% url 'mdn_view' row.mdn.message_id %}?action=this">{{row.mdn}}{% endif %}</td>
+                <td class="nowrap">{% if row.mdn %}<a target="_blank" href="{% url 'mdn_view' row.mdn.message_id %}?action=this">View MDN{% endif %}</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-</form>
 {% endblock %}
 
     
