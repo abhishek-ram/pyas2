@@ -1,6 +1,5 @@
 {% extends "admin/base.html" %}
 {% load i18n static %}
-{% load cycle from future %}
 {% block title %}
 Messages
 {% endblock %}
@@ -12,15 +11,15 @@ Messages
         <thead>
             <tr>
                 <th></th>
-                <th><button class="pyas2header" type="submit" name="order" value="timestamp" >{% trans 'Timestamp' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="direction" >{% trans 'Direction' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="status" >{% trans 'Status' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="messageid" >{% trans 'Message ID' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="organization" >{% trans 'Organization' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="partner" >{% trans 'Partner' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="payload" >{% trans 'Payload' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="mdn mode" >{% trans 'MDN Mode' %}</button></th>
-                <th><button class="pyas2header" type="submit" name="order" value="mdn" >{% trans 'MDN' %}</button></th>
+                <th>{% trans 'Timestamp' %}</th>
+                <th>{% trans 'Direction' %}</th>
+                <th>{% trans 'Status' %}</th>
+                <th>{% trans 'Message ID' %}</th>
+                <th>{% trans 'Organization' %}</th>
+                <th>{% trans 'Partner' %}</th>
+                <th>{% trans 'Payload' %}</th>
+                <th>{% trans 'MDN Mode' %}</th>
+                <th>{% trans 'MDN' %}</th>
             </tr>
         </thead>
         <tbody>

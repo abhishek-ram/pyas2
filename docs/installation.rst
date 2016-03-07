@@ -12,21 +12,23 @@ Create a new ``django`` project
 
     $ django-admin.py startproject django_pyas2
 
-Add ``pyas2`` to your ``INSTALLED_APPS`` setting, ensure that ``pyas2`` is placed above ``django.contrib.admin`` as we are overriding the admin templates.
+Add ``pyas2`` to your ``INSTALLED_APPS`` setting, ensure that ``pyas2`` is placed at the top of this list. 
 
 .. code-block:: python
 
     INSTALLED_APPS = (
-        ...
         'pyas2',
+        ...
     )
 
 Include the pyAS2 URL configuration in your project's ``urls.py``.
 
 .. code-block:: python
-
-  url(r'^pyas2/', include('pyas2.urls')),
   
+  from django.conf.urls import include #add only if django version >= 1.9
+  url(r'^pyas2/', include('pyas2.urls')),
+
+
 Run the following commands to complete the installation and start the server.
 
 .. code-block:: console

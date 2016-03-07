@@ -1,16 +1,17 @@
 from django.conf.urls import patterns, url
 from django.conf import settings
 from django.contrib.auth.decorators import login_required,user_passes_test
+from django.contrib.auth import views as auth_views
 from pyas2 import views
 
 staff_required = user_passes_test(lambda u: u.is_staff)
 superuser_required = user_passes_test(lambda u: u.is_superuser)
 
-urlpatterns = patterns('',
-    url(r'^login.*', 'django.contrib.auth.views.login', {'template_name': 'admin/login.html'}, name='login'),
-    url(r'^logout.*', 'django.contrib.auth.views.logout',{'next_page': 'home'}, name='logout'),
-    url(r'^password_change/$', 'django.contrib.auth.views.password_change', name='password_change'),
-    url(r'^password_change/done/$', 'django.contrib.auth.views.password_change_done',name='password_change_done'),
+urlpatterns = [
+    url(r'^login.*', auth_views.login, {'template_name': 'admin/login.html'}, name='login'),
+    url(r'^logout.*', auth_views.logout,{'next_page': 'home'}, name='logout'),
+    url(r'^password_change/$', auth_views.password_change, name='password_change'),
+    url(r'^password_change/done/$', auth_views.password_change_done,name='password_change_done'),
     url(r'^home.*', login_required(views.home, login_url='login'), name='home'),
     url(r'^msearch/$', login_required(views.MessageSearch.as_view(), login_url='login'), name='msearch'),
     url(r'^message/$', login_required(views.MessageList.as_view(), login_url='login'), name='messages'),
@@ -30,7 +31,7 @@ urlpatterns = patterns('',
     url(r'^as2receive$', views.as2receive, name="as2-receive"),
     #catch-all
     url(r'^.*', login_required(views.home, login_url='login'), name='home'),
-)
+]
 
 
 handler500 = 'pyas2.views.server_error'
