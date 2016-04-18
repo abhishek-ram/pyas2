@@ -132,8 +132,7 @@ def build_mdn(message, status, **kwargs):
         hparser = HeaderParser()
         message_header = hparser.parsestr(message.headers)
 
-        # default message
-        text = _(u'The AS2 message has been processed. Thank you for exchanging AS2 messages with Pyas2.')
+        text = str()
 
         # check for default orginization message
         if message.organization.confirmation_message:
@@ -143,7 +142,8 @@ def build_mdn(message, status, **kwargs):
         if message.partner.confirmation_message:
             text = message.partner.confirmation_message
 
-        if text == None:
+        # default message
+        if text.strip() == '':
             text = _(u'The AS2 message has been processed. Thank you for exchanging AS2 messages with Pyas2.')
 
         if status != 'success':
