@@ -31,11 +31,17 @@ class PublicCertificate(models.Model):
 
 class Organization(models.Model):
     name = models.CharField(verbose_name=_('Organization Name'),max_length=100)
-    confirmation_message = models.CharField(verbose_name=_('Confirmation Message'),max_length=300, null=True, blank=True)
     as2_name = models.CharField(verbose_name=_('AS2 Identifier'),max_length=100, primary_key=True)
     email_address = models.EmailField(null=True, blank=True)
     encryption_key = models.ForeignKey(PrivateCertificate, related_name='enc_org', null=True, blank=True) 
     signature_key = models.ForeignKey(PrivateCertificate,related_name='sign_org',null=True, blank=True) 
+    confirmation_message = models.CharField(
+        verbose_name=_('Confirmation Message'),
+        max_length=300, 
+        null=True, 
+        blank=True,
+        help_text=_('Use this field to send a customized message in the MDN Confirmations for this Organization')
+    )
     def __str__(self):
         return self.name
 
@@ -61,7 +67,13 @@ class Partner(models.Model):
         ('SYNC', 'Synchronous'),
         ('ASYNC', 'Asynchronous'),
     )
-    confirmation_message = models.CharField(verbose_name=_('Confirmation Message'),max_length=300, null=True, blank=True)
+    confirmation_message = models.CharField(
+        verbose_name=_('Confirmation Message'),
+        max_length=300, 
+        null=True, 
+        blank=True,
+        help_text=_('Use this field to send a customized message in the MDN Confirmations for this Partner')
+    )
     name = models.CharField(verbose_name=_('Partner Name'),max_length=100)
     as2_name = models.CharField(verbose_name=_('AS2 Identifier'),max_length=100, primary_key=True)
     email_address = models.EmailField(null=True, blank=True)

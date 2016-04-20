@@ -6,6 +6,11 @@ Release History
 
 .. note:: This version is not yet released and is under active development.
 
+0.2.3 - 2016-04-20
+~~~~~~~~~~~~~~~~
+
+* Added functionality to customize MDN messages at organization and partner levels.
+
 0.2.2 - 2015-10-12
 ~~~~~~~~~~~~~~~~~
 
