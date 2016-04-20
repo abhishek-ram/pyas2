@@ -31,6 +31,7 @@ class PublicCertificate(models.Model):
 
 class Organization(models.Model):
     name = models.CharField(verbose_name=_('Organization Name'),max_length=100)
+    confirmation_message = models.CharField(verbose_name=_('Confirmation Message'),max_length=300, null=True, blank=True)
     as2_name = models.CharField(verbose_name=_('AS2 Identifier'),max_length=100, primary_key=True)
     email_address = models.EmailField(null=True, blank=True)
     encryption_key = models.ForeignKey(PrivateCertificate, related_name='enc_org', null=True, blank=True) 
@@ -60,6 +61,7 @@ class Partner(models.Model):
         ('SYNC', 'Synchronous'),
         ('ASYNC', 'Asynchronous'),
     )
+    confirmation_message = models.CharField(verbose_name=_('Confirmation Message'),max_length=300, null=True, blank=True)
     name = models.CharField(verbose_name=_('Partner Name'),max_length=100)
     as2_name = models.CharField(verbose_name=_('AS2 Identifier'),max_length=100, primary_key=True)
     email_address = models.EmailField(null=True, blank=True)

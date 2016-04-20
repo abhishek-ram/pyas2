@@ -13,7 +13,7 @@ class PartnerAdmin(admin.ModelAdmin):
     list_filter = ('name','as2_name')
     fieldsets = (
         (None, {
-            'fields': ('name', 'as2_name', 'email_address','target_url','subject','content_type')
+            'fields': ('name', 'as2_name', 'email_address','target_url','subject','content_type', 'confirmation_message')
         }),
         ('Http Authentication', {
             'classes': ('collapse','wide'),

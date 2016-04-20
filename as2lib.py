@@ -131,7 +131,21 @@ def build_mdn(message, status, **kwargs):
     try:
         hparser = HeaderParser()
         message_header = hparser.parsestr(message.headers)
-        text = _(u'The AS2 message has been processed. Thank you for exchanging AS2 messages with Pyas2.')
+
+        text = str()
+
+        # check for default orginization message
+        if message.organization.confirmation_message:
+            text = message.organization.confirmation_message
+
+        # overwrite with partner specific message
+        if message.partner.confirmation_message:
+            text = message.partner.confirmation_message
+
+        # default message
+        if text.strip() == '':
+            text = _(u'The AS2 message has been processed. Thank you for exchanging AS2 messages with Pyas2.')
+
         if status != 'success':
             #### Send mail here
             as2utils.senderrorreport(message, _(u'Failure in processing message from partner,\n Basic status : %s \n Advanced Status: %s'%(kwargs['adv_status'],kwargs['status_message'])))
