@@ -294,17 +294,24 @@ def as2receive(request,*args,**kwargs):
        Checks whether its an AS2 message or an MDN and acts accordingly.
     '''
     if request.method == 'POST':
-        as2payload = ''
+        request_body = request.read()
+        # Create separate raw_payload with only message-id and content type as M2Crypto's signature
+        # verification method does not like too many header
+        raw_payload = '%s: %s\n' % ('message-id', request.META['HTTP_MESSAGE_ID'])
+        raw_payload += '%s: %s\n' % ('content-type', request.META['CONTENT_TYPE'])
+        raw_payload += '\n' + request_body
+
+        # Extract all the relevant headers from the http request
+        as2headers = ''
         for key in request.META:
             if key.startswith('HTTP') or key.startswith('CONTENT'):
-                as2payload = as2payload + '%s: %s\n'%(key.replace("HTTP_","").replace("_","-").lower(), request.META[key])
-        as2headers = as2payload
-        as2payload = as2payload + '\n' + request.read()
-        pyas2init.logger.debug('Recevied an HTTP POST from %s with payload :\n%s'%(request.META['REMOTE_ADDR'],as2payload))
+                as2headers += '%s: %s\n' % (key.replace("HTTP_", "").replace("_", "-").lower(), request.META[key])
+
+        pyas2init.logger.debug('Recevied an HTTP POST from %s with payload :\n%s'%(request.META['REMOTE_ADDR'],as2headers + '\n' + request_body))
         try:
             pyas2init.logger.debug('Check payload to see if its an AS2 Message or ASYNC MDN.')
-            payload = email.message_from_string(as2payload)
-            mdn_message = None 
+            payload = email.message_from_string(as2headers + '\n' + request_body)
+            mdn_message = None
             if payload.get_content_type() == 'multipart/report':
                 mdn_message = payload
             elif payload.get_content_type() == 'multipart/signed':
@@ -313,20 +320,20 @@ def as2receive(request,*args,**kwargs):
                         mdn_message = part
             if mdn_message:
                 for part in mdn_message.walk():
-                    if (part.get_content_type() == 'message/disposition-notification'):
+                    if part.get_content_type() == 'message/disposition-notification':
                         msg_id = part.get_payload().pop().get('Original-Message-ID')
-                pyas2init.logger.debug('Received MDN for AS2 message %s'%msg_id)
+                pyas2init.logger.debug('Asynchronous MDN received for AS2 message %s'%msg_id)
                 message = models.Message.objects.get(message_id=msg_id.strip('<>'))
                 models.Log.objects.create(message=message, status='S', text=_(u'Processing asynchronous mdn received from partner'))
                 try:
-                    as2lib.save_mdn(message, as2payload)
+                    as2lib.save_mdn(message, raw_payload)
                 except Exception,e:
                     message.status = 'E'
-                    models.Log.objects.create(message=message, status='E', text=_(u'Failed to send message, error is %s' %e))		
+                    models.Log.objects.create(message=message, status='E', text=_(u'Failed to send message, error is %s' %e))
                     #### Send mail here
                     as2utils.senderrorreport(message,_(u'Failed to send message, error is %s' %e))
                 finally:
-                    message.save()    
+                    message.save()
                     return HttpResponse(_(u'AS2 ASYNC MDN has been received'))
             else:
                 try:
@@ -334,10 +341,10 @@ def as2receive(request,*args,**kwargs):
                     if  models.Message.objects.filter(message_id=payload.get('message-id').strip('<>')).exists():
                         message = models.Message.objects.create(message_id='%s_%s'%(payload.get('message-id').strip('<>'),payload.get('date')),direction='IN', status='IP', headers=as2headers)
                         raise as2utils.as2duplicatedocument(_(u'An identical message has already been sent to our server'))
-                    message = models.Message.objects.create(message_id=payload.get('message-id').strip('<>'),direction='IN', status='IP', headers=as2headers)	
-                    payload = as2lib.save_message(message, as2payload)
+                    message = models.Message.objects.create(message_id=payload.get('message-id').strip('<>'),direction='IN', status='IP', headers=as2headers)
+                    payload = as2lib.save_message(message, payload, raw_payload)
                     outputdir = as2utils.join(pyas2init.gsettings['root_dir'], 'messages', message.organization.as2_name, 'inbox', message.partner.as2_name)
-                    storedir = pyas2init.gsettings['payload_receive_store'] 
+                    storedir = pyas2init.gsettings['payload_receive_store']
                     if message.partner.keep_filename and payload.get_filename():
                         filename = payload.get_filename()
                     else:
@@ -355,7 +362,7 @@ def as2receive(request,*args,**kwargs):
                 except as2utils.as2partnernotfound,e:
                     status, adv_status, status_message = 'error', 'unknown-trading-partner', _(u'An error occured during the AS2 message processing: %s'%e)
                 except as2utils.as2insufficientsecurity,e:
-                    status, adv_status, status_message = 'error', 'insufficient-message-security', _(u'An error occured during the AS2 message processing: %s'%e) 
+                    status, adv_status, status_message = 'error', 'insufficient-message-security', _(u'An error occured during the AS2 message processing: %s'%e)
                 except as2utils.as2decryptionfailed,e:
                     status, adv_status, status_message = 'error', 'decryption-failed', _(u'An error occured during the AS2 message processing: %s'%e)
                 except as2utils.as2decompressionfailed,e:
@@ -379,6 +386,7 @@ def as2receive(request,*args,**kwargs):
             txt = as2utils.txtexc()
             reporttxt = _(u'Fatal error while processing message %(msg)s, error:\n%(txt)s')%{'txt':txt,'msg':request.META.get('HTTP_MESSAGE_ID').strip('<>')}
             pyas2init.logger.error(reporttxt)
+            return HttpResponseServerError(reporttxt)
             #### Send mail here
             mail_managers(_(u'[pyAS2 Error Report] Fatal error%(time)s')%{'time':request.META.get('HTTP_DATE')}, reporttxt)
     elif request.method == 'GET':
