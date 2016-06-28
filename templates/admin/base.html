@@ -12,6 +12,7 @@
     {% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% static "css/rtl.css"%}{% endblock %}" />{% endif %}
     <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{{ STATIC_URL }}{% endfilter %}";</script>
     <link rel="icon" type="image/png" href="{% static "images/favicon.ico" %}"/>
+    <link rel="shortcut icon" type="image/png" href="{% static "images/favicon.ico" %}"/>
     <link rel="stylesheet" type="text/css" href="{% static "css/pyas2.css" %}" />
 </head>
 {% load i18n %}
