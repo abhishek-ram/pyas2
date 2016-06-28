@@ -15,44 +15,49 @@ import sys
 class Command(BaseCommand):
     help = _(u'Send an as2 message to your trading partner')
     args = '<organization_as2name partner_as2name path_to_payload>'
-    option_list = BaseCommand.option_list + (make_option('--delete',
-                                             action='store_true',
-                                             dest='delete',
-                                             default=False,
-                                             help=_(u'Delete source file after processing')),)
+
+    def add_arguments(self, parser):
+        parser.add_argument('organization_as2name', type=str)
+        parser.add_argument('partner_as2name', type=str)
+        parser.add_argument('path_to_payload', type=str)
+
+        parser.add_argument(
+            '--delete',
+            action='store_true',
+            dest='delete',
+            default=False,
+            help=_(u'Delete source file after processing')
+        )
 
     def handle(self, *args, **options):
-        if len(args) != 3:
-            raise CommandError(_(u'Insufficient number of arguments specified, please check help for correct usage'))
-
         # Check if organization and partner exists
         try:
-            org = models.Organization.objects.get(as2_name=args[0])
+            org = models.Organization.objects.get(as2_name=options['organization_as2name'])
         except models.Organization.DoesNotExist:
-            raise CommandError(_(u'Organization "%s" does not exist' % args[0]))
+            raise CommandError(_(u'Organization "%s" does not exist' % options['organization_as2name']))
         try:
-            partner = models.Partner.objects.get(as2_name=args[1])
+            partner = models.Partner.objects.get(as2_name=options['partner_as2name'])
         except models.Partner.DoesNotExist:
-            raise CommandError(_(u'Partner "%s" does not exist' % args[1]))
+            raise CommandError(_(u'Partner "%s" does not exist' % options['partner_as2name']))
 
         # Check if file exists and we have the right permissions
-        if not os.path.isfile(args[2]):
-            raise CommandError(_(u'Payload at location "%s" does not exist' % args[2]))
-        if options['delete'] and not os.access(args[2], os.W_OK):
-            raise CommandError('Insufficient file permission for payload %s' % args[2])
+        if not os.path.isfile(options['path_to_payload']):
+            raise CommandError(_(u'Payload at location "%s" does not exist' % options['path_to_payload']))
+        if options['delete'] and not os.access(options['path_to_payload'], os.W_OK):
+            raise CommandError('Insufficient file permission for payload %s' % options['path_to_payload'])
 
         # Copy the file to the store
         output_dir = as2utils.join(pyas2init.gsettings['payload_send_store'], time.strftime('%Y%m%d'))
         as2utils.dirshouldbethere(output_dir)
-        outfile = as2utils.join(output_dir, os.path.basename(args[2]))
-        shutil.copy2(args[2], outfile)
+        outfile = as2utils.join(output_dir, os.path.basename(options['path_to_payload']))
+        shutil.copy2(options['path_to_payload'], outfile)
 
         # Delete original file if option is set
         if options['delete']:
-            os.remove(args[2])
+            os.remove(options['path_to_payload'])
 
         # Create the payload and message objects
-        payload = models.Payload.objects.create(name=os.path.basename(args[2]),
+        payload = models.Payload.objects.create(name=os.path.basename(options['path_to_payload']),
                                                 file=outfile,
                                                 content_type=partner.content_type)
         message = models.Message.objects.create(message_id=email.utils.make_msgid().strip('<>'),

@@ -222,13 +222,14 @@ class SendMessage(View):
             managepy_path = pyas2init.gsettings['managepy_path']
 
             # Save uploaded file to a temporary location
-            temp = tempfile.NamedTemporaryFile(suffix='_%s' % request.FILES['file'].name,delete=False)
+            temp = tempfile.NamedTemporaryFile(suffix='_%s' % request.FILES['file'].name, delete=False)
             for chunk in request.FILES['file'].chunks():
                 temp.write(chunk)
             lijst = [
                 python_executable_path,
                 managepy_path,
                 'sendas2message',
+                '--delete',
                 form.cleaned_data['organization'],
                 form.cleaned_data['partner'],
                 temp.name
@@ -417,7 +418,6 @@ def as2receive(request, *args, **kwargs):
                     return HttpResponseServerError(_(u'Unknown AS2 MDN received. Will not be processed'))
 
                 except Exception, e:
-                    print traceback.format_exc()
                     message.status = 'E'
                     models.Log.objects.create(message=message,
                                               status='E',
