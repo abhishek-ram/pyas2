@@ -370,7 +370,7 @@ class AS2SendReceiveTest(TestCase):
                                                 signature_key=self.server_crt,
                                                 mdn=True)
 
-        # Setup the message object and buid the message
+        # Setup the message object and build the message
         message_id = emailutils.make_msgid().strip('<>')
         in_message, response = self.buildSendMessage(message_id, partner)
 
@@ -515,12 +515,10 @@ class AS2SendReceiveTest(TestCase):
         # AS2SendReceiveTest.printLogs(in_message)
         self.assertEqual(in_message.status, 'S')
 
-
-
     def buildSendMessage(self, message_id, partner):
         """ Function builds the message and posts the request. """
 
-        message = models.Message.objects.create(message_id='%s_IN'%message_id,
+        message = models.Message.objects.create(message_id='%s_IN' % message_id,
                                                 partner=partner,
                                                 organization=self.organization,
                                                 direction='OUT',
@@ -558,9 +556,9 @@ class AS2SendReceiveTest(TestCase):
             print (log.status, log.text)
 
     @staticmethod
-    def compareFiles(filename1,filename2):
+    def compareFiles(filename1, filename2):
         with open(filename1, "rtU") as a:
-            with open(filename1, "rtU") as b:
+            with open(filename2, "rtU") as b:
                 # Note that "all" and "izip" are lazy
                 # (will stop at the first line that's not identical)
                 return all(lineA == lineB for lineA, lineB in izip(a.xreadlines(), b.xreadlines()))
