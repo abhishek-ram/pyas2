@@ -32,3 +32,8 @@ retryfailedas2comms
 -------------------
 The ``retryfailedas2comms`` command checks for any messages that have been set for retries and then retriggers the transfer 
 for these messages. The command does not take any arguments and should be run on a repeating schedule.
+
+cleanas2server
+--------------
+The ``cleanas2server`` command is a maintenance command and it deletes all DB objects, logs and files older that the ``MAXARCHDAYS``
+setting. It is recommended to run this command once a day using cron or windows scheduler.
