@@ -54,7 +54,6 @@ class MessageList(ListView):
     """Generic List view, displays list of messages in the system"""
 
     model = models.Message
-    paginate_by = 25
 
     def get_queryset(self):
         if self.request.GET:
@@ -139,7 +138,6 @@ class PayloadView(View):
 
 class MDNList(ListView):
     model = models.MDN
-    paginate_by = 25
 
     def get_queryset(self):
         if self.request.GET:
@@ -152,7 +150,9 @@ class MDNList(ListView):
                             query_string['timestamp__gte'] = param[1]
                         elif param[0] in ['status', 'message_id']:
                             query_string[param[0]] = param[1]
-                        elif param[0] in ['omessage_id', 'mdn_mode']:
+                        elif param[0] == 'omessage_id':
+                            query_string['omessage__message_id'] = param[1]
+                        elif param[0] in ['mdn_mode']:
                             query_string['omessage__'+param[0]] = param[1]
                         elif param[0] in ['organization', 'partner']:
                             query_string['omessage__'+param[0]+'__as2_name'] = param[1]

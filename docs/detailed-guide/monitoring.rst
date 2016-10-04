@@ -33,7 +33,7 @@ Field Name          Description
 Search MDNs
 -----------
 ``pyAS2`` also lets you search for MDNs for messages based on a number of criteria. The search screen can be 
-accessed at ``Messages->MDNs``. The following filter criteria are available:
+accessed at ``Messages->Search MDNs``. The following filter criteria are available:
 
 ==========================  ==========================================================================
 Field Name                  Description

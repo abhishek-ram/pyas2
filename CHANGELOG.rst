@@ -1,10 +1,23 @@
 Release History
 ===============
 
-0.3 - `master`_
+0.4 - `master`_
 ~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+0.3.1 - 2016-10-03
+~~~~~~~~~~~~~~~~
+
+* Fixed pagination issue where it was showing only 25 messages and mdns.
+* Added the admin command cleanas2server for deleting old data and logs.
+
+0.3.0 - 2016-06-28
+~~~~~~~~~~~~~~~~
+
+* Added django test cases for testing each of the permutations as defined in RFC 4130 Section 2.4.2
+* Code now follows the pep-8 standard
+* Django admin commands now use argparse instead or optparse
 
 0.2.3 - 2016-04-20
 ~~~~~~~~~~~~~~~~

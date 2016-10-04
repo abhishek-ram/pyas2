@@ -13,7 +13,7 @@
                 <li><a href="{% url "messages" %}?direction=IN" >{% trans 'Inbound Messages' %}</a></li>
                 <li><a href="{% url "messages" %}?direction=OUT" >{% trans 'Outbound Messages' %}</a></li>
                 <li><a href="{% url "msearch" %}" >{% trans 'Search Messages' %}</a></li>
-                <li><a href="{% url "mdnsearch" %}" >{% trans 'MDNs' %}</a></li>
+                <li><a href="{% url "mdnsearch" %}" >{% trans 'Search MDNs' %}</a></li>
         </ul>
         {% if user.is_staff %}
         <ul>

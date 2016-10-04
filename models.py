@@ -163,7 +163,8 @@ class Message(models.Model):
     adv_status = models.CharField(max_length=255, null=True)
     organization = models.ForeignKey(Organization, null=True)
     partner = models.ForeignKey(Partner, null=True)
-    payload = models.OneToOneField('Payload', null=True, related_name='message')
+    payload = models.OneToOneField(
+        'Payload', null=True, related_name='message')
     compressed = models.BooleanField(default=False)
     encrypted = models.BooleanField(default=False)
     signed = models.BooleanField(default=False)
@@ -193,7 +194,7 @@ class Log(models.Model):
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES)
-    message = models.ForeignKey(Message)
+    message = models.ForeignKey(Message, related_name='logs')
     text = models.CharField(max_length=255)
 
 
