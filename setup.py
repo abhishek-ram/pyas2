@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='pyAS2',
-    version='0.3.dev2',
+    version='0.3.1',
     packages=['pyas2'],
     include_package_data=True,
     license='GNU GPL v2.0',  # example license
