@@ -1,0 +1,321 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Send &amp; Receive Messages &mdash; pyAS2 0.2.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="pyAS2 0.2.1 documentation" href="../index.html"/>
+        <link rel="up" title="Detailed Guide" href="index.html"/>
+        <link rel="next" title="Send &amp; Receive MDNs" href="sendreceive-mdns.html"/>
+        <link rel="prev" title="The Data Directory" href="data-dir.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> pyAS2
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#upgrading-pyas2">Upgrading <tt class="docutils literal"><span class="pre">pyAS2</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start-guide.html">Quick-start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#installing-the-servers">Installing the Servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#creating-the-certificates">Creating the certificates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#configure-p1">Configure P1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#configure-p2">Configure P2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#send-a-file">Send a File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Detailed Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="organizations.html">Organizations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="partners.html">Partners</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#general-settings">General Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#authentication-settings">Authentication Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#security-settings">Security Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#mdn-settings">MDN Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#advanced-settings">Advanced Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="certificates.html">Certificates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="certificates.html#generating-certificates">Generating Certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="certificates.html#private-certificates">Private Certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="certificates.html#public-certificates">Public Certificates</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data-dir.html">The Data Directory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#certificates">certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#logging">logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#store">__store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#inbox">inbox</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#outbox">outbox</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Send &amp; Receive Messages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#send-messages-from-the-web-ui">Send Messages From the Web UI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#send-messages-from-the-command-line">Send Messages From the Command-Line</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#send-messages-using-the-send-daemon">Send Messages Using the Send-Daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#receive-messages">Receive Messages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sendreceive-mdns.html">Send &amp; Receive MDNs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-mdns.html#send-mdns">Send MDNs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-mdns.html#receive-mdns">Receive MDNs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="monitoring.html">Monitoring</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="monitoring.html#list-messages">List Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="monitoring.html#search-messages">Search Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="monitoring.html#search-mdns">Search MDNs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="admin-commands.html">Admin Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#runas2server">runas2server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#runas2daemon">runas2daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#sendas2message">sendas2message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#sendasyncmdn">sendasyncmdn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#retryfailedas2comms">retryfailedas2comms</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="email-notifications.html">Email Notifications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#master">0.3 - master</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id1">0.2 - 2015-10-11</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id2">0.1.2 - 2015-09-07</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id3">0.1.1 - 2015-09-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id4">0.1 - 2015-04-29</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">pyAS2</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Detailed Guide</a> &raquo;</li>
+      
+    <li>Send &amp; Receive Messages</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/detailed-guide/sendreceive-messages.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="send-receive-messages">
+<h1>Send &amp; Receive Messages<a class="headerlink" href="#send-receive-messages" title="Permalink to this headline">¶</a></h1>
+<p>We have so far covered all the topics related to configuration of the <tt class="docutils literal"><span class="pre">pyAS2</span></tt> server. Now we will see how
+to use these configurations to send messages to your trading partners using the AS2 protocol. We can send files
+using any of the following techniques:</p>
+<div class="section" id="send-messages-from-the-web-ui">
+<h2>Send Messages From the Web UI<a class="headerlink" href="#send-messages-from-the-web-ui" title="Permalink to this headline">¶</a></h2>
+<p>The simplest method for sending messages to your trading partner is by using the Web UI. This method is generally used
+for testing the AS2 connection with your trading partner. The steps are as follows:</p>
+<ul class="simple">
+<li>Navigate to <tt class="docutils literal"><span class="pre">Run-&gt;Send</span> <span class="pre">Message</span></tt>.</li>
+<li>Select the sender(Organization), the receiver(Partner) and choose the file to be transmitted.</li>
+<li>Click on <tt class="docutils literal"><span class="pre">Send</span> <span class="pre">File</span></tt> to initiate the file transfer and monitor the transfers at <tt class="docutils literal"><span class="pre">Messages-&gt;Outbound</span> <span class="pre">Messages</span></tt>.</li>
+</ul>
+<img alt="../_images/SendFile1.png" src="../_images/SendFile1.png" />
+<img alt="../_images/SendFile2.png" src="../_images/SendFile2.png" />
+</div>
+<div class="section" id="send-messages-from-the-command-line">
+<h2>Send Messages From the Command-Line<a class="headerlink" href="#send-messages-from-the-command-line" title="Permalink to this headline">¶</a></h2>
+<p>The next method for sending messages involves the <tt class="docutils literal"><span class="pre">pyAS2</span></tt> admin command <tt class="docutils literal"><span class="pre">sendas2message</span></tt>. The command is invoked
+from the shell prompt and can be used by other applications to invoke an AS2 file transfer. The command usage is
+as follows:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> python manage.py sendas2message --help
+<span class="go">Usage: python manage.py sendas2message [options] &lt;organization_as2name partner_as2name path_to_payload&gt;</span>
+
+<span class="go">Send an as2 message to your trading partner</span>
+
+<span class="go">Options:</span>
+<span class="go">  --delete              Delete source file after processing</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+</pre></div>
+</div>
+<p>The mandatory arguments to be passed to the command include <tt class="docutils literal"><span class="pre">organization_as2name</span></tt> i.e. the AS2 Identifier of this organization,
+<tt class="docutils literal"><span class="pre">partner_as2name</span></tt> i.e. the AS2 Identifier of your trading partner and <tt class="docutils literal"><span class="pre">path_to_payload</span></tt> the full path to the file to be transmitted.
+The command also lets you set the <tt class="docutils literal"><span class="pre">--delete</span></tt> option to delete the file once it is begins the transfer. A sample usage of the command:</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> python manage.py sendas2message p1as2 p2as2 /Users/abhishekram/Downloads/updateInvoice.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="send-messages-using-the-send-daemon">
+<h2>Send Messages Using the Send-Daemon<a class="headerlink" href="#send-messages-using-the-send-daemon" title="Permalink to this headline">¶</a></h2>
+<p>The last method for sending messages involves the <tt class="docutils literal"><span class="pre">pyAS2</span></tt> admin command <tt class="docutils literal"><span class="pre">runas2daemon</span></tt>. The command once started in the background
+monitors the data directory and when a file is available in a partner&#8217;s <a class="reference external" href="data-dir.html#outbox">outbox</a> folder
+then the transfer is initiated for that file.</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> python manage.py runas2daemon
+<span class="go">20150915 04:23:37 INFO     : Starting PYAS2 send daemon.</span>
+<span class="go">20150915 04:23:37 INFO     : Process exisitng files in the directory.</span>
+<span class="go">20150915 04:23:37 INFO     : PYAS2 send daemon started started.</span>
+<span class="go">20150915 04:23:37 INFO     : Watching directory /opt/pyapp/djproject/messages/MTSAS2Tst/outbox/pyas2test</span>
+<span class="go">20150915 04:23:37 INFO     : Watching directory /opt/pyapp/djproject/messages/likemindsas2/outbox/pyas2test</span>
+</pre></div>
+</div>
+<p>The above example runs the admin command in the foreground, however in a production environment it should be started in the background
+and also OS specific configuration should be added to start this process on system startup.</p>
+</div>
+<div class="section" id="receive-messages">
+<h2>Receive Messages<a class="headerlink" href="#receive-messages" title="Permalink to this headline">¶</a></h2>
+<p>In order to receive files from your trading partners they need to post the AS2 message to the URL
+<tt class="docutils literal"><span class="pre">http://{hostname}:{port}/pyas2/as2receive</span></tt>. The configuration of the <a class="reference internal" href="organizations.html"><em>Organization</em></a>,
+<a class="reference internal" href="partners.html"><em>Partner</em></a> and <a class="reference internal" href="certificates.html"><em>Certificates</em></a> need to be completed for successfully receiving
+messages from your trading partner. Once the message has been received it will be placed in the organizations
+<a class="reference external" href="data-dir.html#inbox">inbox</a> folder.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="sendreceive-mdns.html" class="btn btn-neutral float-right" title="Send &amp; Receive MDNs" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="data-dir.html" class="btn btn-neutral" title="The Data Directory" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Abhishek Ram.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

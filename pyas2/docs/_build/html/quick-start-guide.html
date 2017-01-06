@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Quick-start Guide &mdash; pyAS2 0.2.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="pyAS2 0.2.1 documentation" href="index.html"/>
+        <link rel="next" title="Detailed Guide" href="detailed-guide/index.html"/>
+        <link rel="prev" title="Configuration" href="configuration.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="index.html" class="icon icon-home"> pyAS2
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#upgrading-pyas2">Upgrading <tt class="docutils literal"><span class="pre">pyAS2</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Quick-start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installing-the-servers">Installing the Servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-the-certificates">Creating the certificates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-p1">Configure P1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configure-p2">Configure P2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#send-a-file">Send a File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="detailed-guide/index.html">Detailed Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="detailed-guide/organizations.html">Organizations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="detailed-guide/partners.html">Partners</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/partners.html#general-settings">General Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/partners.html#authentication-settings">Authentication Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/partners.html#security-settings">Security Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/partners.html#mdn-settings">MDN Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/partners.html#advanced-settings">Advanced Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="detailed-guide/certificates.html">Certificates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/certificates.html#generating-certificates">Generating Certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/certificates.html#private-certificates">Private Certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/certificates.html#public-certificates">Public Certificates</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="detailed-guide/data-dir.html">The Data Directory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/data-dir.html#certificates">certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/data-dir.html#logging">logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/data-dir.html#store">__store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/data-dir.html#inbox">inbox</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/data-dir.html#outbox">outbox</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="detailed-guide/sendreceive-messages.html">Send &amp; Receive Messages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/sendreceive-messages.html#send-messages-from-the-web-ui">Send Messages From the Web UI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/sendreceive-messages.html#send-messages-from-the-command-line">Send Messages From the Command-Line</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/sendreceive-messages.html#send-messages-using-the-send-daemon">Send Messages Using the Send-Daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/sendreceive-messages.html#receive-messages">Receive Messages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="detailed-guide/sendreceive-mdns.html">Send &amp; Receive MDNs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/sendreceive-mdns.html#send-mdns">Send MDNs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/sendreceive-mdns.html#receive-mdns">Receive MDNs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="detailed-guide/monitoring.html">Monitoring</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/monitoring.html#list-messages">List Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/monitoring.html#search-messages">Search Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/monitoring.html#search-mdns">Search MDNs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="detailed-guide/admin-commands.html">Admin Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/admin-commands.html#runas2server">runas2server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/admin-commands.html#runas2daemon">runas2daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/admin-commands.html#sendas2message">sendas2message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/admin-commands.html#sendasyncmdn">sendasyncmdn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="detailed-guide/admin-commands.html#retryfailedas2comms">retryfailedas2comms</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="detailed-guide/email-notifications.html">Email Notifications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#master">0.3 - master</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#id1">0.2 - 2015-10-11</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#id2">0.1.2 - 2015-09-07</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#id3">0.1.1 - 2015-09-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#id4">0.1 - 2015-04-29</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">pyAS2</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Quick-start Guide</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/quick-start-guide.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="quick-start-guide">
+<h1>Quick-start Guide<a class="headerlink" href="#quick-start-guide" title="Permalink to this headline">¶</a></h1>
+<p>Now that we have completed installation and configuration of pyAS2, we are ready to start transferring files.</p>
+<p>Let&#8217;s get started by sending a signed and encrypted file from one pyAS2 server <tt class="docutils literal"><span class="pre">P1</span></tt>
+to another pyAS2 server <tt class="docutils literal"><span class="pre">P2</span></tt>. Do note that these two are separate installations of pyAS2.</p>
+<div class="section" id="installing-the-servers">
+<h2>Installing the Servers<a class="headerlink" href="#installing-the-servers" title="Permalink to this headline">¶</a></h2>
+<p>Create a Django project called <tt class="docutils literal"><span class="pre">P1</span></tt> and follow the <a class="reference internal" href="installation.html"><em>installation guide</em></a>
+and run <tt class="docutils literal"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">runas2server</span></tt> to start <tt class="docutils literal"><span class="pre">P1</span></tt> at <a class="reference external" href="http://localhost:8080/pyas2/">http://localhost:8080/pyas2/</a></p>
+<img alt="_images/P1_Home.png" src="_images/P1_Home.png" />
+<p>Create one more Django project called <tt class="docutils literal"><span class="pre">P2</span></tt> and follow the same installations instructions,
+however now we will need to change the pyAS2 port as <tt class="docutils literal"><span class="pre">P1</span></tt> is using the default port.
+To do this update the port to 8081 in the <a class="reference internal" href="configuration.html"><em>global settings</em></a>
+and run <tt class="docutils literal"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">runas2server</span></tt> to start <tt class="docutils literal"><span class="pre">P2</span></tt> at <a class="reference external" href="http://localhost:8081/pyas2/">http://localhost:8081/pyas2/</a></p>
+<img alt="_images/P2_Home.png" src="_images/P2_Home.png" />
+</div>
+<div class="section" id="creating-the-certificates">
+<h2>Creating the certificates<a class="headerlink" href="#creating-the-certificates" title="Permalink to this headline">¶</a></h2>
+<p>We need to generate a Public and Private key pair each for the two servers. <tt class="docutils literal"><span class="pre">P1</span></tt> uses its private key
+to sign the message which is verified by <tt class="docutils literal"><span class="pre">P2</span></tt> using <tt class="docutils literal"><span class="pre">P1's</span></tt> public key. <tt class="docutils literal"><span class="pre">P1</span></tt> uses the <tt class="docutils literal"><span class="pre">P2's</span></tt> public key
+to encrypt the message which is decrypted by <tt class="docutils literal"><span class="pre">P2</span></tt> using its private key.</p>
+<p>To generate the public and private key pair use the below commands</p>
+<div class="highlight-console"><div class="highlight"><pre><span class="gp">$</span> openssl req -x509 -newkey rsa:2048 -keyout P1_private.pem -out P1_public.pem -days 365
+<span class="go">Generating a 2048 bit RSA private key</span>
+<span class="go">.....+++</span>
+<span class="go">................................................................................................+++</span>
+<span class="go">writing new private key to &#39;P1_private.pem&#39;</span>
+<span class="go">Enter PEM pass phrase:</span>
+<span class="go">Verifying - Enter PEM pass phrase:</span>
+<span class="go">-----</span>
+<span class="go">You are about to be asked to enter information that will be incorporated</span>
+<span class="go">into your certificate request.</span>
+<span class="go">What you are about to enter is what is called a Distinguished Name or a DN.</span>
+<span class="go">There are quite a few fields but you can leave some blank</span>
+<span class="go">For some fields there will be a default value,</span>
+<span class="go">If you enter &#39;.&#39;, the field will be left blank.</span>
+<span class="go">-----</span>
+<span class="go">Country Name (2 letter code) [AU]:IN</span>
+<span class="go">State or Province Name (full name) [Some-State]:Karnataka</span>
+<span class="go">Locality Name (eg, city) []:Bangalore</span>
+<span class="go">Organization Name (eg, company) [Internet Widgits Pty Ltd]:P1</span>
+<span class="go">Organizational Unit Name (eg, section) []:AS2</span>
+<span class="go">Common Name (e.g. server FQDN or YOUR name) []:p1as2</span>
+<span class="go">Email Address []:</span>
+<span class="gp">$</span> cat P1_public.pem &gt;&gt; P1_private.pem
+
+<span class="gp">$</span> openssl req -x509 -newkey rsa:2048 -keyout P2_private.pem -out P2_public.pem -days 365
+<span class="go">Generating a 2048 bit RSA private key</span>
+<span class="go">..............................+++</span>
+<span class="go">............................................................................................................+++</span>
+<span class="go">writing new private key to &#39;P2_private.pem&#39;</span>
+<span class="go">Enter PEM pass phrase:</span>
+<span class="go">Verifying - Enter PEM pass phrase:</span>
+<span class="go">-----</span>
+<span class="go">You are about to be asked to enter information that will be incorporated</span>
+<span class="go">into your certificate request.</span>
+<span class="go">What you are about to enter is what is called a Distinguished Name or a DN.</span>
+<span class="go">There are quite a few fields but you can leave some blank</span>
+<span class="go">For some fields there will be a default value,</span>
+<span class="go">If you enter &#39;.&#39;, the field will be left blank.</span>
+<span class="go">-----</span>
+<span class="go">Country Name (2 letter code) [AU]:IN</span>
+<span class="go">State or Province Name (full name) [Some-State]:Karnataka</span>
+<span class="go">Locality Name (eg, city) []:Bangalore</span>
+<span class="go">Organization Name (eg, company) [Internet Widgits Pty Ltd]:P2</span>
+<span class="go">Organizational Unit Name (eg, section) []:AS2</span>
+<span class="go">Common Name (e.g. server FQDN or YOUR name) []:p2as2</span>
+<span class="go">Email Address []:</span>
+<span class="gp">$</span> cat P2_public.pem &gt;&gt; P2_private.pem
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-p1">
+<h2>Configure P1<a class="headerlink" href="#configure-p1" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">P1</span></tt> needs to be configured before it can start sending files, open the web UI and follow these instructions:</p>
+<ul class="simple">
+<li>Navigate to <tt class="docutils literal"><span class="pre">Configuration-&gt;Private</span> <span class="pre">Certificates-&gt;Add</span> <span class="pre">private</span> <span class="pre">certifcate</span></tt>.</li>
+<li>Choose the file <tt class="docutils literal"><span class="pre">P1_private.pem</span></tt> in the certificate field, enter the passphrase and save the Private Certificate.</li>
+<li>Next navigate to <tt class="docutils literal"><span class="pre">Configuration-&gt;Public</span> <span class="pre">Certificates-&gt;Add</span> <span class="pre">public</span> <span class="pre">certifcate</span></tt>.</li>
+<li>Choose the file <tt class="docutils literal"><span class="pre">P2_public.pem</span></tt> in the certificate field and save the Public Certificate.</li>
+<li>Now navigate to <tt class="docutils literal"><span class="pre">Configuration-&gt;Organization-&gt;Add</span> <span class="pre">organization</span></tt>.</li>
+<li>Set Name to <tt class="docutils literal"><span class="pre">P1</span></tt>, As2 Name to <tt class="docutils literal"><span class="pre">p1as2</span></tt> and set the Signature and Encryption keys to <tt class="docutils literal"><span class="pre">P1_private.pem</span></tt> and save the Organization.</li>
+<li>Next navigate to <tt class="docutils literal"><span class="pre">Configuration-&gt;Partner-&gt;Add</span> <span class="pre">partner</span></tt>.</li>
+<li>Set Name to <tt class="docutils literal"><span class="pre">P2</span></tt>, As2 Name to <tt class="docutils literal"><span class="pre">p2as2</span></tt> and Target url to <tt class="docutils literal"><span class="pre">http://localhost:8081/pyas2/as2receive</span></tt></li>
+<li>Under security settings set Encrypt Message to <tt class="docutils literal"><span class="pre">3des</span></tt>, Sign Message to <tt class="docutils literal"><span class="pre">SHA-1</span></tt>, Signature and Encryption keys to <tt class="docutils literal"><span class="pre">P2_public.pem</span></tt>.</li>
+<li>Under MDN settings set MDN mode to <tt class="docutils literal"><span class="pre">Synchronous</span></tt> and Request Signed MDN to <tt class="docutils literal"><span class="pre">SHA-1</span></tt>.</li>
+<li>Save the partner to complete the configuration.</li>
+</ul>
+</div>
+<div class="section" id="configure-p2">
+<h2>Configure P2<a class="headerlink" href="#configure-p2" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">P2</span></tt> needs to be configured before it can start receiving files, open the web UI and follow these instructions:</p>
+<ul class="simple">
+<li>Navigate to <tt class="docutils literal"><span class="pre">Configuration-&gt;Private</span> <span class="pre">Certificates-&gt;Add</span> <span class="pre">private</span> <span class="pre">certifcate</span></tt>.</li>
+<li>Choose the file <tt class="docutils literal"><span class="pre">P2_private.pem</span></tt> in the certificate field, enter the passphrase and save the Private Certificate.</li>
+<li>Next navigate to <tt class="docutils literal"><span class="pre">Configuration-&gt;Public</span> <span class="pre">Certificates-&gt;Add</span> <span class="pre">public</span> <span class="pre">certifcate</span></tt>.</li>
+<li>Choose the file <tt class="docutils literal"><span class="pre">P1_public.pem</span></tt> in the certificate field and save the Public Certificate.</li>
+<li>Now navigate to <tt class="docutils literal"><span class="pre">Configuration-&gt;Organization-&gt;Add</span> <span class="pre">organization</span></tt>.</li>
+<li>Set Name to <tt class="docutils literal"><span class="pre">P2</span></tt>, As2 Name to <tt class="docutils literal"><span class="pre">p2as2</span></tt> and set the Signature and Encryption keys to <tt class="docutils literal"><span class="pre">P2_private.pem</span></tt> and save the Organization.</li>
+<li>Next navigate to <tt class="docutils literal"><span class="pre">Configuration-&gt;Partner-&gt;Add</span> <span class="pre">partner</span></tt>.</li>
+<li>Set Name to <tt class="docutils literal"><span class="pre">P1</span></tt>, As2 Name to <tt class="docutils literal"><span class="pre">p1as2</span></tt> and Target url to <tt class="docutils literal"><span class="pre">http://localhost:8080/pyas2/as2receive</span></tt></li>
+<li>Under security settings set Encrypt Message to <tt class="docutils literal"><span class="pre">3des</span></tt>, Sign Message to <tt class="docutils literal"><span class="pre">SHA-1</span></tt>, Signature and Encryption keys to <tt class="docutils literal"><span class="pre">P1_public.pem</span></tt>.</li>
+<li>Under MDN settings set MDN mode to <tt class="docutils literal"><span class="pre">Synchronous</span></tt> and Request Signed MDN to <tt class="docutils literal"><span class="pre">SHA-1</span></tt>.</li>
+<li>Save the partner to complete the configuration.</li>
+</ul>
+</div>
+<div class="section" id="send-a-file">
+<h2>Send a File<a class="headerlink" href="#send-a-file" title="Permalink to this headline">¶</a></h2>
+<p>We are now read to send a file from <tt class="docutils literal"><span class="pre">P1</span></tt> to <tt class="docutils literal"><span class="pre">P2</span></tt>, to do so follow these steps:</p>
+<ul class="simple">
+<li>Open the <tt class="docutils literal"><span class="pre">P1</span></tt> web UI and navigate to <tt class="docutils literal"><span class="pre">Run-&gt;Send</span> <span class="pre">Message</span></tt>.</li>
+<li>Select the Organization as <tt class="docutils literal"><span class="pre">p1as2(P1)</span></tt> and Partner as <tt class="docutils literal"><span class="pre">p2as2(P2)</span></tt>.</li>
+<li>Now select the file to send and click <tt class="docutils literal"><span class="pre">Send</span> <span class="pre">File</span></tt>.</li>
+<li>The status of the file transfer can be viewed at <tt class="docutils literal"><span class="pre">Messages-&gt;All</span> <span class="pre">Messages</span></tt>.</li>
+<li>Once file transfer is completed you will a green tick in the status column.</li>
+</ul>
+<img alt="_images/P1_SendFile.png" src="_images/P1_SendFile.png" />
+<ul class="simple">
+<li>We will also see a similar entry in the web UI of <tt class="docutils literal"><span class="pre">P2</span></tt>.</li>
+</ul>
+<img alt="_images/P2_SendFile.png" src="_images/P2_SendFile.png" />
+<ul class="simple">
+<li>We can see basic information on this screen such as Partner, Organization, Message ID and MDN.</li>
+<li>We can also view the MDN and Payload by clicking on the respective links.</li>
+</ul>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>We have successfully demonstrated the core functionality of <tt class="docutils literal"><span class="pre">pyAS2</span></tt> i.e. sending files from one system to another using
+the AS2 protocol. For a more detailed overview of all its functionality do go through the <a class="reference internal" href="detailed-guide/index.html"><em>detailed docs</em></a>.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="detailed-guide/index.html" class="btn btn-neutral float-right" title="Detailed Guide" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="configuration.html" class="btn btn-neutral" title="Configuration" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Abhishek Ram.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.2.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,464 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Partners &mdash; pyAS2 0.2.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="pyAS2 0.2.1 documentation" href="../index.html"/>
+        <link rel="up" title="Detailed Guide" href="index.html"/>
+        <link rel="next" title="Certificates" href="certificates.html"/>
+        <link rel="prev" title="Organizations" href="organizations.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> pyAS2
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#upgrading-pyas2">Upgrading <tt class="docutils literal"><span class="pre">pyAS2</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start-guide.html">Quick-start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#installing-the-servers">Installing the Servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#creating-the-certificates">Creating the certificates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#configure-p1">Configure P1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#configure-p2">Configure P2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#send-a-file">Send a File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Detailed Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="organizations.html">Organizations</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Partners</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#general-settings">General Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#authentication-settings">Authentication Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#security-settings">Security Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mdn-settings">MDN Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-settings">Advanced Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="certificates.html">Certificates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="certificates.html#generating-certificates">Generating Certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="certificates.html#private-certificates">Private Certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="certificates.html#public-certificates">Public Certificates</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data-dir.html">The Data Directory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#certificates">certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#logging">logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#store">__store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#inbox">inbox</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#outbox">outbox</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sendreceive-messages.html">Send &amp; Receive Messages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-messages.html#send-messages-from-the-web-ui">Send Messages From the Web UI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-messages.html#send-messages-from-the-command-line">Send Messages From the Command-Line</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-messages.html#send-messages-using-the-send-daemon">Send Messages Using the Send-Daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-messages.html#receive-messages">Receive Messages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sendreceive-mdns.html">Send &amp; Receive MDNs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-mdns.html#send-mdns">Send MDNs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-mdns.html#receive-mdns">Receive MDNs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="monitoring.html">Monitoring</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="monitoring.html#list-messages">List Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="monitoring.html#search-messages">Search Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="monitoring.html#search-mdns">Search MDNs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="admin-commands.html">Admin Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#runas2server">runas2server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#runas2daemon">runas2daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#sendas2message">sendas2message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#sendasyncmdn">sendasyncmdn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#retryfailedas2comms">retryfailedas2comms</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="email-notifications.html">Email Notifications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#master">0.3 - master</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id1">0.2 - 2015-10-11</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id2">0.1.2 - 2015-09-07</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id3">0.1.1 - 2015-09-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id4">0.1 - 2015-04-29</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">pyAS2</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Detailed Guide</a> &raquo;</li>
+      
+    <li>Partners</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/detailed-guide/partners.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="partners">
+<h1>Partners<a class="headerlink" href="#partners" title="Permalink to this headline">¶</a></h1>
+<p>Partners in <tt class="docutils literal"><span class="pre">pyAS2</span></tt> mean all your trading partners with whom you will exchanges messages, i.e. they are the receivers
+when you send messages and the senders when you receive messages. Partners can be managed from the web UI at <tt class="docutils literal"><span class="pre">Configuration-&gt;Partners</span></tt>.
+The following screen lists the existing partners and also you gives the option to search them and create new ones. Each
+partner is characterized by the following fields:</p>
+<div class="section" id="general-settings">
+<h2>General Settings<a class="headerlink" href="#general-settings" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="61%" />
+<col width="13%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field Name</th>
+<th class="head">Description</th>
+<th class="head">Mandatory</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Name</span></tt></td>
+<td>The descriptive name of the partner.</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">As2</span> <span class="pre">Name</span></tt></td>
+<td>The as2 identifies for this partner as
+communicated by the partner.</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Email</span> <span class="pre">Address</span></tt></td>
+<td>The email address for the partner.</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Target</span> <span class="pre">Url</span></tt></td>
+<td>The HTTP/S endpoint of the partner to
+which files need to be posted.</td>
+<td>Yes</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Subject</span></tt></td>
+<td>The MIME subject header to be sent along
+with the file.</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Content</span> <span class="pre">Type</span></tt></td>
+<td>The content type of the message being
+transmitted, can be XML, X12 or EDIFACT.</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="authentication-settings">
+<h2>Authentication Settings<a class="headerlink" href="#authentication-settings" title="Permalink to this headline">¶</a></h2>
+<p>Use these settings if basic authentication has been enabled for the partners AS2 server.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="55%" />
+<col width="12%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field Name</th>
+<th class="head">Description</th>
+<th class="head">Mandatory</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Enable</span> <span class="pre">Authentication</span></tt></td>
+<td>Check this option to enable basic AUTH.</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Http</span> <span class="pre">auth</span> <span class="pre">user</span></tt></td>
+<td>User name to access the partners server.</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Http</span> <span class="pre">auth</span> <span class="pre">pass</span></tt></td>
+<td>Password to access the partners server.</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">HTTPS</span> <span class="pre">Local</span> <span class="pre">CA</span> <span class="pre">Store</span></tt></td>
+<td>Use this for HTTPS endpoints where the
+partners SSL certificate has been signed
+by an unknown CA. Select the CA certificate
+here</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="security-settings">
+<h2>Security Settings<a class="headerlink" href="#security-settings" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="58%" />
+<col width="12%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field Name</th>
+<th class="head">Description</th>
+<th class="head">Mandatory</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Compress</span> <span class="pre">Message</span></tt></td>
+<td>Check this option to enable AS2 message
+compression.</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Encrypt</span> <span class="pre">Message</span></tt></td>
+<td>Select the algorithm to be used for
+encrypting messages, defaults to None.</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Encryption</span> <span class="pre">Key</span></tt></td>
+<td>Select the <tt class="docutils literal"><span class="pre">Public</span> <span class="pre">Key</span></tt> used for
+encrypting the outbound messages
+to this partner.</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Sign</span> <span class="pre">Message</span></tt></td>
+<td>Select the hash algorithm to be used for
+signing messages, defaults to None.
+incoming messages from trading partners.</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Signature</span> <span class="pre">key</span></tt></td>
+<td>The <tt class="docutils literal"><span class="pre">Public</span> <span class="pre">Key</span></tt> used to verify inbound
+signed messages and MDNs from this partner</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="mdn-settings">
+<h2>MDN Settings<a class="headerlink" href="#mdn-settings" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="58%" />
+<col width="12%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field Name</th>
+<th class="head">Description</th>
+<th class="head">Mandatory</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Request</span> <span class="pre">MDN</span></tt></td>
+<td>Check this option to request MDN for
+outbound messages to this partner.</td>
+<td>Yes</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Mdn</span> <span class="pre">mode</span></tt></td>
+<td>Select the MDN mode, defaults to
+Synchronous</td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Request</span> <span class="pre">Signed</span> <span class="pre">MDN</span></tt></td>
+<td>Select the algorithm to be used in case
+signed MDN is to be returned.</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="advanced-settings">
+<h2>Advanced Settings<a class="headerlink" href="#advanced-settings" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="58%" />
+<col width="10%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Field Name</th>
+<th class="head">Description</th>
+<th class="head">Mandatory</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Keep</span> <span class="pre">Original</span> <span class="pre">Filename</span></tt></td>
+<td>Use Original File name to to store file on receipt,
+use this option only if you are sure partner sends
+unique names.</td>
+<td>No</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">Command</span> <span class="pre">on</span> <span class="pre">Message</span> <span class="pre">Send</span></tt></td>
+<td>OS Command executed after successful message send,
+replacements are <tt class="docutils literal"><span class="pre">$filename</span></tt>, <tt class="docutils literal"><span class="pre">$sender</span></tt>,
+<tt class="docutils literal"><span class="pre">$recevier</span></tt>, <tt class="docutils literal"><span class="pre">$messageid</span></tt> and any message header
+such as <tt class="docutils literal"><span class="pre">$Subject</span></tt></td>
+<td>No</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">Command</span> <span class="pre">on</span> <span class="pre">Message</span> <span class="pre">Receipt</span></tt></td>
+<td>OS Command executed after successful message receipt,
+replacements are <tt class="docutils literal"><span class="pre">$filename</span></tt>, <tt class="docutils literal"><span class="pre">$fullfilename</span></tt>,
+<tt class="docutils literal"><span class="pre">$sender</span></tt>, <tt class="docutils literal"><span class="pre">$recevier</span></tt>, <tt class="docutils literal"><span class="pre">$messageid</span></tt> and any
+message header such as <tt class="docutils literal"><span class="pre">$Subject</span></tt>.</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="certificates.html" class="btn btn-neutral float-right" title="Certificates" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="organizations.html" class="btn btn-neutral" title="Organizations" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Abhishek Ram.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

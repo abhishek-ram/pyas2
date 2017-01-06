@@ -1,0 +1,275 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Email Notifications &mdash; pyAS2 0.2.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="pyAS2 0.2.1 documentation" href="../index.html"/>
+        <link rel="up" title="Detailed Guide" href="index.html"/>
+        <link rel="next" title="Release History" href="../changelog.html"/>
+        <link rel="prev" title="Admin Commands" href="admin-commands.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+
+        
+          <a href="../index.html" class="icon icon-home"> pyAS2
+        
+
+        
+        </a>
+
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#upgrading-pyas2">Upgrading <tt class="docutils literal"><span class="pre">pyAS2</span></tt></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start-guide.html">Quick-start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#installing-the-servers">Installing the Servers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#creating-the-certificates">Creating the certificates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#configure-p1">Configure P1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#configure-p2">Configure P2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#send-a-file">Send a File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quick-start-guide.html#conclusion">Conclusion</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Detailed Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="organizations.html">Organizations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="partners.html">Partners</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#general-settings">General Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#authentication-settings">Authentication Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#security-settings">Security Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#mdn-settings">MDN Settings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="partners.html#advanced-settings">Advanced Settings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="certificates.html">Certificates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="certificates.html#generating-certificates">Generating Certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="certificates.html#private-certificates">Private Certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="certificates.html#public-certificates">Public Certificates</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data-dir.html">The Data Directory</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#certificates">certificates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#logging">logging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#store">__store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#inbox">inbox</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data-dir.html#outbox">outbox</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sendreceive-messages.html">Send &amp; Receive Messages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-messages.html#send-messages-from-the-web-ui">Send Messages From the Web UI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-messages.html#send-messages-from-the-command-line">Send Messages From the Command-Line</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-messages.html#send-messages-using-the-send-daemon">Send Messages Using the Send-Daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-messages.html#receive-messages">Receive Messages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sendreceive-mdns.html">Send &amp; Receive MDNs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-mdns.html#send-mdns">Send MDNs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sendreceive-mdns.html#receive-mdns">Receive MDNs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="monitoring.html">Monitoring</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="monitoring.html#list-messages">List Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="monitoring.html#search-messages">Search Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="monitoring.html#search-mdns">Search MDNs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="admin-commands.html">Admin Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#runas2server">runas2server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#runas2daemon">runas2daemon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#sendas2message">sendas2message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#sendasyncmdn">sendasyncmdn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="admin-commands.html#retryfailedas2comms">retryfailedas2comms</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="">Email Notifications</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#master">0.3 - master</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id1">0.2 - 2015-10-11</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id2">0.1.2 - 2015-09-07</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id3">0.1.1 - 2015-09-04</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changelog.html#id4">0.1 - 2015-04-29</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">pyAS2</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="index.html">Detailed Guide</a> &raquo;</li>
+      
+    <li>Email Notifications</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/detailed-guide/email-notifications.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="email-notifications">
+<h1>Email Notifications<a class="headerlink" href="#email-notifications" title="Permalink to this headline">¶</a></h1>
+<p>We can configure <tt class="docutils literal"><span class="pre">pyAS2</span></tt> to send email reports in case of errors encountered while sending
+or receiving AS2 messages with your trading partner. To use this feature just set the relevent information
+in your <a class="reference external" href="https://docs.djangoproject.com/en/1.8/ref/settings/">project&#8217;s settings.py</a> module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">MANAGERS</span> <span class="o">=</span> <span class="p">(</span>    <span class="c">#bots will send error reports to the MANAGERS</span>
+    <span class="p">(</span><span class="s">&#39;name_manager&#39;</span><span class="p">,</span> <span class="s">&#39;myemailaddress@gmail&#39;</span><span class="p">),</span>
+    <span class="p">)</span>
+<span class="n">EMAIL_HOST</span> <span class="o">=</span> <span class="s">&#39;smtp.gmail.com&#39;</span>             <span class="c">#Default: &#39;localhost&#39;</span>
+<span class="n">EMAIL_PORT</span> <span class="o">=</span> <span class="s">&#39;587&#39;</span>             <span class="c">#Default: 25</span>
+<span class="n">EMAIL_USE_TLS</span> <span class="o">=</span> <span class="bp">True</span>       <span class="c">#Default: False</span>
+<span class="n">EMAIL_HOST_USER</span> <span class="o">=</span> <span class="s">&#39;username&#39;</span>        <span class="c">#Default: &#39;&#39;. Username to use for the SMTP server defined in EMAIL_HOST. If empty, Django won&#39;t attempt authentication.</span>
+<span class="n">EMAIL_HOST_PASSWORD</span> <span class="o">=</span> <span class="s">&#39;*******&#39;</span>    <span class="c">#Default: &#39;&#39;. PASSWORD to use for the SMTP server defined in EMAIL_HOST. If empty, Django won&#39;t attempt authentication.</span>
+<span class="n">SERVER_EMAIL</span> <span class="o">=</span> <span class="s">&#39;botserrors@gmail.com&#39;</span>           <span class="c">#Sender of bots error reports. Default: &#39;root@localhost&#39;</span>
+<span class="n">EMAIL_SUBJECT_PREFIX</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>   <span class="c">#This is prepended on email subject.</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../changelog.html" class="btn btn-neutral float-right" title="Release History" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="admin-commands.html" class="btn btn-neutral" title="Admin Commands" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2015, Abhishek Ram.
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.2.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
