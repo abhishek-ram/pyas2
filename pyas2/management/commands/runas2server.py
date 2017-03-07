@@ -29,7 +29,8 @@ class Command(BaseCommand):
             '/': {
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': 'static',
-                'tools.staticdir.root': os.path.dirname(pyas2.__file__)
+                'tools.staticdir.root': os.path.abspath(
+                    os.path.dirname(pyas2.__file__))
             }
         }
         servestaticfiles = cherrypy.tree.mount(None, '/static', conf)
@@ -39,12 +40,19 @@ class Command(BaseCommand):
         # but django does not need the AdminMediaHandler in this setup. is much faster.
         servedjango = WSGIHandler()
 
-        # cherrypy uses a dispatcher in order to handle the serving of static files and django.
-        dispatcher = wsgiserver.WSGIPathInfoDispatcher({'/': servedjango, '/static': servestaticfiles})
-        pyas2server = wsgiserver.CherryPyWSGIServer(bind_addr=('0.0.0.0', pyas2init.gsettings['port']),
-                                                    wsgi_app=dispatcher,
-                                                    server_name='pyas2-webserver')
-        pyas2init.logger.log(25, _(u'PyAS2 server running at port: "%s".' % pyas2init.gsettings['port']))
+        # cherrypy uses a dispatcher in order to handle the serving of
+        # static files and django.
+        dispatcher = wsgiserver.WSGIPathInfoDispatcher(
+            {'/': servedjango, '/static': servestaticfiles})
+
+        pyas2server = wsgiserver.CherryPyWSGIServer(
+            bind_addr=('0.0.0.0', pyas2init.gsettings['port']),
+            wsgi_app=dispatcher,
+            server_name='pyas2-webserver'
+        )
+
+        pyas2init.logger.log(
+            25, _(u'PyAS2 server running at port: "%s".' % pyas2init.gsettings['port']))
 
         # handle ssl: cherrypy < 3.2 always uses pyOpenssl. cherrypy >= 3.2
         # uses python buildin ssl (python >= 2.6 has buildin support for ssl).

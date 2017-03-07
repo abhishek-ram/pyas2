@@ -6,7 +6,8 @@ from email.parser import HeaderParser
 from itertools import izip
 import os
 
-TEST_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'pyas2', 'testdata')
+TEST_DIR = os.path.join((os.path.dirname(
+    os.path.abspath(__file__))),  'fixtures')
 
 
 class AS2SendReceiveTest(TestCase):
@@ -18,37 +19,54 @@ class AS2SendReceiveTest(TestCase):
         # Every test needs a client.
         cls.client = Client()
         cls.header_parser = HeaderParser()
+
         # Load the client and server certificates
-        cls.server_key = models.PrivateCertificate.objects.create(certificate='./pyas2/testdata/as2server.pem',
-                                                                  certificate_passphrase='password')
-        cls.server_crt = models.PublicCertificate.objects.create(certificate='./pyas2/testdata/as2server.crt')
-        cls.client_key = models.PrivateCertificate.objects.create(certificate='./pyas2/testdata/as2client.pem',
-                                                                  certificate_passphrase='password')
-        cls.client_crt = models.PublicCertificate.objects.create(certificate='./pyas2/testdata/as2client.crt')
+        cls.server_key = models.PrivateCertificate.objects.create(
+            certificate=os.path.join(TEST_DIR, 'as2server.pem'),
+            certificate_passphrase='password'
+        )
+        cls.server_crt = models.PublicCertificate.objects.create(
+            certificate=os.path.join(TEST_DIR, 'as2server.crt')
+        )
+        cls.client_key = models.PrivateCertificate.objects.create(
+            certificate=os.path.join(TEST_DIR, 'as2client.pem'),
+            certificate_passphrase='password'
+        )
+        cls.client_crt = models.PublicCertificate.objects.create(
+            certificate=os.path.join(TEST_DIR, 'as2client.crt')
+        )
 
         # Setup the server organization and partner
-        models.Organization.objects.create(name='Server Organization',
-                                           as2_name='as2server',
-                                           encryption_key=cls.server_key,
-                                           signature_key=cls.server_key)
-        models.Partner.objects.create(name='Server Partner',
-                                      as2_name='as2client',
-                                      target_url='http://localhost:8080/pyas2/as2receive',
-                                      compress=False,
-                                      mdn=False,
-                                      signature_key=cls.client_crt,
-                                      encryption_key=cls.client_crt)
+        models.Organization.objects.create(
+            name='Server Organization',
+            as2_name='as2server',
+            encryption_key=cls.server_key,
+            signature_key=cls.server_key
+        )
+        models.Partner.objects.create(
+            name='Server Partner',
+            as2_name='as2client',
+            target_url='http://localhost:8080/pyas2/as2receive',
+            compress=False,
+            mdn=False,
+            signature_key=cls.client_crt,
+            encryption_key=cls.client_crt
+        )
 
         # Setup the client organization and partner
-        cls.organization = models.Organization.objects.create(name='Client Organization',
-                                                              as2_name='as2client',
-                                                              encryption_key=cls.client_key,
-                                                              signature_key=cls.client_key)
+        cls.organization = models.Organization.objects.create(
+            name='Client Organization',
+            as2_name='as2client',
+            encryption_key=cls.client_key,
+            signature_key=cls.client_key
+        )
 
         # Initialise the payload i.e. the file to be transmitted
-        cls.payload = models.Payload.objects.create(name='testmessage.edi',
-                                                    file=os.path.join(TEST_DIR, 'testmessage.edi'),
-                                                    content_type='application/edi-consent')
+        cls.payload = models.Payload.objects.create(
+            name='testmessage.edi',
+            file=os.path.join(TEST_DIR, 'testmessage.edi'),
+            content_type='application/edi-consent'
+        )
 
     def testEndpoint(self):
         """ Test if the as2 reveive endpoint is active """

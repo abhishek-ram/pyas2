@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='pyAS2',
-    version='0.3.1',
+    version='0.3.2',
     packages=['pyas2'],
     include_package_data=True,
     license='GNU GPL v2.0',  # example license
@@ -37,5 +37,11 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware',
     ],
     keywords='AS2 AS2Server RFC4130 FileTransfer',
-    install_requires=['django','cherrypy','requests','m2crypto','pyasn1'],
+    install_requires=[
+        'django>1.9, <=1.10.6',
+        'cherrypy>6, <=8.9.1',
+        'requests',
+        'm2crypto',
+        'pyasn1'
+    ],
 )

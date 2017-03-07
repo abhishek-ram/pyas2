@@ -83,6 +83,13 @@ Contribute
 #. Push to the branch: `git push origin my-new-feature`
 #. Send a pull request and bug the maintainer until it gets merged and published. :) Make sure to add yourself to AUTHORS_.
 
+Running Tests
+~~~~~~~~~~~~~
+
+To run ``pyAS2's`` test suite:
+
+``django-admin.py test pyas2 --settings=pyas2.test_settings --pythonpath=.``
+
 License
 ~~~~~~~
 

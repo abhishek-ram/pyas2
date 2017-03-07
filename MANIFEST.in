@@ -4,4 +4,4 @@ recursive-include pyas2/static *
 recursive-include pyas2/templates *
 recursive-include pyas2/templatetags *
 recursive-include pyas2/management *
-recursive-include pyas2/testdata *
+recursive-include pyas2/tests *

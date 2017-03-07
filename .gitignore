@@ -54,6 +54,9 @@ docs/_build/
 # PyBuilder
 target/
 
+#PyCharm
+.idea/
+
 #PyAS2
 messages/
 certificates/
