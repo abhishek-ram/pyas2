@@ -54,6 +54,7 @@ class MessageList(ListView):
     """Generic List view, displays list of messages in the system"""
 
     model = models.Message
+    paginate_by = 25
 
     def get_queryset(self):
         if self.request.GET:
@@ -138,6 +139,7 @@ class PayloadView(View):
 
 class MDNList(ListView):
     model = models.MDN
+    paginate_by = 25
 
     def get_queryset(self):
         if self.request.GET:

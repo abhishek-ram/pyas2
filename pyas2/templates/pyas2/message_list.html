@@ -1,28 +1,12 @@
 {% extends "admin/base.html" %}
-{% load i18n static %}
+{% load i18n static pyas2_extras%}
 {% block title %}
 Messages
 {% endblock %}
-{% block extrahead %}
-<link rel="stylesheet" type="text/css" href="{% static "css/dataTables.jqueryui.min.css" %}" />
-<script src="{% static "admin/js/jquery.min.js" %}"></script>
-<script src="{% static "js/jquery.dataTables.min.js" %}"></script>
-<script src="{% static "js/dataTables.jqueryui.min.js" %}"></script>
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('#messages').DataTable({
-            "columnDefs": [
-                { "searchable": false, "targets": [0,3,7,9] }
-            ],
-            "ordering": false,
-            "pageLength": 25
-        });
-    } );
-</script>
-{% endblock %}
+
 {% block content %}
 <h1>Message List</h1>
-    <table id="messages" class="display" cellspacing="0" width="100%">
+    <table id="messages" cellspacing="0" width="100%">
         <thead>
             <tr>
                 <th></th>
@@ -38,7 +22,7 @@ Messages
             </tr>
         </thead>
         <tbody>
-        {% for row in message_list %}
+        {% for row in page_obj.object_list %}
             <tr class="{% cycle 'row1' 'row2' %}">
                 <td>
                     <div class="dropdown">
@@ -84,6 +68,10 @@ Messages
         {% endfor %}
         </tbody>
     </table>
+
+
+    {% include "pyas2/pagination.html" %}
+
 {% endblock %}
 
     

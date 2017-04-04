@@ -6,6 +6,12 @@ Release History
 
 .. note:: This version is not yet released and is under active development.
 
+0.3.3 - 2017-04-04
+~~~~~~~~~~~~~~~~~~
+
+* Use pagination when listing messages in the GUI, also do not use Datatables.
+* Set the request MDN field default value to False.
+
 0.3.2 - 2017-03-07
 ~~~~~~~~~~~~~~~~~~
 
