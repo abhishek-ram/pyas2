@@ -1,0 +1,19 @@
+{% load i18n pyas2_extras %}
+    <div class="paginator">
+        <p class="float-left">Showing {{ page_obj.start_index }} to
+            {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries</p>
+        <span class="step-links float-right">
+            {% if page_obj.has_previous %}
+                <a href="{% append_to_get page=page_obj.previous_page_number%}">Previous </a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="{% append_to_get page=page_obj.next_page_number %}"> Next</a>
+            {% endif %}
+        </span>
+    </div>
+

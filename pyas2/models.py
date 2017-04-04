@@ -105,7 +105,7 @@ class Partner(models.Model):
     signature = models.CharField(max_length=20, verbose_name=_('Sign Message'), choices=SIGN_ALG_CHOICES, null=True,
                                  blank=True)
     signature_key = models.ForeignKey(PublicCertificate, related_name='sign_partner', null=True, blank=True)
-    mdn = models.BooleanField(verbose_name=_('Request MDN'), default=True)
+    mdn = models.BooleanField(verbose_name=_('Request MDN'), default=False)
     mdn_mode = models.CharField(max_length=20, choices=MDN_TYPE_CHOICES, null=True, blank=True)
     mdn_sign = models.CharField(max_length=20, verbose_name=_('Request Signed MDN'), choices=SIGN_ALG_CHOICES,
                                 null=True, blank=True)
