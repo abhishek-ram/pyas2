@@ -6,6 +6,11 @@ Release History
 
 .. note:: This version is not yet released and is under active development.
 
+0.3.4 - 2017-08-17
+~~~~~~~~~~~~~~~~~~
+
+* Add migration to the distribution.
+
 0.3.3 - 2017-04-04
 ~~~~~~~~~~~~~~~~~~
 
