@@ -1,5 +1,7 @@
 Installation
 ============
+Fisrt Install M2Crypto separately following `these instructions <https://gitlab.com/m2crypto/m2crypto/blob/master/INSTALL.rst>`
+
 Install using ``pip``...
 
 .. code-block:: console
@@ -33,25 +35,6 @@ Run the following commands to complete the installation and start the server.
 
 .. code-block:: console
 
-    $ python manage.py makemigrations pyas2
-    Migrations for 'pyas2':
-      0001_initial.py:
-        - Create model Log
-        - Create model MDN
-        - Create model Message
-        - Create model Organization
-        - Create model Partner
-        - Create model Payload
-        - Create model PrivateCertificate
-        - Create model PublicCertificate
-        - Add field encryption_key to partner
-        - Add field signature_key to partner
-        - Add field encryption_key to organization
-        - Add field signature_key to organization
-        - Add field organization to message
-        - Add field partner to message
-        - Add field payload to message
-        - Add field message to log
     $ python manage.py migrate
     Operations to perform:
       Apply all migrations: pyas2, admin, contenttypes, auth, sessions
@@ -59,8 +42,32 @@ Run the following commands to complete the installation and start the server.
       Applying contenttypes.0001_initial... OK
       Applying auth.0001_initial... OK
       Applying admin.0001_initial... OK
+      Applying admin.0002_logentry_remove_auto_add... OK
+      Applying contenttypes.0002_remove_content_type_name... OK
+      Applying auth.0002_alter_permission_name_max_length... OK
+      Applying auth.0003_alter_user_email_max_length... OK
+      Applying auth.0004_alter_user_username_opts... OK
+      Applying auth.0005_alter_user_last_login_null... OK
+      Applying auth.0006_require_contenttypes_0002... OK
+      Applying auth.0007_alter_validators_add_error_messages... OK
+      Applying auth.0008_alter_user_username_max_length... OK
+      Applying pyas2.0001_initial... OK
+      Applying pyas2.0002_partner_compress... OK
+      Applying pyas2.0003_auto_20150311_1141... OK
+      Applying pyas2.0004_auto_20150311_1258... OK
+      Applying pyas2.0005_message_compressed... OK
+      Applying pyas2.0006_auto_20150313_0548... OK
+      Applying pyas2.0007_auto_20150313_0707... OK
+      Applying pyas2.0008_auto_20150317_0450... OK
+      Applying pyas2.0009_auto_20150317_1324... OK
+      Applying pyas2.0010_auto_20150416_0745... OK
+      Applying pyas2.0011_auto_20150427_1029... OK
+      Applying pyas2.0012_auto_20151006_0526... OK
+      Applying pyas2.0013_auto_20160307_0233... OK
+      Applying pyas2.0014_auto_20160420_0515... OK
+      Applying pyas2.0015_auto_20160615_0409... OK
+      Applying pyas2.0016_auto_20161004_0543... OK
       Applying sessions.0001_initial... OK
-      Applying pyas2.0001_initial... DONE
     $ python manage.py createsuperuser
     Username (leave blank to use 'abhishekram'): admin
     Email address: admin@domain.com  
@@ -86,55 +93,38 @@ Run the following commands to upgrade to the latest version:
 .. code-block:: console
 
     $ pip install -U pyas2
-    $ python manage.py makemigrations
-    Migrations for 'pyas2':
-      0012_auto_20151011_1612.py:
-        - Add field verify_cert to publiccertificate
-        - Alter field mdn_mode on message
-        - Alter field as2_name on organization
-        - Alter field name on organization
-        - Alter field as2_name on partner
-        - Alter field cmd_receive on partner
-        - Alter field cmd_send on partner
-        - Alter field https_ca_cert on partner
-        - Alter field name on partner
-        - Alter field ca_cert on privatecertificate
-        - Alter field certificate on privatecertificate
-        - Alter field ca_cert on publiccertificate
-        - Alter field certificate on publiccertificate
     $ python manage.py migrate
     Operations to perform:
       Apply all migrations: admin, pyas2, contenttypes, auth, sessions
     Running migrations:
-      Applying pyas2.0012_auto_20151011_1612... OK
+      Applying pyas2.0017_auto_20170404_0730... OK
 
 .. warning::
-    If you did not run makemigrations when you intially installed ``pyAS2`` then follow these steps to initialize migrations:
-
+    A major change has been made to ``pyAS2``, starting version 0.3.4 the migrations are included in the repo so if you are upgrading from an older version you need to fake till the last migration done and then finally do migrations. So suppose you were at 0.3.2 you would follow these steps:
+    
     .. code-block:: console
 
-        $ python manage.py makemigrations pyas2
-        Migrations for 'pyas2':
-          0001_initial.py:
-            - Create model Log
-            - Create model MDN
-            - Create model Message
-            - Create model Organization
-            - Create model Partner
-            - Create model Payload
-            - Create model PrivateCertificate
-            - Create model PublicCertificate
-            - Add field encryption_key to partner
-            - Add field signature_key to partner
-            - Add field encryption_key to organization
-            - Add field signature_key to organization
-            - Add field organization to message
-            - Add field partner to message
-            - Add field payload to message
-            - Add field message to log
-        $ python manage.py migrate --fake-initial pyas2
+        $ python manage.py migrate --fake pyas2 0016
+        Operations to perform:
+          Target specific migration: 0016_auto_20161004_0543, from pyas2
+        Running migrations:
+          Applying pyas2.0002_partner_compress... FAKED
+          Applying pyas2.0003_auto_20150311_1141... FAKED
+          Applying pyas2.0004_auto_20150311_1258... FAKED
+          Applying pyas2.0005_message_compressed... FAKED
+          Applying pyas2.0006_auto_20150313_0548... FAKED
+          Applying pyas2.0007_auto_20150313_0707... FAKED
+          Applying pyas2.0008_auto_20150317_0450... FAKED
+          Applying pyas2.0009_auto_20150317_1324... FAKED
+          Applying pyas2.0010_auto_20150416_0745... FAKED
+          Applying pyas2.0011_auto_20150427_1029... FAKED
+          Applying pyas2.0012_auto_20151006_0526... FAKED
+          Applying pyas2.0013_auto_20160307_0233... FAKED
+          Applying pyas2.0014_auto_20160420_0515... FAKED
+          Applying pyas2.0015_auto_20160615_0409... FAKED
+          Applying pyas2.0016_auto_20161004_0543... FAKED
+        $ python manage.py migrate pyas2
         Operations to perform:
           Apply all migrations: pyas2
         Running migrations:
-          Rendering model states... DONE
-          Applying pyas2.0001_initial... FAKED
+          Applying pyas2.0017_auto_20170404_0730... OK
