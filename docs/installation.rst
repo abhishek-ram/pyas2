@@ -1,6 +1,6 @@
 Installation
 ============
-Fisrt Install M2Crypto separately following `these instructions <https://gitlab.com/m2crypto/m2crypto/blob/master/INSTALL.rst>`
+Fisrt Install M2Crypto separately following `these instructions <https://gitlab.com/m2crypto/m2crypto/blob/master/INSTALL.rst>`_
 
 Install using ``pip``...
 
