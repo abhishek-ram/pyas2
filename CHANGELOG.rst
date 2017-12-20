@@ -6,6 +6,11 @@ Release History
 
 .. note:: This version is not yet released and is under active development.
 
+0.3.5 - 2017-12-20
+~~~~~~~~~~~~~~~~~~
+
+* Renewed the certificates used in the django tests.
+
 0.3.4 - 2017-08-17
 ~~~~~~~~~~~~~~~~~~
 
