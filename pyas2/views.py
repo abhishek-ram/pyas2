@@ -352,6 +352,20 @@ def send_test_mail_managers(request, *args, **kwargs):
     return redirect(reverse('home'))
 
 
+def download_cert(request, pk, *args, **kwargs):
+    cert = models.PublicCertificate.objects.filter(
+        certificate='certificates/' + pk).first()
+    if not cert:
+        cert = models.PrivateCertificate.objects.filter(
+            certificate='certificates/' + pk).first()
+
+    response = HttpResponse(content_type='application/x-pem-file')
+    disposition_type = 'attachment'
+    response['Content-Disposition'] = disposition_type + '; filename=' + cert.certificate.name
+    response.write(cert.certificate.read())
+    return response
+
+
 @csrf_exempt
 def as2receive(request, *args, **kwargs):
     """

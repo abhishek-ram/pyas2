@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^sendasyncmdn/$', login_required(views.send_async_mdn, login_url='login'), name='sendasyncmdn'),
     url(r'^retryfailedcomms/$', login_required(views.retry_failed_comms, login_url='login'), name='retryfailedcomms'),
     url(r'^cancelretries/(?P<pk>.+)/$', login_required(views.cancel_retries, login_url='login'), name='cancelretries'),
+    url(r'^certificates/(?P<pk>.+)$', login_required(views.download_cert, login_url='login'), name='download_cert'),
     # only superuser
     url(r'^sendtestmail$', superuser_required(views.send_test_mail_managers), name='sendtestmail'),
     # as2 asynchronous mdn and message receive url
