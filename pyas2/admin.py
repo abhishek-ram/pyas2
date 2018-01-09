@@ -1,13 +1,30 @@
 from django.contrib import admin
 from pyas2 import forms
 from pyas2 import models
-
-
-# Register your models here.
+import os
 
 
 class PrivateCertificateAdmin(admin.ModelAdmin):
     form = forms.PrivateCertificateForm
+    list_display = ('__str__', 'download_link',)
+
+    def download_link(self, obj):
+        return '<a href="/pyas2/certificates/' + os.path.basename(
+            obj.certificate.name) + '">' + 'Click Here' + '</a>'
+
+    download_link.allow_tags = True
+    download_link.short_description = "Download Link"
+
+
+class PublicCertificateAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'download_link',)
+
+    def download_link(self, obj):
+        return '<a href="/pyas2/certificates/' + os.path.basename(
+            obj.certificate.name) + '">' + 'Click Here' + '</a>'
+
+    download_link.allow_tags = True
+    download_link.short_description = "Download Link"
 
 
 class PartnerAdmin(admin.ModelAdmin):
@@ -45,7 +62,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.PrivateCertificate, PrivateCertificateAdmin)
-admin.site.register(models.PublicCertificate)
+admin.site.register(models.PublicCertificate, PublicCertificateAdmin)
 admin.site.register(models.Organization, OrganizationAdmin)
 admin.site.register(models.Partner, PartnerAdmin)
 admin.site.register(models.Message)

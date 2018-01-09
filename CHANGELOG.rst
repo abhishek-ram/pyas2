@@ -6,6 +6,12 @@ Release History
 
 .. note:: This version is not yet released and is under active development.
 
+0.3.8 - 2017-01-09
+~~~~~~~~~~~~~~~~~~
+
+* Give option to download certs from the admin.
+
+
 0.3.7 - 2017-01-09
 ~~~~~~~~~~~~~~~~~~
 

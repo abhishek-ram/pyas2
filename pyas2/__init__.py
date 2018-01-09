@@ -1,2 +1,2 @@
 __title__ = 'pyAS2'
-__version__ = '0.3.7'
+__version__ = '0.3.8'

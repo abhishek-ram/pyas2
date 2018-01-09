@@ -354,10 +354,10 @@ def send_test_mail_managers(request, *args, **kwargs):
 
 def download_cert(request, pk, *args, **kwargs):
     cert = models.PublicCertificate.objects.filter(
-        certificate='certificates/' + pk).first()
+        certificate__endswith=pk).first()
     if not cert:
         cert = models.PrivateCertificate.objects.filter(
-            certificate='certificates/' + pk).first()
+            certificate__endswith=pk).first()
 
     response = HttpResponse(content_type='application/x-pem-file')
     disposition_type = 'attachment'
