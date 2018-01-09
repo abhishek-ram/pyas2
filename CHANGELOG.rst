@@ -6,7 +6,12 @@ Release History
 
 .. note:: This version is not yet released and is under active development.
 
-0.3.6 - 2017-01--5
+0.3.7 - 2017-01-09
+~~~~~~~~~~~~~~~~~~
+
+* Use a function to get the certificate upload_to.
+
+0.3.6 - 2017-01-05
 ~~~~~~~~~~~~~~~~~~
 
 * Added view for downloading certificates from the admin.

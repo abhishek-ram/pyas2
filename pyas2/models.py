@@ -15,13 +15,15 @@ pyas2init.initserverlogging('pyas2')
 # Set default entry for selects
 DEFAULT_ENTRY = ('', "---------")
 
+
 # Set the storage directory for certificates
-upload_storage = FileSystemStorage(location=pyas2init.gsettings['root_dir'], base_url='/pyas2')
+def get_certificate_path(instance, filename):
+    return os.path.join(pyas2init.gsettings['root_dir'], 'certificates', filename)
 
 
 class PrivateCertificate(models.Model):
-    certificate = models.FileField(upload_to='certificates', storage=upload_storage)
-    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage, verbose_name=_('Local CA Store'),
+    certificate = models.FileField(upload_to=get_certificate_path)
+    ca_cert = models.FileField(upload_to=get_certificate_path, verbose_name=_('Local CA Store'),
                                null=True, blank=True)
     certificate_passphrase = models.CharField(max_length=100)
 
@@ -30,8 +32,8 @@ class PrivateCertificate(models.Model):
 
 
 class PublicCertificate(models.Model):
-    certificate = models.FileField(upload_to='certificates', storage=upload_storage)
-    ca_cert = models.FileField(upload_to='certificates', storage=upload_storage, verbose_name=_('Local CA Store'),
+    certificate = models.FileField(upload_to=get_certificate_path)
+    ca_cert = models.FileField(upload_to=get_certificate_path, verbose_name=_('Local CA Store'),
                                null=True, blank=True)
     verify_cert = models.BooleanField(verbose_name=_('Verify Certificate'), default=True,
                                       help_text=_('Uncheck this option to disable certificate verification.'))
@@ -93,8 +95,8 @@ class Partner(models.Model):
     http_auth = models.BooleanField(verbose_name=_('Enable Authentication'), default=False)
     http_auth_user = models.CharField(max_length=100, null=True, blank=True)
     http_auth_pass = models.CharField(max_length=100, null=True, blank=True)
-    https_ca_cert = models.FileField(upload_to='certificates', verbose_name=_('HTTPS Local CA Store'),
-                                     storage=upload_storage, null=True, blank=True)
+    https_ca_cert = models.FileField(upload_to=get_certificate_path,
+                                     verbose_name=_('HTTPS Local CA Store'), null=True, blank=True)
     target_url = models.URLField()
     subject = models.CharField(max_length=255, default=_('EDI Message sent using pyas2'))
     content_type = models.CharField(max_length=100, choices=CONTENT_TYPE_CHOICES, default='application/edi-consent')
