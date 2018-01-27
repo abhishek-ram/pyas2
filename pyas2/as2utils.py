@@ -393,3 +393,22 @@ def verify_payload(msg, raw_sig, cert, ca_cert, verify_cert):
 
 def get_key_passphrase(self):
     return key_pass
+
+
+def check_binary_sig(signature, boundary, content):
+    """ Function checks for binary signature and replaces with base64"""
+    # Check if the signature is base64 or not
+    try:
+        raw_sig = signature.get_payload().encode('ascii').strip()
+    except UnicodeDecodeError:
+        # If not decode to base64 and replace in raw message
+        raw_sig = signature.get_payload().encode('base64').strip()
+
+    signature.set_payload(raw_sig)
+    content_pts = content.split(boundary)
+    content_pts[-2] = '\r\n%s\r\n' % mimetostring(signature, 78)
+    content = boundary.join(content_pts)
+
+    # return the contents and raw signature
+    return content, raw_sig
+

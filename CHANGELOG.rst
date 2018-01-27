@@ -1,10 +1,12 @@
 Release History
 ===============
 
-0.4 - `master`_
+0.4.0 - 2017-01-27
 ~~~~~~~~~~~~~~~
 
-.. note:: This version is not yet released and is under active development.
+* Cleaner handling of signature verifications
+* Added test cases for sterling b2b integrator message and mdn
+* Set `max_length` for file fields to manage long folder names.
 
 0.3.8 - 2017-01-09
 ~~~~~~~~~~~~~~~~~~

@@ -22,9 +22,11 @@ def get_certificate_path(instance, filename):
 
 
 class PrivateCertificate(models.Model):
-    certificate = models.FileField(upload_to=get_certificate_path)
-    ca_cert = models.FileField(upload_to=get_certificate_path, verbose_name=_('Local CA Store'),
-                               null=True, blank=True)
+    certificate = models.FileField(
+        max_length=500, upload_to=get_certificate_path)
+    ca_cert = models.FileField(
+        max_length=500, upload_to=get_certificate_path,
+        verbose_name=_('Local CA Store'), null=True, blank=True)
     certificate_passphrase = models.CharField(max_length=100)
 
     def __str__(self):
@@ -32,11 +34,14 @@ class PrivateCertificate(models.Model):
 
 
 class PublicCertificate(models.Model):
-    certificate = models.FileField(upload_to=get_certificate_path)
-    ca_cert = models.FileField(upload_to=get_certificate_path, verbose_name=_('Local CA Store'),
-                               null=True, blank=True)
-    verify_cert = models.BooleanField(verbose_name=_('Verify Certificate'), default=True,
-                                      help_text=_('Uncheck this option to disable certificate verification.'))
+    certificate = models.FileField(
+        max_length=500, upload_to=get_certificate_path)
+    ca_cert = models.FileField(
+        max_length=500, upload_to=get_certificate_path,
+        verbose_name=_('Local CA Store'), null=True, blank=True)
+    verify_cert = models.BooleanField(
+        verbose_name=_('Verify Certificate'), default=True,
+        help_text=_('Uncheck this option to disable certificate verification.'))
 
     def __str__(self):
         return os.path.basename(self.certificate.name)
@@ -95,8 +100,9 @@ class Partner(models.Model):
     http_auth = models.BooleanField(verbose_name=_('Enable Authentication'), default=False)
     http_auth_user = models.CharField(max_length=100, null=True, blank=True)
     http_auth_pass = models.CharField(max_length=100, null=True, blank=True)
-    https_ca_cert = models.FileField(upload_to=get_certificate_path,
-                                     verbose_name=_('HTTPS Local CA Store'), null=True, blank=True)
+    https_ca_cert = models.FileField(
+        max_length=500, upload_to=get_certificate_path,
+        verbose_name=_('HTTPS Local CA Store'), null=True, blank=True)
     target_url = models.URLField()
     subject = models.CharField(max_length=255, default=_('EDI Message sent using pyas2'))
     content_type = models.CharField(max_length=100, choices=CONTENT_TYPE_CHOICES, default='application/edi-consent')
@@ -182,7 +188,7 @@ class Message(models.Model):
 class Payload(models.Model):
     name = models.CharField(max_length=100)
     content_type = models.CharField(max_length=255)
-    file = models.CharField(max_length=255)
+    file = models.CharField(max_length=500)
 
     def __str__(self):
         return self.name
@@ -209,7 +215,7 @@ class MDN(models.Model):
     message_id = models.CharField(max_length=100, primary_key=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES)
-    file = models.CharField(max_length=255)
+    file = models.CharField(max_length=500)
     headers = models.TextField(null=True)
     return_url = models.URLField(null=True)
     signed = models.BooleanField(default=False)

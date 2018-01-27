@@ -3,6 +3,7 @@ from pyas2 import models
 from pyas2 import as2lib
 from email import utils as emailutils
 from email.parser import HeaderParser
+from email import message_from_string
 from itertools import izip
 import os
 
@@ -580,3 +581,71 @@ class AS2SendReceiveTest(TestCase):
                 # Note that "all" and "izip" are lazy
                 # (will stop at the first line that's not identical)
                 return all(lineA == lineB for lineA, lineB in izip(a.xreadlines(), b.xreadlines()))
+
+
+class AS2SterlingIntegratorTest(TestCase):
+    """Test cases against the Sterling B2B Integrator AS2 server."""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Every test needs a client.
+        cls.client = Client()
+        cls.header_parser = HeaderParser()
+
+        # Load the client and server certificates
+        cls.server_key = models.PrivateCertificate.objects.create(
+            certificate=os.path.join(TEST_DIR, 'as2server.pem'),
+            certificate_passphrase='password'
+        )
+        cls.si_public_key = models.PublicCertificate.objects.create(
+            certificate=os.path.join(TEST_DIR, 'si_public_key.crt'),
+            ca_cert=os.path.join(TEST_DIR, 'si_public_key.ca'),
+            verify_cert=False
+        )
+
+        # Setup the server organization and partner
+        cls.organization = models.Organization.objects.create(
+            name='Server Organization',
+            as2_name='as2server',
+            encryption_key=cls.server_key,
+            signature_key=cls.server_key
+        )
+
+        cls.partner = models.Partner.objects.create(
+            name='Sterling B2B Integrator',
+            as2_name='SIAS2PRD',
+            target_url='http://localhost:8080/pyas2/as2receive',
+            compress=False,
+            mdn=False,
+            signature_key=cls.si_public_key,
+            encryption_key=cls.si_public_key
+        )
+
+        # Initialise the payload i.e. the file to be transmitted
+        cls.payload = models.Payload.objects.create(
+            name='testmessage.edi',
+            file=os.path.join(TEST_DIR, 'testmessage.edi'),
+            content_type='application/edi-consent'
+        )
+
+    def test_process_message(self):
+        with open(os.path.join(TEST_DIR, 'si_signed_cmp.msg')) as msg:
+            raw_payload = msg.read()
+            payload = message_from_string(raw_payload)
+            message = models.Message.objects.create(
+                message_id=payload.get('message-id').strip('<>'),
+                direction='IN',
+                status='IP',
+                headers=''
+            )
+            as2lib.save_message(message, payload, raw_payload)
+
+    def test_process_mdn(self):
+        message = models.Message.objects.create(
+            message_id='151694007918.24690.7052273208458909245@ip-172-31-14-209.ec2.internal',
+            partner=self.partner, organization=self.organization,
+            direction='OUT', status='IP', payload=self.payload)
+
+        with open(os.path.join(TEST_DIR, 'si_signed.mdn')) as mdn:
+            as2lib.save_mdn(message, mdn.read())
+

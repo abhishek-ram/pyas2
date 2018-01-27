@@ -93,7 +93,6 @@ def save_message(message, payload, raw_payload):
             pyas2init.logger.debug('Verifying the signed payload:\n{0:s}'.format(payload.as_string()))
             message.signed = True
             mic_alg = payload.get_param('micalg').lower() or 'sha1'
-            # main_boundary = '--' + payload.get_boundary()
 
             # Get the partners public and ca certificates
             cert = str(message.partner.signature_key.certificate.path)
@@ -103,13 +102,10 @@ def save_message(message, payload, raw_payload):
             verify_cert = message.partner.signature_key.verify_cert
 
             # Extract the signature and signed content from the mime message
-            raw_sig = None
+            main_boundary = '--' + payload.get_boundary()
             for part in payload.walk():
                 if part.get_content_type() == "application/pkcs7-signature":
-                    try:
-                        raw_sig = part.get_payload().encode('ascii').strip()
-                    except UnicodeDecodeError:
-                        raw_sig = part.get_payload().encode('base64').strip()
+                    __, raw_sig = as2utils.check_binary_sig(part, main_boundary, raw_payload)
                 else:
                     payload = part
 
@@ -117,7 +113,7 @@ def save_message(message, payload, raw_payload):
             try:
                 as2utils.verify_payload(raw_payload, None, cert, ca_cert, verify_cert)
             except Exception:
-                # Verify message using extracted signature and stripped message
+                # Verify message using extracted signature and canonicalzed message
                 try:
                     as2utils.verify_payload(as2utils.canonicalize2(payload), raw_sig, cert, ca_cert, verify_cert)
                 except Exception, e:
@@ -529,25 +525,19 @@ def save_mdn(message, mdn_content):
                 ca_cert = str(message.partner.signature_key.ca_cert.path)
             verify_cert = message.partner.signature_key.verify_cert
 
-            # main_boundary = '--' + mdn_message.get_boundary()
             # Extract the signed message and signature
+            main_boundary = '--' + mdn_message.get_boundary()
             for part in mdn_message.get_payload():
                 if part.get_content_type().lower() == "application/pkcs7-signature":
-                    sig = part
+                    mdn_content, __ = as2utils.check_binary_sig(
+                        part, main_boundary, mdn_content)
                 else:
                     mdn_message = part
-
-            # check if signature is base64 encoded and if not encode
-            # try:
-            #     raw_sig = sig.get_payload().encode('ascii').strip()
-            # except Exception, e:
-            #     raw_sig = sig.get_payload().encode('base64').strip()
 
             # Verify the signature using raw MDN content
             try:
                 as2utils.verify_payload(mdn_content, None, cert, ca_cert, verify_cert)
             except Exception, e:
-                # TODO: Verify using extracted message and signature
                 raise as2utils.As2Exception(_(u'MDN Signature Verification Error, exception message is %s' % e))
 
         # Save the MDN to the store
