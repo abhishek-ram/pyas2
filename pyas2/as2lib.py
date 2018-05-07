@@ -104,7 +104,8 @@ def save_message(message, payload, raw_payload):
             # Extract the signature and signed content from the mime message
             main_boundary = '--' + payload.get_boundary()
             for part in payload.walk():
-                if part.get_content_type() == "application/pkcs7-signature":
+                if part.get_content_type() in ["application/pkcs7-signature",
+                                               "application/x-pkcs7-signature"]:
                     __, raw_sig = as2utils.check_binary_sig(part, main_boundary, raw_payload)
                 else:
                     payload = part

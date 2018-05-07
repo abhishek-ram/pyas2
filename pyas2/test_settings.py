@@ -132,3 +132,5 @@ PYAS2 = {
     'ASYNCMDNWAIT': 30,
     'MAXARCHDAYS': 30,
 }
+
+SESSION_COOKIE_NAME = 'pyas2old'

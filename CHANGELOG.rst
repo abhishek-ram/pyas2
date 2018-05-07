@@ -1,25 +1,30 @@
 Release History
 ===============
 
-0.4.0 - 2017-01-27
+0.4.1 - 2018-05-07
+~~~~~~~~~~~~~~~
+
+* Also look for `application/x-pkcs7-signature` when verifying signatures
+
+0.4.0 - 2018-01-27
 ~~~~~~~~~~~~~~~
 
 * Cleaner handling of signature verifications
 * Added test cases for sterling b2b integrator message and mdn
 * Set `max_length` for file fields to manage long folder names.
 
-0.3.8 - 2017-01-09
+0.3.8 - 2018-01-09
 ~~~~~~~~~~~~~~~~~~
 
 * Give option to download certs from the admin.
 
 
-0.3.7 - 2017-01-09
+0.3.7 - 2018-01-09
 ~~~~~~~~~~~~~~~~~~
 
 * Use a function to get the certificate upload_to.
 
-0.3.6 - 2017-01-05
+0.3.6 - 2018-01-05
 ~~~~~~~~~~~~~~~~~~
 
 * Added view for downloading certificates from the admin.
