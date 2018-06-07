@@ -648,4 +648,3 @@ class AS2SterlingIntegratorTest(TestCase):
 
         with open(os.path.join(TEST_DIR, 'si_signed.mdn')) as mdn:
             as2lib.save_mdn(message, mdn.read())
-

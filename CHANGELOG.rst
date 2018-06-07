@@ -1,6 +1,13 @@
 Release History
 ===============
 
+0.4.2 - 2018-06-07
+~~~~~~~~~~~~~~~
+
+* Also look for `application/x-pkcs7-signature` when verifying MDN signatures
+* Limit size of exception logged to database
+* Handle case where Sync MDN does not have a Message ID
+
 0.4.1 - 2018-05-07
 ~~~~~~~~~~~~~~~
 

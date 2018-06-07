@@ -455,7 +455,8 @@ def send_message(message, payload):
                                                 u'"%s".\n\nTo retry transmission run the management '
                                                 u'command "retryfailedas2comms".' % e))
             message.status = 'R'
-            models.Log.objects.create(message=message, status='E', text=_(u'Message send failed with error %s' % e))
+            models.Log.objects.create(message=message, status='E',
+                                      text=_(u'Message send failed with error %s' % e)[:250])
             return
         models.Log.objects.create(message=message, status='S', text=_(u'AS2 message successfully sent to partner'))
 
@@ -469,8 +470,10 @@ def send_message(message, payload):
             # In case of Synchronous MDN the response content will be the MDN. So process it.
             # Get the response headers, convert key to lower case for normalization
             mdn_headers = dict((k.lower().replace('_', '-'), response.headers[k]) for k in response.headers)
+
             # create the mdn content with message-id and content-type header and response content
-            mdn_content = '%s: %s\n' % ('message-id', mdn_headers['message-id'])
+            mdn_content = '%s: %s\n' % (
+                'message-id', mdn_headers.get('message-id', message.message_id))
             mdn_content += '%s: %s\n\n' % ('content-type', mdn_headers['content-type'])
             mdn_content += response.content
             models.Log.objects.create(message=message, status='S', text=_(u'Synchronous mdn received from partner'))
@@ -529,7 +532,8 @@ def save_mdn(message, mdn_content):
             # Extract the signed message and signature
             main_boundary = '--' + mdn_message.get_boundary()
             for part in mdn_message.get_payload():
-                if part.get_content_type().lower() == "application/pkcs7-signature":
+                if part.get_content_type().lower() in ["application/pkcs7-signature",
+                                                       "application/x-pkcs7-signature"]:
                     mdn_content, __ = as2utils.check_binary_sig(
                         part, main_boundary, mdn_content)
                 else:
