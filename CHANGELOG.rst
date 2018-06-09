@@ -1,6 +1,11 @@
 Release History
 ===============
 
+0.4.3 - 2018-06-09
+~~~~~~~~~~~~~~~
+
+* Send encrypted content as binary data instead of base64
+
 0.4.2 - 2018-06-07
 ~~~~~~~~~~~~~~~
 

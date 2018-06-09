@@ -373,27 +373,28 @@ def as2receive(request, *args, **kwargs):
        Checks whether its an AS2 message or an MDN and acts accordingly.
     """
     if request.method == 'POST':
-        # Process the posted AS2 message
-        request_body = request.read()
-
-        # Create separate raw_payload with only message-id and content type as M2Crypto's signature
-        # verification method does not like too many header
+        # Create separate raw_payload with only message-id and content type
+        # as M2Crypto's signatur verification method does not like many headers
         raw_payload = '%s: %s\n' % ('message-id', request.META['HTTP_MESSAGE_ID'])
         raw_payload += '%s: %s\n\n' % ('content-type', request.META['CONTENT_TYPE'])
-        raw_payload += request_body
+        raw_payload += request.body
 
         # Extract all the relevant headers from the http request
         as2headers = ''
         for key in request.META:
             if key.startswith('HTTP') or key.startswith('CONTENT'):
-                as2headers += '%s: %s\n' % (key.replace("HTTP_", "").replace("_", "-").lower(), request.META[key])
+                h_key = key.replace("HTTP_", "").replace("_", "-").lower()
+                as2headers += '%s: %s\n' % (h_key, request.META[key])
 
+        request_content = as2headers.encode('utf-8') + '\n'.encode('utf-8') +request.body
         pyas2init.logger.debug('Recevied an HTTP POST from %s with payload :\n%s' %
-                               (request.META['REMOTE_ADDR'], as2headers + '\n' + request_body))
+                               (request.META['REMOTE_ADDR'], request_content))
         try:
-            pyas2init.logger.debug('Check payload to see if its an AS2 Message or ASYNC MDN.')
+            pyas2init.logger.debug(
+                'Check payload to see if its an AS2 Message or ASYNC MDN.')
             # Load the request header and body as a MIME Email Message
-            payload = email.message_from_string(as2headers + '\n' + request_body)
+            payload = email.message_from_string(request_content)
+
             # Get the message sender and receiver AS2 IDs
             message_org = as2utils.unescape_as2name(payload.get('as2-to'))
             message_partner = as2utils.unescape_as2name(payload.get('as2-from'))

@@ -389,7 +389,8 @@ def build_message(message):
                                            message.partner.encryption_key.certificate.path,
                                            message.partner.encryption)
         payload.set_type('application/pkcs7-mime')
-        as2_content = payload.get_payload()
+        as2_content = payload.get_payload().decode('base64')
+        del payload['Content-Transfer-Encoding']
         pyas2init.logger.debug('Encrypted message %s payload as:\n%s' % (message.message_id, payload.as_string()))
 
     # If MDN is to be requested from the partner, set the appropriate headers
