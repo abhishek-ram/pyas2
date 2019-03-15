@@ -62,3 +62,4 @@ messages/
 certificates/
 logging/
 venv
+.DS_STORE

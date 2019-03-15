@@ -1,6 +1,12 @@
 Release History
 ===============
 
+0.4.4 - 2019-03-15
+~~~~~~~~~~~~~~~
+
+* Increase the length of string fields
+
+
 0.4.3 - 2018-06-09
 ~~~~~~~~~~~~~~~
 
