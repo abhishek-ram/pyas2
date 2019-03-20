@@ -1,6 +1,12 @@
 Release History
 ===============
 
+0.4.5 - 2019-03-20
+~~~~~~~~~~~~~~~
+
+* Use uuid for filenames and not message id
+* More verbose logging of exceptions
+
 0.4.4 - 2019-03-15
 ~~~~~~~~~~~~~~~
 
