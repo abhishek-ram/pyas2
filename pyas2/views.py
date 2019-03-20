@@ -19,6 +19,7 @@ import subprocess
 import tempfile
 import traceback
 import email
+import uuid
 
 
 def server_error(request, template_name='500.html'):
@@ -436,12 +437,13 @@ def as2receive(request, *args, **kwargs):
 
                 except Exception, e:
                     message.status = 'E'
-                    models.Log.objects.create(message=message,
-                                              status='E',
-                                              text=_(u'Failed to send message, error is %s' % e))
+                    message.adv_status = _(u'Failed to send message, error is:\n %s' %
+                                           traceback.format_exc(None).decode('utf-8', 'ignore'))
+                    models.Log.objects.create(
+                        message=message, status='E', text=message.adv_status)
 
                     # Send mail here
-                    as2utils.senderrorreport(message, _(u'Failed to send message, error is %s' % e))
+                    as2utils.senderrorreport(message, message.adv_status)
 
                 finally:
                     # Save message and send response to HTTP request
@@ -489,9 +491,9 @@ def as2receive(request, *args, **kwargs):
 
                     # Get the filename from the header and if not there set to message id
                     if message.partner.keep_filename and payload.get_filename():
-                        filename = payload.get_filename()
+                        filename = payload.get_filename()[:100]
                     else:
-                        filename = '%s.msg' % message.message_id
+                        filename = '%s.msg' % uuid.uuid4()
 
                     # Save the message content to the store and inbox
                     content = payload.get_payload(decode=True)
@@ -544,13 +546,14 @@ def as2receive(request, *args, **kwargs):
                     adv_status = 'integrity-check-failed'
                     status_message = _(u'An error occurred during the AS2 message processing: %s' % e)
 
-                except Exception, e:
+                except Exception:
                     txt = traceback.format_exc(None).decode('utf-8', 'ignore')
                     pyas2init.logger.error(_(u'Unexpected error while processing message %(msg)s, '
                                              u'error:\n%(txt)s'), {'txt': txt, 'msg': message.message_id})
                     status = 'error'
                     adv_status = 'unexpected-processing-error'
-                    status_message = _(u'An error occurred during the AS2 message processing: %s' % e)
+                    status_message = _(u'An error occurred during the AS2'
+                                       u' message processing: \n %s' % txt)
                 finally:
                     # Build the mdn for the message based on processing status
                     mdn_body, mdn_message = as2lib.build_mdn(message,
