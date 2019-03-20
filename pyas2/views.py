@@ -19,6 +19,7 @@ import subprocess
 import tempfile
 import traceback
 import email
+import uuid
 
 
 def server_error(request, template_name='500.html'):
@@ -489,9 +490,9 @@ def as2receive(request, *args, **kwargs):
 
                     # Get the filename from the header and if not there set to message id
                     if message.partner.keep_filename and payload.get_filename():
-                        filename = payload.get_filename()
+                        filename = payload.get_filename()[:100]
                     else:
-                        filename = '%s.msg' % message.message_id
+                        filename = '%s.msg' % uuid.uuid4()
 
                     # Save the message content to the store and inbox
                     content = payload.get_payload(decode=True)
