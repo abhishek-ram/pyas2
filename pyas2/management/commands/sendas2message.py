@@ -4,7 +4,7 @@ from pyas2 import models
 from pyas2 import as2lib
 from pyas2 import as2utils
 from pyas2 import pyas2init 
-from optparse import make_option
+import traceback
 import email.utils
 import shutil
 import time
@@ -71,14 +71,19 @@ class Command(BaseCommand):
         try:
             payload = as2lib.build_message(message)
             as2lib.send_message(message, payload)	
-        except Exception, e:
-            pyas2init.logger.error(_(u'Failed to send message, error:\n%(txt)s') % {'txt': as2utils.txtexc()})
+        except Exception:
             message.status = 'E'
-            models.Log.objects.create(message=message, status='E', text=_(u'Failed to send message, error is %s' % e))
+            txt = traceback.format_exc(None).decode('utf-8', 'ignore')
+            message.adv_status = \
+                _(u'Failed to send message, error:\n%(txt)s') % {'txt': txt}
+            pyas2init.logger.error(message.adv_status)
+
+            models.Log.objects.create(
+                message=message, status='E', text=message.adv_status)
             message.save()
 
             # Send mail here
-            as2utils.senderrorreport(message, _(u'Failed to send message, error is %s' % e))
+            as2utils.senderrorreport(message, message.adv_status)
             sys.exit(2)
 
         sys.exit(0)

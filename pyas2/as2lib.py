@@ -184,6 +184,7 @@ def build_mdn(message, status, **kwargs):
                                   u'The disposition-notification report has additional details.')
             models.Log.objects.create(message=message, status='E', text=kwargs['status_message'])
             message.status = 'E'
+            message.adv_status = kwargs['status_message']
         else:
             message.status = 'S'
 
