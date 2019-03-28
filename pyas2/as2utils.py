@@ -259,6 +259,7 @@ def canonicalize(msg):
 class CompressedDataAttr(univ.Sequence):
     componentType = namedtype.NamedTypes(
         namedtype.NamedType('compressionAlgorithm', univ.ObjectIdentifier()),
+        namedtype.OptionalNamedType('parameters', univ.Any()),
     )
 
 
@@ -311,7 +312,8 @@ def compress_payload(payload):
 
 
 def decompress_payload(payload):
-    decoded_content, substrate = decoder.decode(payload, asn1Spec=CompressedDataMain())
+    decoded_content, substrate = decoder.decode(
+        payload, asn1Spec=CompressedDataMain())
     compressed_content = decoded_content.getComponentByName('compressedData').getComponentByName('payload').\
         getComponentByName('content')
     return zlib.decompress(compressed_content.asOctets())

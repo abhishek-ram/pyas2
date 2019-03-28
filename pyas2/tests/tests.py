@@ -648,3 +648,54 @@ class AS2SterlingIntegratorTest(TestCase):
 
         with open(os.path.join(TEST_DIR, 'si_signed.mdn')) as mdn:
             as2lib.save_mdn(message, mdn.read())
+
+
+# class AS2CleoTest(TestCase):
+#     """Test cases against the Sterling B2B Integrator AS2 server."""
+#
+#     @classmethod
+#     def setUpTestData(cls):
+#         # Every test needs a client.
+#         cls.client = Client()
+#         cls.header_parser = HeaderParser()
+#
+#         # Load the client and server certificates
+#         cls.server_key = models.PrivateCertificate.objects.create(
+#             certificate=os.path.join(TEST_DIR, 'uc_as2server.pem'),
+#             certificate_passphrase='VU5JT05DUkFURVQ='
+#         )
+#         cls.si_public_key = models.PublicCertificate.objects.create(
+#             certificate=os.path.join(TEST_DIR, 'cleo_public_key.crt'),
+#             verify_cert=False
+#         )
+#
+#         # Setup the server organization and partner
+#         cls.organization = models.Organization.objects.create(
+#             name='Server Organization',
+#             as2_name='UNIONCRATET',
+#             encryption_key=cls.server_key,
+#             signature_key=cls.server_key
+#         )
+#
+#         cls.partner = models.Partner.objects.create(
+#             name='Sterling B2B Integrator',
+#             as2_name='08925485US00',
+#             target_url='http://localhost:8080/pyas2/as2receive',
+#             compress=False,
+#             mdn=False,
+#             signature_key=cls.si_public_key,
+#             encryption_key=cls.si_public_key
+#         )
+#
+#     def test_process_message(self):
+#         with open(os.path.join(TEST_DIR, 'cl_signed_cmp.msg')) as msg:
+#             raw_payload = msg.read()
+#             payload = message_from_string(raw_payload)
+#             message = models.Message.objects.create(
+#                 message_id=payload.get('message-id').strip('<>'),
+#                 direction='IN',
+#                 status='IP',
+#                 headers=''
+#             )
+#             message = as2lib.save_message(message, payload, raw_payload)
+#             print(message)

@@ -12,6 +12,36 @@ from pyas2 import pyas2init
 from string import Template
 
 
+def decompress_message(message, payload):
+    """ Function for decompressing the message """
+    decompressed_content = None
+    if payload.get_content_type() == 'application/pkcs7-mime' \
+            and payload.get_param('smime-type') == 'compressed-data':
+        models.Log.objects.create(message=message, status='S',
+                                  text=_(u'Decompressing the payload'))
+        message.compressed = True
+
+        # Decode the data to binary if its base64 encoded
+        compressed_content = payload.get_payload()
+        try:
+            compressed_content.encode('ascii')
+            compressed_content = base64.b64decode(payload.get_payload())
+        except UnicodeDecodeError:
+            pass
+
+        pyas2init.logger.debug(
+            'Decompressing the payload:\n%s' % compressed_content)
+        try:
+            decompressed_content = as2utils.decompress_payload(
+                compressed_content)
+
+        except Exception, e:
+            raise as2utils.As2DecompressionFailed(
+                'Failed to decompress message,exception message is %s' % e)
+
+    return message, decompressed_content
+
+
 def save_message(message, payload, raw_payload):
     """ Function decompresses, decrypts and verifies the received AS2 message
      Takes an AS2 message as input and returns the actual payload ex. X12 message """
@@ -79,6 +109,12 @@ def save_message(message, payload, raw_payload):
             except Exception, msg:
                 raise as2utils.As2DecryptionFailed('Failed to decrypt message, exception message is %s' % msg)
 
+        # Check for compression before signature check
+        message, decompressed_content = decompress_message(message, payload)
+        if decompressed_content:
+            payload = email.message_from_string(decompressed_content)
+            raw_payload = decompressed_content
+
         # Check if message from this partner are expected to be signed
         if message.partner.signature and payload.get_content_type() != 'multipart/signed':
             raise as2utils.As2InsufficientSecurity(
@@ -124,25 +160,9 @@ def save_message(message, payload, raw_payload):
             mic_content = as2utils.canonicalize2(payload)
 
         # Check if the message has been compressed and if so decompress it
-        if payload.get_content_type() == 'application/pkcs7-mime' \
-                and payload.get_param('smime-type') == 'compressed-data':
-            models.Log.objects.create(message=message, status='S', text=_(u'Decompressing the payload'))
-            message.compressed = True
-
-            # Decode the data to binary if its base64 encoded
-            compressed_content = payload.get_payload()
-            try:
-                compressed_content.encode('ascii')
-                compressed_content = base64.b64decode(payload.get_payload())
-            except UnicodeDecodeError:
-                pass
-
-            pyas2init.logger.debug('Decompressing the payload:\n%s' % compressed_content)
-            try:
-                decompressed_content = as2utils.decompress_payload(compressed_content)
-                payload = email.message_from_string(decompressed_content)
-            except Exception, e:
-                raise as2utils.As2DecompressionFailed('Failed to decompress message,exception message is %s' % e)
+        message, decompressed_content = decompress_message(message, payload)
+        if decompressed_content:
+            payload = email.message_from_string(decompressed_content)
 
         # Saving the message mic for sending it in the MDN
         if mic_content:
