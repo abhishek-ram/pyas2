@@ -49,3 +49,6 @@ def indent_edifact(content):
 def indent_xml(content):
     this_xml = xml.dom.minidom.parseString(content)
     return this_xml.toprettyxml()
+
+def indent_csv(content):
+    return content
