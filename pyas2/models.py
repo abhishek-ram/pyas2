@@ -71,6 +71,7 @@ class Partner(models.Model):
         ('application/EDIFACT', 'application/EDIFACT'),
         ('application/edi-consent', 'application/edi-consent'),
         ('application/XML', 'application/XML'),
+        ('text/CSV', 'text/CSV'),
     )
     ENCRYPT_ALG_CHOICES = (
         ('des_ede3_cbc', '3DES'),
