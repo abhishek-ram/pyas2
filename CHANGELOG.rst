@@ -1,6 +1,12 @@
 Release History
 ===============
 
+0.4.6 - 2019-04-17
+~~~~~~~~~~~~~~~
+
+* Add support for sending CSV files
+* Handle cases where compression can happen before signing
+
 0.4.5 - 2019-03-20
 ~~~~~~~~~~~~~~~
 
@@ -11,7 +17,6 @@ Release History
 ~~~~~~~~~~~~~~~
 
 * Increase the length of string fields
-
 
 0.4.3 - 2018-06-09
 ~~~~~~~~~~~~~~~
